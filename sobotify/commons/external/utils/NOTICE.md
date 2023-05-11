@@ -1,0 +1,5 @@
+# Copyright Notice
+
+The file [keypointstoangles.py](keypointstoangles.py) in this folder is taken from [https://github.com/elggem/naoqi-pose-retargeting/blob/main/utils/keypointstoangles.py](https://github.com/elggem/naoqi-pose-retargeting/blob/main/utils/keypointstoangles.py), who stated, that it has been taken from  [github.com/FraPorta/pepper_openpose_teleoperation](https://github.com/FraPorta/pepper_openpose_teleoperation), licensed under Apache 2.0, and that modifications have been made to it.
+
+The file [drawlandmarks.py](drawlandmarks.py) contained in this folder is based on [https://github.com/elggem/naoqi-pose-retargeting/blob/main/utils/drawlandmarks.py](https://github.com/elggem/naoqi-pose-retargeting/blob/main/utils/drawlandmarks.py), licensed under Apache 2.0, who stated, that it is in part based on code from [github.com/Kazuhito00/mediapipe-python-sample](https://github.com/Kazuhito00/mediapipe-python-sample), licensed under Apache 2.0. Modifications have been made to the file.
