@@ -4,6 +4,7 @@ import paho.mqtt.client as mqtt
 class mqttClient(object):
 
     def __init__(self,mosquitto_ip,client_name):
+        self.callback={}
         self.client = mqtt.Client(client_name, clean_session = False)
         self.broker = mosquitto_ip       
         self.client.on_connect = self.on_connect
@@ -17,9 +18,9 @@ class mqttClient(object):
             exit()
         self.client.loop_start()
 
-    def subscribe(self,subscibe_topic,subscibe_callback) :
-        self.client.subscribe(subscibe_topic)
-        self.message_callback=subscibe_callback
+    def subscribe(self,topic,callback) :
+        self.client.subscribe(topic)
+        self.callback[topic]=callback
 
     def publish(self,subscibe_topic,message) :
         self.client.publish(subscibe_topic,message)
@@ -29,8 +30,10 @@ class mqttClient(object):
 
     def on_message(self, client, userdata, msg):
         message = msg.payload.decode('utf-8')
-        print ("received message:", message)
-        self.message_callback(message)
+        topic = msg.topic
+        print ("received on topic: " + topic + " ====> message: " + message )
+        callback=self.callback[topic]
+        callback(message)
 
     def on_connect(self, client, userdata, flags, rc):
         print ("Connected! - " + str(rc))
