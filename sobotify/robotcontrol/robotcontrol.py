@@ -256,8 +256,8 @@ def robotcontroller(mqtt,mosquitto_ip,data_path,language,min_speech_speed,max_sp
     print ("starting robot controller ...")
     robot = RobotControl(data_path,language,min_speech_speed,max_speech_speed,robot_name,robot_ip)
     if mqtt=="on" :
-        mqtt_client = mqttClient(mosquitto_ip,"VirtualRobot")
-        mqtt_client.subscribe("pepper_client",robot.action)
+        mqtt_client = mqttClient(mosquitto_ip,"robot")
+        mqtt_client.subscribe("robot/speak-and-gesture",robot.action)
         while True:
             sleep(1000)
     else :

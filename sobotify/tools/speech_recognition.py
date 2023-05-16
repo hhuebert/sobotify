@@ -98,12 +98,12 @@ class voskListener:
 
 def speechrecognition(mqtt,mosquitto_ip,vosk_keyword,vosk_model_path,language,sound_device):
     if mqtt=="on" :
-        mqtt_client = mqttClient(mosquitto_ip,"SpeechRecognition")
+        mqtt_client = mqttClient(mosquitto_ip,"speech-recognition")
     vosk_listener = voskListener(vosk_keyword,vosk_model_path,language,sound_device)
     while True: 
         query_text=vosk_listener.get_query()
         if mqtt=="on" :
-            mqtt_client.publish("vosk_client",query_text)
+            mqtt_client.publish("speech-recognition/statement",query_text)
 
 if __name__ == "__main__":
     parser=argparse.ArgumentParser(description='speech recognition with mqtt client')
