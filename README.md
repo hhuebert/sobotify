@@ -18,11 +18,11 @@ You can use the
 
 [install.bat](scripts/install.bat) 
 
-file in the script folder to automatically download and install all required tools and packages. It downloads several other project and tools (VOSK, FFMPEG, Mosquitto, miniconda, qibullet, Python SDK for Pepper/NAO (pynaoqi),...). 
+file in the script folder to automatically download and install all required tools and packages. It downloads several other project and tools (VOSK, FFMPEG, Mosquitto, miniconda, pybullet, qibullet, Python SDK for Pepper/NAO (pynaoqi),...). 
 
-Please check their licenses before installation and usage. You can find the corresponding download URLs in [install.bat](scripts/install.bat) and package names in [requirements.txt](requirements.txt) 
+Please check their licenses before installation and usage. You can find the corresponding download URLs in [install.bat](scripts/install.bat) and Python package (PyPi) names in [requirements.txt](requirements.txt). pybullet is downloaded from the conda package repository (conda-forge)   
 
-## Manuall Installation
+## Manual Installation
 
 ### Sobotify-Settings-Folder
 Create a directory .sobotify\data\ in your home directory, e.g. C:\Users\MyName\.sobotify\data 
@@ -62,17 +62,12 @@ However, you can also use regular Python installation instead of Conda, as sobot
 Create a Python 3.8 environment for most of the sobotify tools:
 * open anaconda prompt and type the following commands: 
 
-    `conda create -y -n sobotify python=3.8` 
-
-    `conda activate sobotify`
-
-    `conda config --add channels conda-forge`
-
-    `conda install pybullet`
-
-    `cd to sobotify folder (where README.md is)` 
-
-    `pip install -e . -r requirements.txt`
+      conda create -y -n sobotify python=3.8
+      conda activate sobotify
+      conda config --add channels conda-forge
+      conda install pybullet
+      cd to sobotify folder (where README.md is)
+      pip install -e . -r requirements.txt`
 
 #### Python 2.7 environment (Pepper and Nao)
 Create a Python 2.7 envirnoment including the Python SDK (pynaoqi) and a if you want to use Pepper and Nao robots:
@@ -83,15 +78,11 @@ Create a Python 2.7 envirnoment including the Python SDK (pynaoqi) and a if you 
 
 * open anaconda prompt and type the following commands: 
 
-    `conda create -y -n sobotify_naoqi python=2.7`
-
-    `conda activate sobotify_naoqi`
-    
-    `cd to sobotify folder (where README.md is)`
-    
-    `pip install -e . -r requirements.txt`
-    
-    `conda env config vars set PYTHONPATH=%USERPROFILE%\.sobotify\pynaoqi`
+       conda create -y -n sobotify_naoqi python=2.7
+       conda activate sobotify_naoqi
+       cd to sobotify folder (where README.md is)
+       pip install -e . -r requirements.txt
+       conda env config vars set PYTHONPATH=%USERPROFILE%\.sobotify\pynaoqi
     
 # Testing
 
@@ -99,21 +90,39 @@ Create a Python 2.7 envirnoment including the Python SDK (pynaoqi) and a if you 
 
 The batch files in the [scripts](scripts/) folder can be used to test the tools easily.
 
-Drop a video file on [analyze_video.bat](scripts/analyze_video.bat) to create the robot control files
+* Drop a video file on [analyze_video.bat](scripts/analyze_video.bat) to create the robot control files.  
+(You might want to adjust the language in the batch file beforehand)
 
-Drop a video file on [play_pepper.bat](scripts/play_pepper.bat) to play the previously analyzed robot control files (wiht the same name) on Pepper
+* Drop a video file on [play_pepper.bat](scripts/play_pepper.bat) to play the previously analyzed robot control files (wiht the same name) on Pepper.  
+(You might want to adjust the language and the Pepper IP address in the batch file beforehand)
 
-Drop a video file on [play_stickman.bat](scripts/play_pepper.bat) to play the previously analyzed robot control files (wiht the same name) on the stickman
+* Drop a video file on [play_stickman.bat](scripts/play_pepper.bat) to play the previously analyzed robot control files (wiht the same name) on the stickman.  
+(You might want to adjust the language in the batch file beforehand)
 
-click on [start_debate_partner.bat](scripts/start_debate_partner.bat) to start the debate partner scenario.
+* Open the click on [start_debate_partner.bat](scripts/start_debate_partner.bat) to start the debate partner scenario.  
+(You might want to adjust the mosquitto IP address, Pepper IP address and language in the batch file beforehand)
 
 
 ## Commandline Testing
+
+### running the debate partner app
+  For starting the debate parnter app with default settings (english with keyword "apple tree" and the "stickman" robot) use  
+
+    conda activate sobotify
+    python scripts\debate_partner.py
+
+or for running on the Pepper robot at 192.168.0.141 in german language with the keyword "Banane" 
+
+    conda activate sobotify
+    python scripts\debate_partner.py --language="german" --keyword="Banane" --robot_name pepper --robot_ip 192.168.0.141
+
+
+
 ### Converting a video
   For converting a video to robot control file (movement and speech) use  
 
     conda activate sobotify
-    python sobotify\sobotify.py -a --video_file MyTest1.mp4 --language english --robot_name pepper
+    python sobotify\sobotify.py -a --video_file MyTest1.mp4 --language english --robot_name pepper 
 
   or
 
@@ -186,4 +195,6 @@ Additionally, sobotify uses several packages (see [requirements.txt](requirement
 ## Credits: 
 Part of sobotify include and are based on others code, especially from Fraporta (https://github.com/FraPorta/pepper_openpose_teleoperation) and also elggem (https://github.com/elggem/naoqi-pose-retargeting), which also uses code from Kazuhito00 (https://github.com/Kazuhito00/mediapipe-python-sample). 
 
-Additionally several members of the Science Of Intelligence research project contributed to this project, whom I would like to thank. And special thanks go to Haeseon Yun for her inspiring inputs and and discussions in creating and applying these tools (https://www.scienceofintelligence.de/research/researchprojects/project_06/) 
+Additionally several members of the Science Of Intelligence research project contributed to this project, whom I would like to thank. 
+
+And special thanks go to Haeseon Yun for her inspiring inputs and fruitful discussions in creating and applying these tools (https://www.scienceofintelligence.de/research/researchprojects/project_06/) 
