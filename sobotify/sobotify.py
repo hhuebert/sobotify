@@ -5,7 +5,6 @@ import subprocess
 import time
 import platform
 import signal
-from sobotify.commons.mqttclient import mqttClient
 
 
 mosquitto_ip_default     = '127.0.0.1'      # ip address of the mosquitto server'
@@ -39,6 +38,7 @@ class sobotify (object) :
         self.speech_recognition_proc=0
         self.llm_proc=0
         if start_mqtt_client==True :
+            from sobotify.commons.mqttclient import mqttClient
             self.mqtt_client = mqttClient(mosquitto_ip,app_name)
 
     def subscribe_llm_reply(self,callback):
