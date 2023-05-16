@@ -108,7 +108,7 @@ class speech():
         self.speech.setParameter("speed", self.speed)
         
     def setLanguage(self, language):
-        self.language=language
+        self.language=language.capitalize()
         self.speech.setLanguage(self.language)
 
     def setSpeed(self, speed):

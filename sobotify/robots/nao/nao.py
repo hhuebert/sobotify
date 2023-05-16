@@ -99,19 +99,19 @@ class motion():
             self.motion.setAngles(names, angles, self.fractionMaxSpeed)
             
     def terminate(self):
-        pass
+        self.posture.goToPosture("Stand", 0.5)
 
 
 class speech():
     def replace_umlaute(self):
-        self.text=self.text.replace("�","ae")
-        self.text=self.text.replace("�","Ae")
-        self.text=self.text.replace("�","oe")
-        self.text=self.text.replace("�","oe")
-        self.text=self.text.replace("�","ue")
-        self.text=self.text.replace("�","Ue")
-        self.text=self.text.replace("�","Oe")
-        self.text=self.text.replace("�","ss")
+        self.text=self.text.replace("ä","ae")
+        self.text=self.text.replace("Ä","Ae")
+        self.text=self.text.replace("ö","oe")
+        self.text=self.text.replace("Ö","oe")
+        self.text=self.text.replace("ü","ue")
+        self.text=self.text.replace("Ü","Ue")
+        self.text=self.text.replace("Ö","Oe")
+        self.text=self.text.replace("ß","ss")
 
     def __init__(self,robot_ip):
         self.language="English"
@@ -125,7 +125,7 @@ class speech():
         self.speech.setParameter("speed", self.speed)
         
     def setLanguage(self, language):
-        self.language=language
+        self.language=language.capitalize()
         self.speech.setLanguage(self.language)
 
     def setSpeed(self, speed):
