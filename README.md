@@ -19,35 +19,33 @@ It has been tested with Python 3.8 on Windows. Future versions should also suppo
 
 * Unzip the sobotify-main.zip file 
 * Copy the unpacked sobotify-main folder to a permanent location (i.e. where it can stay, as this will be the installatione location), for example copy it to your home directory, such as C:\Users\MyName\sobotify-main
-* go into the sobotify-main\sobotify\scripts folder
-* Double-Click the file 
+* go into the sobotify top folder
+* double click the file 
 
       install.bat
 
-   to automatically download and install all required tools and packages. It downloads several other project and tools (miniconda, Mosquitto, VOSK, FFMPEG, pybullet, qibullet, Python SDK for Pepper/NAO (pynaoqi),...). 
-
-Please check their licenses before installation and usage. You can find the corresponding download URLs in [install.bat](scripts/install.bat) and Python package (PyPi) names in [requirements.txt](requirements.txt). pybullet is downloaded from the conda package repository (conda-forge)   
+   to automatically download and install all required tools and packages. It downloads several other project and tools (miniconda, Mosquitto, VOSK, FFMPEG, pybullet, qibullet, Python SDK for Pepper/NAO (pynaoqi),...).   
+   Please check their licenses before installation and usage. You can find the corresponding download URLs in [install.bat](install.bat) and Python package (PyPi) names in [requirements.txt](requirements.txt). pybullet is downloaded from the conda package repository (conda-forge)   
 
 ## One-Click-Testing
 
-The batch files in the "sobotify/scripts" folder can be used to test the tools easily.
+The batch files in the "sobotify/example" folder can be used to test the tools easily.
 
-* To create the robot control files drag&drop a video file on:  
+* To create the robot control files **drag&drop** a video file on:  
   (You might want to adjust the language in the batch file beforehand)      
 
       analyze_video.bat 
 
-* After creating the robot control files you play them on Pepper by drag&drop of the video file (or any file with the same same) on:    
-(You might want to adjust the language and the Pepper IP address in the batch file beforehand)
+* After creating the robot control files you play them on an a robot by **drag&drop** of the video file (or any file with the same name) on:    
+(You might want to adjust the language and the robot IP address in the batch file beforehand)
 
       play_stickman.bat
 
-* After creating the robot control files you play them on Pepper by drag&drop of the video file (or any file with the same same) on:    
-(You might want to adjust the language and the Pepper IP address in the batch file beforehand)
+  or 
       
       play_pepper.bat
 
-* Start the example app "debate partner" by double-clicking the following batch fil :
+* Start the example app "debate partner" by **double-clicking** the following batch fil :
 (You might want to adjust the robot name, robot IP address, the keyword, language or sound device in the batch file beforehand)
 
       start_debate_partner.bat  
@@ -120,7 +118,19 @@ Create a Python 2.7 envirnoment including the Python SDK (pynaoqi) and a if you 
 
 For commandline testing you need to open a miniconda prompt. Then you can use the following commands. Before using the actual sobotify commands, you need to activate the sobotify enviroment (as can be seen below)
 
-### running the debate partner app
+### "Hello World" on robots
+
+For testing "Hello world" with the stickman use : 
+
+    conda activate sobotify
+    python sobotify\sobotify.py -r
+
+For testing Hello World with pepper:
+
+    conda activate sobotify_naoqi
+    python .\sobotify\robotcontrol\robotcontrol.py --robot_name pepper --robot_ip 192.168.0.141
+
+### Running the debate partner app
   For starting the debate parnter app with default settings (english with keyword "apple tree" and the "stickman" robot) use  
 
     conda activate sobotify
@@ -131,16 +141,16 @@ or for running on the Pepper robot at 192.168.0.141 in german language with the 
     conda activate sobotify
     python scripts\debate_partner.py --language="german" --keyword="Banane" --robot_name pepper --robot_ip 192.168.0.141
 
-### Converting a video
+### Extracting gesture and speech from a video file
   For converting a video to robot control file (movement and speech) use  
 
     conda activate sobotify
-    python sobotify\sobotify.py -a --video_file MyTest1.mp4 --language english --robot_name pepper 
+    python sobotify\sobotify.py -e --video_file MyTest1.mp4 --language english --robot_name pepper 
 
   or
 
     conda activate sobotify
-    python sobotify\tools\analyze\analyze.py --video_file MyTest1.mp4 --language english --robot_name pepper 
+    python sobotify\tools\extract\extract.py --video_file MyTest1.mp4 --language english --robot_name pepper 
 
 This will create the robot control files in the  in the data base (by default: %USERPROFILE%\.sobotify\data\):
 * MyTest1.srt ==> spoken words with timing information (for robot speech)
@@ -149,8 +159,8 @@ This will create the robot control files in the  in the data base (by default: %
 * MyTest1_wlmarks.csv ==> world landmarks (internal data) 
 * MyTest1.tsp ==> time stamps (internal data)
 
-### Control the "stickman"
-For running  "Hello world" with the stickman use : 
+### Running the extracted gesture/speech on the robot
+For running  the previously extracted gesture/speech from the video MyTest1 with the stickman use : 
 
     conda activate sobotify
     python sobotify\sobotify.py -r --robot_name stickman --language english --message "MyTest1|Hello" 
@@ -159,47 +169,6 @@ or
 
     conda activate sobotify
     python sobotify\robotcontrol\robotcontrol.py --robot_name stickman --language english --message "MyTest1|Hello"
-
-For testing "Hello world" with the stickman use : 
-
-    conda activate sobotify
-    python sobotify\sobotify.py -r
-
-For testing the debate partner with stickman:
-
-    conda activate sobotify
-    python sobotify\sobotify.py -mrvl
-
-
-### Control the pepper robot
-For testing the debate partner with pepper (when llm processor is runnung on a different PC):
-
-on your PC (for example with IP address 192.168.0.101) run:
-
-    conda activate sobotify
-    python ./sobotify/sobotify.py -mrv --robot_name pepper --mosquitto_ip 192.168.0.101
-
-on llm-processor PC run:
-
-either 
-
-    conda activate sobotify
-    python ./sobotify/sobotify.py -ml --mosquitto_ip 192.168.0.101
-
-or 
-
-     conda activate sobotify
-     python ./sobotify/tools/llm_processor.py --mosquitto_ip 192.168.0.101
-
-For testing Hello World with pepper:
-
-    conda activate sobotify_naoqi
-    python .\sobotify\robotcontrol\robotcontrol.py --robot_name pepper --robot_ip 192.168.0.141
-
-For testing the debate partner with pepper:
-    
-    conda activate sobotify
-    python ./sobotify/sobotify.py -mrlv --robot_name pepper --robot_ip 192.168.0.141
 
 ## License:
 Sobotify itself is licensed under MIT license. However, some part of the code are taken from other project which are under other licenses (e.g. Apache License). The license is then stated in the code. 

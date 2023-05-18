@@ -11,12 +11,11 @@ class debate_partner:
         self.statement_pending=False
         self.reply_pending=False
         self.sobot=sobotify.sobotify(app_name="debate-partner",debug=False)
-        self.sobot.start_mosquitto()
-        self.sobot.start_robotcontrol(robot_name=robot_name,robot_ip=robot_ip, language=language)
-        self.sobot.start_llm_processor()
-        self.sobot.start_speech_recognition(language=language,keyword=keyword,sound_device=sound_device)
-        self.sobot.subscribe_llm_reply(self.store_reply)
-        self.sobot.subscribe_speech_recognition(self.store_statement)
+        self.sobot.start_listener(language=language,keyword=keyword,sound_device=sound_device)
+        self.sobot.start_chatbot()
+        self.sobot.start_robotcontroller(robot_name=robot_name,robot_ip=robot_ip, language=language)
+        self.sobot.subscribe_listener(self.store_statement)
+        self.sobot.subscribe_chatbot(self.store_reply)
 
     def store_statement(self,statement) :
         self.statement = statement
@@ -32,11 +31,11 @@ class debate_partner:
         while True:
             if self.statement_pending:
                 self.statement_pending=False
-                self.sobot.robot_say_and_gesture("Hello user, thank you for starting a debate. This is a very interesting topic.")
-                self.sobot.llm_send_request(self.statement)
+                self.sobot.speak("Hello user, thank you for starting a debate. This is a very interesting topic.")
+                self.sobot.chat(self.statement)
             if self.reply_pending:
                 self.reply_pending=False
-                self.sobot.robot_say_and_gesture("My reply is " + self.reply)
+                self.sobot.speak("My reply is " + self.reply)
             time.sleep(1)    
 
     def terminate(self):

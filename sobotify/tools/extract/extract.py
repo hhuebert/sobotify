@@ -1,8 +1,8 @@
 import argparse
 import os
-import sobotify.tools.analyze.video2landmarks as video2landmarks
-import sobotify.tools.analyze.audio2srt as audio2srt
-import sobotify.tools.analyze.video2timestamps as video2timestamps
+import sobotify.tools.extract.video2landmarks as video2landmarks
+import sobotify.tools.extract.audio2srt as audio2srt
+import sobotify.tools.extract.video2timestamps as video2timestamps
 
 def getRobot(name) :
     if name=='stickman' :

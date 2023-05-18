@@ -47,7 +47,7 @@ set CONDA_ENV=sobotify
 CALL %CONDA% create -y -n %CONDA_ENV% python=3.8 
 CALL %CONDA% config --add channels conda-forge
 CALL %CONDA% run -n %CONDA_ENV% conda install pybullet
-CALL %CONDA% run -n %CONDA_ENV% pip install -e "%~dp0\.." -r "%~dp0\..\requirements.txt"
+CALL %CONDA% run -n %CONDA_ENV% pip install -e "%~dp0" -r "%~dp0\requirements.txt"
 CALL %CONDA% run -n %CONDA_ENV% pip install protobuf==3.20.1 --force-reinstall
 REM ======================================================================================
 
@@ -66,7 +66,7 @@ REM Create python environment for naoqi
 set CONDA="%USERPROFILE%\miniconda3\condabin\conda.bat" 
 set CONDA_ENV_NAOQI=sobotify_naoqi
 CALL %CONDA% create -y -n %CONDA_ENV_NAOQI% python=2.7 
-CALL %CONDA% run -n %CONDA_ENV_NAOQI% pip install -e "%~dp0\.." -r "%~dp0\..\requirements.txt"
+CALL %CONDA% run -n %CONDA_ENV_NAOQI% pip install -e "%~dp0" -r "%~dp0\requirements.txt"
 CALL %CONDA% run -n %CONDA_ENV_NAOQI% conda env config vars set PYTHONPATH="%NAOQI_PATH%\pynaoqi\lib"
 REM ======================================================================================
 
