@@ -18,8 +18,8 @@ It has been tested with Python 3.8 on Windows. Future versions should also suppo
 * Download the current version of sobotify here : https://github.com/hhuebert/sobotify/archive/refs/heads/main.zip
 
 * Unzip the sobotify-main.zip file 
-* Copy the unpacked sobotify-main folder to a permanent location (i.e. where it can stay, as this will be the installatione location), for example copy it to your home directory, such as C:\Users\MyName\sobotify-main
-* go into the sobotify top folder
+* Copy the unpacked sobotify-main folder to a permanent location (i.e. where it can stay, as this will be the installation folder), for example copy it to your home directory, such as C:\Users\MyName\sobotify-main
+* go into the sobotify top folder (sobotify-main\sobotify)
 * double click the file 
 
       install.bat
