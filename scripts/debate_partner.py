@@ -6,7 +6,7 @@ from sobotify import sobotify
 
 class debate_partner:
 
-    def __init__(self,robot_name,robot_ip,language,keyword,mosquitto_ip) :
+    def __init__(self,robot_name,robot_ip,language,keyword,sound_device,mosquitto_ip) :
         print ("init debate partner")
         self.statement_pending=False
         self.reply_pending=False
@@ -14,7 +14,7 @@ class debate_partner:
         self.sobot.start_mosquitto()
         self.sobot.start_robotcontrol(robot_name=robot_name,robot_ip=robot_ip, language=language)
         self.sobot.start_llm_processor()
-        self.sobot.start_speech_recognition(language=language,keyword=keyword)
+        self.sobot.start_speech_recognition(language=language,keyword=keyword,sound_device=sound_device)
         self.sobot.subscribe_llm_reply(self.store_reply)
         self.sobot.subscribe_speech_recognition(self.store_statement)
 
@@ -56,7 +56,8 @@ if __name__ == "__main__":
     parser.add_argument('--robot_ip',default='127.0.0.1',help='ip address of the robot')
     parser.add_argument('--keyword',default='apple tree',help='key word to activate speech recognition')
     parser.add_argument('--language',default="english",help='choose language (english,german)')
+    parser.add_argument('--sound_device',default=0,type=int,help='number of sound device, can be found with: import sounddevice;sounddevice.query_devices()')
     args=parser.parse_args()
 
-    debate = debate_partner(args.robot_name,args.robot_ip,args.language,args.keyword,args.mosquitto_ip)
+    debate = debate_partner(args.robot_name,args.robot_ip,args.language,args.keyword,args.sound_device,args.mosquitto_ip)
     debate.run()
