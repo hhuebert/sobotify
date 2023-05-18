@@ -90,16 +90,16 @@ class voskListener:
             print("found keyword => start recording query ...");
             # listen to query
             query_text=self.find_keyword(True)
-            print("... stop recording query");
+            print("... stop recording query")
             winsound.Beep(500,1000)
             print("your query is: " + query_text)
             time.sleep(1)
             return query_text
 
-def speechrecognition(mqtt,mosquitto_ip,vosk_keyword,vosk_model_path,language,sound_device):
+def speechrecognition(mqtt,mosquitto_ip,keyword,vosk_model_path,language,sound_device):
     if mqtt=="on" :
         mqtt_client = mqttClient(mosquitto_ip,"speech-recognition")
-    vosk_listener = voskListener(vosk_keyword,vosk_model_path,language,sound_device)
+    vosk_listener = voskListener(keyword,vosk_model_path,language,sound_device)
     while True: 
         query_text=vosk_listener.get_query()
         if mqtt=="on" :
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     parser.add_argument('--mosquitto_ip',default='127.0.0.1',help='ip address of the mosquitto server')
     parser.add_argument('--vosk_model_path',default=os.path.join(os.path.expanduser("~"),".sobotify","vosk","models"),help='path to vosk_model')
     parser.add_argument('--language',default="english",help='choose language (english,german)')
-    parser.add_argument('--vosk_keyword',default='apple tree',help='key word to activate vosk listener')
+    parser.add_argument('--keyword',default='apple tree',help='key word to activate vosk listener')
     parser.add_argument('--sound_device',default=0,type=int,help='number of sound device, can be found with: import sounddevice;sounddevice.query_devices()')
     args=parser.parse_args()
-    speechrecognition(args.mqtt,args.mosquitto_ip,args.vosk_keyword,args.vosk_model_path,args.language,args.sound_device)
+    speechrecognition(args.mqtt,args.mosquitto_ip,args.keyword,args.vosk_model_path,args.language,args.sound_device)

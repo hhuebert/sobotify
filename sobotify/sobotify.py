@@ -63,10 +63,9 @@ class sobotify (object) :
         arguments.extend(('--vosk_model_path',vosk_model_path))  
         arguments.extend(('--data_path',data_path))
         arguments.extend(('--language',language))
-        #analyze_proc=subprocess.Popen(arguments,creationflags=subprocess.CREATE_NEW_CONSOLE)
         if self.debug==True:
             print (*arguments)
-        self.analyze_proc=subprocess.Popen(arguments,stdout=subprocess.PIPE)
+        self.analyze_proc=subprocess.Popen(arguments)
         print ('started gesture/speech analysis, pid=',self.analyze_proc.pid)
 
     def start_mosquitto(self,mosquitto_path=mosquitto_path_default): 
@@ -131,7 +130,7 @@ class sobotify (object) :
         arguments.extend(('--mosquitto_ip',mosquitto_ip))
         arguments.extend(('--vosk_model_path',vosk_model_path))
         arguments.extend(('--language',language))
-        arguments.extend(('--vosk_keyword',keyword))
+        arguments.extend(('--keyword',keyword))
         arguments.extend(('--sound_device',str(sound_device))) 
         if self.debug==True:
             print (*arguments)
