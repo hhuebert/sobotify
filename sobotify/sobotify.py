@@ -102,6 +102,7 @@ class sobotify (object) :
             arguments=[os.path.expanduser("~")+"\miniconda3\condabin\conda.bat"]
             arguments.append("run")
             arguments.extend(('-n',robot_conda_env))
+            arguments.append("--no-capture-output")
             arguments.append("python")
             arguments.append(script_path)
         else :
