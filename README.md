@@ -1,28 +1,60 @@
 # sobotify
-## sobotify: a framework for turning a robot into a SOcial roBOT
+## sobotify: turn your robot into a SOcial roBOT
 
-sobotify is a projects, that aims to become a framework for turning a robot into a social robot. 
+sobotify is a framework for turning a robot into a social robot. 
 Currently it supports controlling the Pepper robot and a virtual "robot" (stickman). It is planned to support further robots (NAO, Cozmo, MyKeepon, ...).
  
 It has been tested with Python 3.8 on Windows. Future versions should also support Linux.
 
-# Known Issues
+# Known Issues/Restrictions
 * NAO support not fully tested yet
 * Issues with NAO and Pepper simulators (very slow execution)
-* LLM (Large Language Model) code only dummy
+* LLM (Large Language Model) code is only a dummy
 
-# Installation
+# Quick Start
 
-## "One-Click"-Installer
-You can use the 
+## Easy Install
 
-[install.bat](scripts/install.bat) 
+* Download the current version of sobotify here : https://github.com/hhuebert/sobotify/archive/refs/heads/main.zip
 
-file in the script folder to automatically download and install all required tools and packages. It downloads several other project and tools (VOSK, FFMPEG, Mosquitto, miniconda, pybullet, qibullet, Python SDK for Pepper/NAO (pynaoqi),...). 
+* Unzip the sobotify-main.zip file 
+* Copy the unpacked sobotify-main folder to a permanent location (i.e. where it can stay, as this will be the installatione location), for example copy it to your home directory, such as C:\Users\MyName\sobotify-main
+* go into the sobotify-main\sobotify\scripts folder
+* Double-Click the file 
+
+      install.bat
+
+   to automatically download and install all required tools and packages. It downloads several other project and tools (miniconda, Mosquitto, VOSK, FFMPEG, pybullet, qibullet, Python SDK for Pepper/NAO (pynaoqi),...). 
 
 Please check their licenses before installation and usage. You can find the corresponding download URLs in [install.bat](scripts/install.bat) and Python package (PyPi) names in [requirements.txt](requirements.txt). pybullet is downloaded from the conda package repository (conda-forge)   
 
+## One-Click-Testing
+
+The batch files in the "sobotify/scripts" folder can be used to test the tools easily.
+
+* To create the robot control files drag&drop a video file on:  
+  (You might want to adjust the language in the batch file beforehand)      
+
+      analyze_video.bat 
+
+* After creating the robot control files you play them on Pepper by drag&drop of the video file (or any file with the same same) on:    
+(You might want to adjust the language and the Pepper IP address in the batch file beforehand)
+
+      play_stickman.bat
+
+* After creating the robot control files you play them on Pepper by drag&drop of the video file (or any file with the same same) on:    
+(You might want to adjust the language and the Pepper IP address in the batch file beforehand)
+      
+      play_pepper.bat
+
+* Start the example app "debate partner" by double-clicking the following batch fil :
+(You might want to adjust the robot name, robot IP address, the keyword, language or sound device in the batch file beforehand)
+
+      start_debate_partner.bat  
+
 ## Manual Installation
+
+Instead of using the install.bat script for installation as described above, you can perform a manual installation.
 
 ### Sobotify-Settings-Folder
 Create a directory .sobotify\data\ in your home directory, e.g. C:\Users\MyName\.sobotify\data 
@@ -84,26 +116,9 @@ Create a Python 2.7 envirnoment including the Python SDK (pynaoqi) and a if you 
        pip install -e . -r requirements.txt
        conda env config vars set PYTHONPATH=%USERPROFILE%\.sobotify\pynaoqi
     
-# Testing
-
-## One-Click-Testing
-
-The batch files in the [scripts](scripts/) folder can be used to test the tools easily.
-
-* Drop a video file on [analyze_video.bat](scripts/analyze_video.bat) to create the robot control files.  
-(You might want to adjust the language in the batch file beforehand)
-
-* Drop a video file on [play_pepper.bat](scripts/play_pepper.bat) to play the previously analyzed robot control files (wiht the same name) on Pepper.  
-(You might want to adjust the language and the Pepper IP address in the batch file beforehand)
-
-* Drop a video file on [play_stickman.bat](scripts/play_pepper.bat) to play the previously analyzed robot control files (wiht the same name) on the stickman.  
-(You might want to adjust the language in the batch file beforehand)
-
-* Open the click on [start_debate_partner.bat](scripts/start_debate_partner.bat) to start the debate partner scenario.  
-(You might want to adjust the mosquitto IP address, Pepper IP address and language in the batch file beforehand)
-
-
 ## Commandline Testing
+
+For commandline testing you need to open a miniconda prompt. Then you can use the following commands. Before using the actual sobotify commands, you need to activate the sobotify enviroment (as can be seen below)
 
 ### running the debate partner app
   For starting the debate parnter app with default settings (english with keyword "apple tree" and the "stickman" robot) use  
@@ -115,8 +130,6 @@ or for running on the Pepper robot at 192.168.0.141 in german language with the 
 
     conda activate sobotify
     python scripts\debate_partner.py --language="german" --keyword="Banane" --robot_name pepper --robot_ip 192.168.0.141
-
-
 
 ### Converting a video
   For converting a video to robot control file (movement and speech) use  
