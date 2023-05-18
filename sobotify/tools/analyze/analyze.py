@@ -21,14 +21,19 @@ def getRobot(name) :
 def analyze(video_file,data_path,robot_name,ffmpeg_path,vosk_model_path,language):
     #REM for recording on Android Phone with Bluetooth Headset/microphone use : https://play.google.com/store/apps/details?id=com.bedoig.BTmono&hl=de&gl=US
     print("extracting gesture and speech in video file ", video_file, "and store results to ", data_path)
+    print("extract time stamps")
     video2timestamps.video2timestamps(video_file,data_path,ffmpeg_path)    
+    print("speech recognition")
     audio2srt.audio2srt(video_file,data_path,ffmpeg_path,vosk_model_path,language)
+    print("extract landmarks")
     video2landmarks.video2landmarks(video_file,data_path)
     landmarks2angles_converter=getRobot(robot_name)
     if not landmarks2angles_converter is None :
         fileName, ext = os.path.splitext(os.path.basename(video_file))
         world_landmarks_filename= os.path.join(data_path,fileName+"_wlmarks.csv")
+        print("convert landmarks to robot angles")
         landmarks2angles_converter(world_landmarks_filename,data_path)
+    print("... done extracting gesture and speech!")
 
 if __name__ == '__main__':
     parser=argparse.ArgumentParser(description='extract human gestures/poses from video file and store them as landmarks in csv text file')
