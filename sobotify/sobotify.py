@@ -37,9 +37,14 @@ class sobotify (object) :
         self.rocontrol_proc=0
         self.speech_recognition_proc=0
         self.llm_proc=0
+        self.robot_done_flag=False
+        self.statement_pending=False
+        self.statement = ""
+        self.start_mqtt_client=start_mqtt_client
+
         if start_mqtt_server==True:
             self.start_mosquitto(mosquitto_path)
-        if start_mqtt_client==True :
+        if self.start_mqtt_client==True :
             from sobotify.commons.mqttclient import mqttClient
             self.mqtt_client = mqttClient(mosquitto_ip,app_name)
 
@@ -49,8 +54,37 @@ class sobotify (object) :
     def subscribe_listener(self,callback):
          self.mqtt_client.subscribe("speech-recognition/statement",callback)
 
+    def store_statement(self,statement) :
+        self.statement = statement
+        print("got statement from human: "+ self.statement)
+        self.statement_pending=True
+
+    def robot_done(self,message) :
+        print("got info robot is done: "+ message)
+        self.robot_done_flag=True
+
+    def wait_for_robot(self):
+        self.mqtt_client.subscribe("robot/done",self.robot_done)
+        print("waiting for robot to finish ...")             
+        while not self.robot_done_flag==True:
+            time.sleep(1)   
+        self.robot_done_flag=False
+        print(" ... done")             
+
+    def listen(self,listen_to_keyword=False,keyword=keyword_default):
+        if (listen_to_keyword==True) :
+            self.mqtt_client.publish("speech-recognition/control/record/listen_to_keyword",keyword)
+        else :
+            self.mqtt_client.subscribe("speech-recognition/statement",self.store_statement)
+            self.mqtt_client.publish("speech-recognition/control/record/start","")
+            while not self.statement_pending:
+                time.sleep(1)    
+            self.statement_pending=False
+            return self.statement
+
     def speak(self,message):
-         self.mqtt_client.publish("robot/speak-and-gesture",message)
+        self.mqtt_client.publish("robot/speak-and-gesture",message)
+        self.wait_for_robot()
     
     def chat(self,message):
          self.mqtt_client.publish("llm/query",message)
@@ -174,6 +208,7 @@ if __name__ == "__main__":
     signal.signal (signal.SIGINT,handler)
     
     parser=argparse.ArgumentParser(prog='sobotify',description='The Social Robot Framework')
+    parser.add_argument('-d',default="false",action="store_true",help='debug')
     parser.add_argument('-e',default="false",action="store_true",help='start gesture/speech extract tool')
     parser.add_argument('-m',default="false",action="store_true",help='start mosquitto')
     parser.add_argument('-r',default="false",action="store_true",help='start robot controller')
@@ -200,7 +235,7 @@ if __name__ == "__main__":
     args=parser.parse_args()
 
 
-    sobot = sobotify(start_mqtt_server=args.m,start_mqtt_client=False, mosquitto_path=args.mosquitto_path)
+    sobot = sobotify(start_mqtt_server=args.m,start_mqtt_client=False, mosquitto_path=args.mosquitto_path,debug=args.d)
 
     if args.e==True:
         sobot.start_extract(args.video_file,args.data_path,args.robot_name,args.ffmpeg_path,args.vosk_model_path,args.language)

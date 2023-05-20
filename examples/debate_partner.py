@@ -7,7 +7,7 @@ from sobotify import sobotify
 class debate_partner:
 
     def __init__(self,robot_name,robot_ip,language,keyword,sound_device,mosquitto_ip) :
-        print ("init debate partner")
+        print ("init debate partner ...")
         self.statement_pending=False
         self.reply_pending=False
         self.sobot=sobotify.sobotify(app_name="debate-partner",debug=False)
@@ -16,6 +16,8 @@ class debate_partner:
         self.sobot.start_robotcontroller(robot_name=robot_name,robot_ip=robot_ip, language=language)
         self.sobot.subscribe_listener(self.store_statement)
         self.sobot.subscribe_chatbot(self.store_reply)
+        time.sleep(10) # wait for all tools to start
+        print (" ... done")
 
     def store_statement(self,statement) :
         self.statement = statement
@@ -28,6 +30,7 @@ class debate_partner:
         self.reply_pending=True
 
     def run(self) :
+        self.sobot.listen(listen_to_keyword=True)
         while True:
             if self.statement_pending:
                 self.statement_pending=False

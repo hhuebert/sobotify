@@ -122,7 +122,11 @@ class TextTool :
 
 class RobotControl(): 
 
-    def __init__(self,data_path, language, min_speech_speed, max_speech_speed,robot_name,robot_ip):
+    def __init__(self,mqtt,mosquitto_ip,data_path, language, min_speech_speed, max_speech_speed,robot_name,robot_ip):
+        self.mqtt=mqtt
+        if mqtt=="on" :
+            self.mqtt_client = mqttClient(mosquitto_ip,"robot")
+            self.mqtt_client.subscribe("robot/speak-and-gesture",self.action)
         self.speech,self.motion = getRobot(robot_name,robot_ip)
         self.speech.setLanguage(language)
         self.text_tool = TextTool()
@@ -241,6 +245,8 @@ class RobotControl():
         thread_speech.join()
         thread_motion.join()
         self.motion.terminate()
+        if self.mqtt=="on" :
+            self.mqtt_client.publish("robot/done","")
         print ("action done at     : " + str(datetime.now()))
         
     def start(self):
@@ -254,10 +260,8 @@ class RobotControl():
 
 def robotcontroller(mqtt,mosquitto_ip,data_path,language,min_speech_speed,max_speech_speed,robot_name,robot_ip,message) :
     print ("starting robot controller ...")
-    robot = RobotControl(data_path,language,min_speech_speed,max_speech_speed,robot_name,robot_ip)
+    robot = RobotControl(mqtt,mosquitto_ip,data_path,language,min_speech_speed,max_speech_speed,robot_name,robot_ip)
     if mqtt=="on" :
-        mqtt_client = mqttClient(mosquitto_ip,"robot")
-        mqtt_client.subscribe("robot/speak-and-gesture",robot.action)
         while True:
             sleep(1000)
     else :
