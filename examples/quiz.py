@@ -8,15 +8,20 @@ from sobotify import sobotify
 tasks=[]
 tasks.append({
     "question":"What is 4 times 12?",
-    "answers":["forty eight"]
+    "answers":[
+        ["forty eight"]
+    ]
     })
 tasks.append({
-    "question":"Please name a shape with 4 corners?",
-    "answers":["rectangle","square","rhombus","parallelogram","trapezoid","kite"]
+    "question":"Please name two shapes with 4 corners, one with right angles and one without?",
+    "answers":[
+        ["rectangle","square"],
+        ["rhombus","parallelogram","trapezoid","kite"]
+    ]
     })
 tasks.append({
     "question":"Is 7 a prime number?",
-    "answers":["yes","yeah","true","right","sure"]
+    "answers":[["yes","yeah","true","right","sure"]]
     })
 
 class quiz:
@@ -29,11 +34,17 @@ class quiz:
         time.sleep(10) # wait for all finish start up phase
         print (" ... done")
 
-    def search_answer(self,keywords,answer) :
+    def search_answers(self,keywords,answer) :
         for keyword in keywords :
             if keyword.lower() in answer.lower() :
                 return True
         return False   
+
+    def search_answer_groups(self,keyword_groups,answer) :
+        for keywords in keyword_groups :
+            if not self.search_answers(keywords,answer) :
+                return False
+        return True   
 
     def process_task(self,task) :
         self.sobot.speak(task["question"])
@@ -42,17 +53,17 @@ class quiz:
             answer=self.sobot.listen()
             if len(answer)<=1: self.sobot.speak("Sorry, I didn't hear your answer. Maybe it came to late or it was not loud enough.")
             else :
-                if self.search_answer(task["answers"],answer) : 
+                if self.search_answer_groups(task["answers"],answer) : 
                     self.sobot.speak("This is correct, very good.")
                     return True
                 else :     
                     self.sobot.speak("the answer is not correct.")
-        self.sobot.speak("a correct answer is "+ task["answers"][0])
+        self.sobot.speak("a correct answer is "+ task["answers"][0][0])
         return False
 
     def run(self) :
         correct_answers=0
-        self.sobot.speak("We will do a math quiz now. Please answer right after my questions")
+        self.sobot.speak("We will do a math quiz now. Please answer right after my questions",speed=70)
         for task in tasks:
             if self.process_task(task): correct_answers+=1
             time.sleep(1)    
