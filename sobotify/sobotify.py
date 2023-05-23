@@ -82,7 +82,12 @@ class sobotify (object) :
             self.statement_pending=False
             return self.statement
 
-    def speak(self,message):
+    def speak(self,message,speed=0):
+        if  (speed==0) :
+            self.mqtt_client.publish("robot/control/set-min-speed",min_speech_speed_default)
+            self.mqtt_client.publish("robot/control/set-max-speed",max_speech_speed_default)
+        else :
+            self.mqtt_client.publish("robot/control/set-speed",speed)
         self.mqtt_client.publish("robot/speak-and-gesture",message)
         self.wait_for_robot()
     

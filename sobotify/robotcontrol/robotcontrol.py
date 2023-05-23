@@ -127,6 +127,9 @@ class RobotControl():
         if mqtt=="on" :
             self.mqtt_client = mqttClient(mosquitto_ip,"robot")
             self.mqtt_client.subscribe("robot/speak-and-gesture",self.action)
+            self.mqtt_client.subscribe("robot/control/set-speed",self.set_speed)
+            self.mqtt_client.subscribe("robot/control/set-max-speed",self.set_max_speed)
+            self.mqtt_client.subscribe("robot/control/set-min-speed",self.set_min_speed)
         self.speech,self.motion = getRobot(robot_name,robot_ip)
         self.speech.setLanguage(language)
         self.text_tool = TextTool()
@@ -140,6 +143,17 @@ class RobotControl():
         self.current_datapath= self.data_path
         self.min_speech_speed=int(min_speech_speed)
         self.max_speech_speed=int(max_speech_speed)
+
+
+    def set_speed(self,message):
+        self.set_min_speed(message)
+        self.set_max_speed(message)
+
+    def set_max_speed(self,message):
+        self.max_speech_speed=int(message)
+
+    def set_min_speed(self,message):
+        self.min_speech_speed=int(message)
 
     def deltatime(self,end) :
         time_string = "{:.3f}".format((end-self.start_time).total_seconds())
