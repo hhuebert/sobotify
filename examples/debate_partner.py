@@ -10,10 +10,10 @@ class debate_partner:
         print ("init debate partner ...")
         self.statement_pending=False
         self.reply_pending=False
-        self.sobot=sobotify.sobotify(app_name="debate-partner",debug=False)
-        self.sobot.start_listener(language=language,keyword=keyword,sound_device=sound_device)
-        self.sobot.start_chatbot()
-        self.sobot.start_robotcontroller(robot_name=robot_name,robot_ip=robot_ip, language=language)
+        self.sobot=sobotify.sobotify(app_name="debate-partner",mosquitto_ip=mosquitto_ip,debug=False)
+        self.sobot.start_listener(mosquitto_ip=mosquitto_ip,language=language,keyword=keyword,sound_device=sound_device)
+        #self.sobot.start_chatbot()
+        self.sobot.start_robotcontroller(robot_name=robot_name,mosquitto_ip=mosquitto_ip,robot_ip=robot_ip, language=language)
         self.sobot.subscribe_listener(self.store_statement)
         self.sobot.subscribe_chatbot(self.store_reply)
         time.sleep(10) # wait for all tools to start
@@ -34,8 +34,8 @@ class debate_partner:
         while True:
             if self.statement_pending:
                 self.statement_pending=False
-                self.sobot.speak("Hello user, thank you for starting a debate. This is a very interesting topic.")
                 self.sobot.chat(self.statement)
+                self.sobot.speak("Hello user, thank you for starting a debate. This is a very interesting topic.")
             if self.reply_pending:
                 self.reply_pending=False
                 self.sobot.speak("My reply is " + self.reply)
