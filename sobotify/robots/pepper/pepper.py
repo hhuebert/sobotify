@@ -83,17 +83,19 @@ class motion():
         pass
 
 
-class speech():
+def convert_to_ascii(text):
+    text=text.decode("utf-8","ignore")
+    text=text.replace(U"\u00E4","ae")
+    text=text.replace(U"\u00C4","Ae")
+    text=text.replace(U"\u00F6","oe")
+    text=text.replace(U"\u00D6","Oe")
+    text=text.replace(U"\u00FC","ue")
+    text=text.replace(U"\u00DC","Ue")
+    text=text.replace(U"\u00DF","ss")
+    text= text.encode(encoding="ASCII",errors="ignore")
+    return text
 
-    def replace_umlaute(self):
-        self.text=self.text.replace("ä","ae")
-        self.text=self.text.replace("Ä","Ae")
-        self.text=self.text.replace("ö","oe")
-        self.text=self.text.replace("Ö","oe")
-        self.text=self.text.replace("ü","ue")
-        self.text=self.text.replace("Ü","Ue")
-        self.text=self.text.replace("Ö","Oe")
-        self.text=self.text.replace("ß","ss")
+class speech():
 
     def __init__(self,robot_ip):
         #self.language="German"
@@ -116,9 +118,7 @@ class speech():
         self.speech.setParameter("speed", self.speed)
  
     def say(self, Text):
-        self.text=Text
-        #self.replace_umlaute()
-        print("Pepper says:" + self.text)
+        self.text=convert_to_ascii(Text)
         self.speech.say(str(self.text))		    
         
     def terminate(self):
