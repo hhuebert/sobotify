@@ -29,7 +29,7 @@ It has been tested with Python 3.8 on Windows. Future versions should also suppo
 
 ## One-Click-Testing
 
-The batch files in the "sobotify/example" folder can be used to test the tools easily.
+The batch files in the "sobotify/examples" folder can be used to test the tools easily.
 
 * To create the robot control files **drag&drop** a video file on:  
   (You might want to adjust the language in the batch file beforehand)      
@@ -45,7 +45,7 @@ The batch files in the "sobotify/example" folder can be used to test the tools e
       
       play_pepper.bat
 
-* Start the example app "debate partner" by **double-clicking** the following batch fil :
+* Start the example app "debate partner" by **double-clicking** the following batch file :
 (You might want to adjust the robot name, robot IP address, the keyword, language or sound device in the batch file beforehand)
 
       start_debate_partner.bat  
@@ -97,7 +97,7 @@ Create a Python 3.8 environment for most of the sobotify tools:
       conda config --add channels conda-forge
       conda install pybullet
       cd to sobotify folder (where README.md is)
-      pip install -e . -r requirements.txt`
+      pip install -e . -r requirements.txt
 
 #### Python 2.7 environment (Pepper and Nao)
 Create a Python 2.7 envirnoment including the Python SDK (pynaoqi) and a if you want to use Pepper and Nao robots:
@@ -134,12 +134,12 @@ For testing Hello World with pepper:
   For starting the debate parnter app with default settings (english with keyword "apple tree" and the "stickman" robot) use  
 
     conda activate sobotify
-    python scripts\debate_partner.py
+    python examples\debate_partner.py
 
 or for running on the Pepper robot at 192.168.0.141 in german language with the keyword "Banane" 
 
     conda activate sobotify
-    python scripts\debate_partner.py --language="german" --keyword="Banane" --robot_name pepper --robot_ip 192.168.0.141
+    python examples\debate_partner.py --language="german" --keyword="Banane" --robot_name pepper --robot_ip 192.168.0.141
 
 ### Extracting gesture and speech from a video file
   For converting a video to robot control file (movement and speech) use  
