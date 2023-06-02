@@ -12,7 +12,7 @@ class debate_partner:
         self.reply_pending=False
         self.sobot=sobotify.sobotify(app_name="debate-partner",mosquitto_ip=mosquitto_ip,debug=False)
         self.sobot.start_listener(mosquitto_ip=mosquitto_ip,language=language,keyword=keyword,sound_device=sound_device)
-        #self.sobot.start_chatbot()
+        self.sobot.start_chatbot()
         self.sobot.start_robotcontroller(robot_name=robot_name,mosquitto_ip=mosquitto_ip,robot_ip=robot_ip, language=language)
         self.sobot.subscribe_listener(self.store_statement)
         self.sobot.subscribe_chatbot(self.store_reply)
