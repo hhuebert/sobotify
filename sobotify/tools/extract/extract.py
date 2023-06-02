@@ -4,6 +4,8 @@ import sobotify.tools.extract.video2landmarks as video2landmarks
 import sobotify.tools.extract.audio2srt as audio2srt
 import sobotify.tools.extract.video2timestamps as video2timestamps
 
+LIST_OF_ROBOTS=("stickman","pepper","nao")
+
 def getRobot(name) :
     if name=='stickman' :
         return None
@@ -27,12 +29,16 @@ def analyze(video_file,data_path,robot_name,ffmpeg_path,vosk_model_path,language
     audio2srt.audio2srt(video_file,data_path,ffmpeg_path,vosk_model_path,language)
     print("extract landmarks")
     video2landmarks.video2landmarks(video_file,data_path)
-    landmarks2angles_converter=getRobot(robot_name)
-    if not landmarks2angles_converter is None :
-        fileName, ext = os.path.splitext(os.path.basename(video_file))
-        world_landmarks_filename= os.path.join(data_path,fileName+"_wlmarks.csv")
-        print("convert landmarks to robot angles")
-        landmarks2angles_converter(world_landmarks_filename,data_path)
+    robots=()
+    if robot_name=="all": robots=LIST_OF_ROBOTS
+    else : robots.append(robot_name)
+    for robot in robots :
+        landmarks2angles_converter=getRobot(robot)
+        if not landmarks2angles_converter is None :
+            fileName, ext = os.path.splitext(os.path.basename(video_file))
+            world_landmarks_filename= os.path.join(data_path,fileName+"_wlmarks.csv")
+            print("convert landmarks to robot angles")
+            landmarks2angles_converter(world_landmarks_filename,data_path)
     print("... done extracting gesture and speech!")
 
 if __name__ == '__main__':
