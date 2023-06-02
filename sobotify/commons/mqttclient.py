@@ -22,7 +22,7 @@ class mqttClient(object):
         self.client.subscribe(topic)
         self.callback[topic]=callback
 
-    def publish(self,subscibe_topic,message) :
+    def publish(self,subscibe_topic,message="") :
         self.client.publish(subscibe_topic,message)
 
     def on_publish(self, client, userdata, rc):
