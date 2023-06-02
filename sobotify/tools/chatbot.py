@@ -11,7 +11,7 @@ class llm:
 
     def __init__(self,ll_model) :
         self.query=''
-        print ("init ll model ", ll_model ,"...", end = '', flush=True)
+        print ("init chatbot ...", flush=True)
         time.sleep(1) 
         print (" finished")
         
