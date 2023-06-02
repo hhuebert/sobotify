@@ -29,24 +29,20 @@ It has been tested with Python 3.8 on Windows. Future versions should also suppo
 
 ## One-Click-Testing
 
-The batch files in the "sobotify/examples" folder can be used to test the tools easily.
+Double-click the batch file 
+start_app.bat to start an app.
 
-* To create the robot control files **drag&drop** a video file on:  
-  (You might want to adjust the language in the batch file beforehand)      
+* For starting a predefined app (e.g. the quiz app) **double-clicking** the following file to start the GUI:      
 
-      analyze_video.bat 
+      start_app.bat
 
-* After creating the robot control files you play them on an a robot by **drag&drop** of the video file (or any file with the same name) on:    
-(You might want to adjust the language and the robot IP address in the batch file beforehand)
+* For extracting gestures and speech from a video file **double-clicking** the following file to start the GUI: 
+  (Important: you always need a speech with the gesture, otherwise the gestures will not be replayed)
 
-      play_stickman.bat
-
-  or 
-      
-      play_pepper.bat
+      examples\start_gesture.bat
 
 * Start the example app "debate partner" by **double-clicking** the following batch file :
-(You might want to adjust the robot name, robot IP address, the keyword, language or sound device in the batch file beforehand)
+(You might want to adjust the robot name, robot IP address, the keyword, language or sound device in the batch file beforehand. IMPORTANT: after usage, CLOSE all command windows, that have been opened by the script.)
 
       start_debate_partner.bat  
 
