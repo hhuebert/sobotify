@@ -36,6 +36,7 @@ def llm_processor(mqtt,mosquitto_ip,llm_model,llm_temperature,llm_max_length) :
     if mqtt=="on" :
         mqtt_client = mqttClient(mosquitto_ip,"llm")
         mqtt_client.subscribe("llm/query",llm_proc.store_query)
+        mqtt_client.publish("llm/status/init-done")
         while True:
             if question_pending:
                 question_pending=False
