@@ -62,7 +62,10 @@ class SobotifyGestureGui(object):
 		self.new_gesture=StringVar()
 
 		self.gestures=get_gestures()
-		self.selected_curr_gesture.set(self.gestures[0])
+		if len(self.gestures)==0:
+			self.selected_curr_gesture.set("")
+		else:
+			self.selected_curr_gesture.set(self.gestures[0])
 		self.new_gesture.set(DEFAULT_NEW_PROJECT_NAME)
 		self.selected_delete_gesture.set("")
 
@@ -141,7 +144,10 @@ class SobotifyGestureGui(object):
 			except:
 				pass
 			if deleted_project_name==self.selected_curr_gesture.get() :
-				self.selected_curr_gesture.set(self.projects[0])
+				if len(self.gestures)==0:
+					self.selected_curr_gesture.set("")
+				else:
+					self.selected_curr_gesture.set(self.gestures[0])
 
 
 	def start_gesture(self):

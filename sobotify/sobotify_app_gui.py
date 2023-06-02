@@ -91,8 +91,12 @@ class SobotifyAppGui(object):
 		self.new_project=StringVar()
 
 		self.projects=get_projects()
-		self.selected_curr_project.set(self.projects[0])
-		self.selected_base_project.set(self.projects[0]);
+		if len(self.projects)==0:
+			self.selected_curr_project.set("")
+			self.selected_base_project.set("")
+		else:
+			self.selected_curr_project.set(self.projects[0])
+			self.selected_base_project.set(self.projects[0])
 		self.new_project.set(DEFAULT_NEW_PROJECT_NAME)
 		self.selected_delete_project.set("")
 
@@ -163,9 +167,15 @@ class SobotifyAppGui(object):
 			self.combobox_curr_project_sel['values']=self.projects
 			self.combobox_delete_project.set("")
 			if deleted_project_name==self.selected_curr_project.get() :
-				self.selected_curr_project.set(self.projects[0])
+				if len(self.projects)==0:
+					self.selected_curr_project.set("")
+				else:
+					self.selected_curr_project.set(self.projects[0])
 			if deleted_project_name==self.selected_base_project.get() :
-				self.selected_base_project.set(self.projects[0])
+				if len(self.projects)==0:
+					self.selected_base_project.set("")
+				else:
+					self.selected_base_project.set(self.projects[0])
 
 	def start_project(self) :
 		self.app,self.language=get_project_info(self.selected_curr_project.get())
