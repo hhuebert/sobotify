@@ -72,9 +72,16 @@ REM ============================================================================
 
 
 REM ======================================================================================
-REM Create data directory
+REM Create directories and copy default project data
 set SOBOTIFY_DATA_PATH=%USERPROFILE%\.sobotify\data
 mkdir "%SOBOTIFY_DATA_PATH%"
+mkdir "%SOBOTIFY_DATA_PATH%\trash"
+set SOBOTIFY_PROJECT_PATH=%USERPROFILE%\.sobotify\projects
+mkdir "%SOBOTIFY_PROJECT_PATH%"
+mkdir "%SOBOTIFY_PROJECT_PATH%\trash"
+copy "%~dp0\sobotify\apps\quiz\quiz_english.xlsx" "%SOBOTIFY_PROJECT_PATH%"
+copy "%~dp0\sobotify\apps\quiz\quiz_german.xlsx" "%SOBOTIFY_PROJECT_PATH%"
+
 REM ======================================================================================
 
 pause

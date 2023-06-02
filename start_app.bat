@@ -1,0 +1,1 @@
+CALL "%USERPROFILE%\miniconda3\condabin\conda.bat" run -n sobotify --no-capture-output python "%~dp0\sobotify\sobotify_app_gui.py"
