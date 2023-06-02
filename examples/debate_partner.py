@@ -16,7 +16,6 @@ class debate_partner:
         self.sobot.start_robotcontroller(robot_name=robot_name,mosquitto_ip=mosquitto_ip,robot_ip=robot_ip, language=language)
         self.sobot.subscribe_listener(self.store_statement)
         self.sobot.subscribe_chatbot(self.store_reply)
-        time.sleep(10) # wait for all tools to start
         print (" ... done")
 
     def store_statement(self,statement) :
