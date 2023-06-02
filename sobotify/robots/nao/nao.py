@@ -102,7 +102,9 @@ class motion():
         self.posture.goToPosture("Stand", 0.5)
 
 def convert_to_ascii(text):
-    text=text.decode("utf-8","ignore")
+    if not isinstance(text,unicode):
+        print ("not unicode")
+        text=text.decode("utf-8","ignore")
     text=text.replace(U"\u00E4","ae")
     text=text.replace(U"\u00C4","Ae")
     text=text.replace(U"\u00F6","oe")
