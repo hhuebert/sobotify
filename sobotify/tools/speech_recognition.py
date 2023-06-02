@@ -28,6 +28,7 @@ class voskListener:
             self.mqtt_client = mqttClient(mosquitto_ip,"speech-recognition")
             self.mqtt_client.subscribe("speech-recognition/control/record/listen_to_keyword",self.start_recording_after_keyword)
             self.mqtt_client.subscribe("speech-recognition/control/record/start",self.start_recording)
+            self.mqtt_client.publish("speech-recognition/status/init-done")
 
         # get samplerate from audiodevice
         try:
@@ -143,7 +144,9 @@ class voskListener:
 
     def start_recording(self,message):
         print("start recording")
+        winsound.Beep(1000,1000)
         query_text=self.record()
+        winsound.Beep(500,1000)
         if self.mqtt=="on" :
             print("publish message: " + query_text)
             self.mqtt_client.publish("speech-recognition/statement",query_text)
