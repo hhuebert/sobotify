@@ -42,6 +42,19 @@ def getRobot(name,robot_ip) :
             print("unknow robot :" + str(name))
             exit()
 
+def convert_to_ascii(text):
+    if not isinstance(text,unicode):
+        print ("not unicode")
+        text=text.decode("utf-8","ignore")
+    text=text.replace(U"\u00E4","ae")
+    text=text.replace(U"\u00C4","Ae")
+    text=text.replace(U"\u00F6","oe")
+    text=text.replace(U"\u00D6","Oe")
+    text=text.replace(U"\u00FC","ue")
+    text=text.replace(U"\u00DC","Ue")
+    text=text.replace(U"\u00DF","ss")
+    text= text.encode(encoding="ASCII",errors="ignore")
+    return text
 
 def readFile(filename,data_path):
     try: 
@@ -143,6 +156,8 @@ class RobotControl():
         self.current_datapath= self.data_path
         self.min_speech_speed=int(min_speech_speed)
         self.max_speech_speed=int(max_speech_speed)
+        if mqtt=="on" :
+            self.mqtt_client.publish("robot/status/init-done")
 
 
     def set_speed(self,message):
@@ -239,6 +254,8 @@ class RobotControl():
                 random_motion_file.close()
  
     def action(self,message):     
+        if (sys.version_info[0]==2 and sys.version_info[1]==7) :
+            message= convert_to_ascii(message)
         parts = message.split("|")
         if len(parts)>1:
             self.tag = parts[0]
@@ -250,6 +267,8 @@ class RobotControl():
             self.current_datapath= self.data_path_random
         self.text_tool.replacements = readFile(self.tag + "_replace.txt",self.current_datapath)
         self.srtText                = readSrtFile(self.tag + ".srt",self.current_datapath)
+        if (sys.version_info[0]==2 and sys.version_info[1]==7) :
+            self.srtText= convert_to_ascii(self.srtText)
         self.start_time = datetime.now()
         print ("action starts at   : " + str(self.start_time))
         thread_speech = threading.Thread(target=self.say)
@@ -272,15 +291,19 @@ class RobotControl():
             self.running = False
         self.speech.terminate()
 
-def robotcontroller(mqtt,mosquitto_ip,data_path,language,min_speech_speed,max_speech_speed,robot_name,robot_ip,message) :
+def robotcontroller(mqtt,mosquitto_ip,data_path,language,min_speech_speed,max_speech_speed,robot_name,robot_ip,message,gesture) :
     print ("starting robot controller ...")
     robot = RobotControl(mqtt,mosquitto_ip,data_path,language,min_speech_speed,max_speech_speed,robot_name,robot_ip)
     if mqtt=="on" :
         while True:
             sleep(1000)
     else :
-        print ("received message:", message)
-        robot.action(message)
+        if gesture=="":
+            print ("received message:", message)
+            robot.action(message)
+        else :
+            print ("received gesture:", gesture)
+            robot.action(gesture+"|")
         robot.terminate()
 
 
@@ -289,6 +312,7 @@ if __name__ == "__main__":
     parser.add_argument('--mqtt',default="off",help='enable/disable mqtt client (on/off)')
     parser.add_argument('--mosquitto_ip',default='127.0.0.1',help='ip address of the mosquitto server')
     parser.add_argument('--message',default='Hello World',help='message to be spoken by the robot')
+    parser.add_argument('--gesture',default='',help='gesture to be done by the robot')
     parser.add_argument('--robot_name',default='stickman',help='name of the robot (stickman,pepper)')
     parser.add_argument('--robot_ip',default='127.0.0.1',help='ip address of the robot')
     parser.add_argument('--data_path',default=os.path.join(os.path.expanduser("~"),".sobotify","data"),help='path to movement/speech data')
@@ -296,6 +320,6 @@ if __name__ == "__main__":
     parser.add_argument('--min_speech_speed',default=70,help='minimum speech speed of robot')
     parser.add_argument('--max_speech_speed',default=110,help='maximum speech speed of robot')
     args=parser.parse_args()   
-    robotcontroller(args.mqtt,args.mosquitto_ip,args.data_path,args.language,args.min_speech_speed,args.max_speech_speed,args.robot_name,args.robot_ip,args.message)
+    robotcontroller(args.mqtt,args.mosquitto_ip,args.data_path,args.language,args.min_speech_speed,args.max_speech_speed,args.robot_name,args.robot_ip,args.message,args.gesture)
 
  
