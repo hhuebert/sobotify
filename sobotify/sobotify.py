@@ -41,7 +41,10 @@ class sobotify (object) :
         self.statement_pending=False
         self.statement = ""
         self.start_mqtt_client=start_mqtt_client
-
+        self.init_speech_recognition_done_flag = False
+        self.init_chatbot_done_flag = False
+        self.init_robot_done_flag = False
+        
         if start_mqtt_server==True:
             self.start_mosquitto(mosquitto_path)
         if self.start_mqtt_client==True :
@@ -129,6 +132,19 @@ class sobotify (object) :
         time.sleep(3)
         print ('started mosquitto, pid=',self.mosquitto_proc.pid)
 
+
+    ########################################################################################################
+    def init_robot_done(self,message) :
+        print("got init done: "+ message)
+        self.init_robot_done_flag =True
+
+    def wait_for_init_robot_done(self):
+        self.mqtt_client.subscribe("robot/status/init-done",self.init_robot_done)
+        print("waiting for robot to finish initalization ...")             
+        while not self.init_robot_done_flag==True:
+            time.sleep(1)   
+        print(" ... done")  
+
     def start_robotcontroller(self,mqtt=True,mosquitto_ip=mosquitto_ip_default,robot_name=robot_name_default,robot_ip=robot_ip_default,
                            robot_conda_env=robot_conda_env_default,data_path=data_path_default,language=language_default,
                            min_speech_speed=min_speech_speed_default,max_speech_speed=max_speech_speed_default,message=message_default) :
@@ -161,6 +177,20 @@ class sobotify (object) :
         self.rocontrol_proc=subprocess.Popen(arguments,creationflags=subprocess.CREATE_NEW_CONSOLE)
         #rocontrol_proc=subprocess.Popen(arguments)
         print ('started robot controller, pid=',self.rocontrol_proc.pid)
+        if mqtt== True: 
+            self.wait_for_init_robot_done()
+
+    ########################################################################################################
+    def init_speech_recognition_done(self,message) :
+        print("got init done: "+ message)
+        self.init_speech_recognition_done_flag =True
+
+    def wait_for_init_speech_recognition_done(self):
+        self.mqtt_client.subscribe("speech-recognition/status/init-done",self.init_speech_recognition_done)
+        print("waiting for speech recognition to finish initalization ...")             
+        while not self.init_speech_recognition_done_flag==True:
+            time.sleep(1)   
+        print(" ... done")           
 
     def start_listener(self,mqtt=True,mosquitto_ip=mosquitto_ip_default,vosk_model_path=vosk_model_path_default,language=language_default,
                                  keyword=keyword_default,sound_device=sound_device_default):
@@ -178,7 +208,21 @@ class sobotify (object) :
             print (*arguments)
         self.speech_recognition_proc=subprocess.Popen(arguments,creationflags=subprocess.CREATE_NEW_CONSOLE)
         print ('started speech recognition, pid=',self.speech_recognition_proc.pid)
+        if mqtt== True: 
+            self.wait_for_init_speech_recognition_done()
 
+    ########################################################################################################
+    def init_chatbot_done(self,message) :
+        print("got init done: "+ message)
+        self.init_chatbot_done_flag =True
+
+    def wait_for_init_chatbot_done(self):
+        self.mqtt_client.subscribe("llm/status/init-done",self.init_chatbot_done)
+        print("waiting for chatbot to finish initalization ...")             
+        while not self.init_chatbot_done_flag==True:
+            time.sleep(1)   
+        print(" ... done")  
+    
     def start_chatbot(self,mqtt=True,mosquitto_ip=mosquitto_ip_default,llm_model=llm_model_default,
                       llm_temperature=llm_temperature_default,llm_max_length=llm_max_length_default):
         sobotify_path=os.path.dirname(os.path.abspath(__file__))
@@ -194,6 +238,8 @@ class sobotify (object) :
             print (*arguments)
         self.llm_proc=subprocess.Popen(arguments,creationflags=subprocess.CREATE_NEW_CONSOLE)
         print ('started chatbot, pid=',self.llm_proc.pid)
+        if mqtt== True: 
+            self.wait_for_init_chatbot_done()
 
     def terminate(self):
         if not self.analyze_proc==0: self.analyze_proc.kill()
@@ -208,9 +254,15 @@ def handler(signal_received, frame):
     sobot.terminate()
     exit(0)
 
+def handler2(signal_received, frame):
+    # Handle cleanup here
+    print('SIGINT or CTRL-C detected. Exiting gracefully')
+    sobot.terminate()
+    exit(0)
 
 if __name__ == "__main__":
     signal.signal (signal.SIGINT,handler)
+    signal.signal (signal.SIGTERM,handler2)
     
     parser=argparse.ArgumentParser(prog='sobotify',description='The Social Robot Framework')
     parser.add_argument('-d',default="false",action="store_true",help='debug')
