@@ -9,7 +9,9 @@ It has been tested with Python 3.8 on Windows. Future versions should also suppo
 # Known Issues/Restrictions
 * NAO support not fully tested yet
 * Issues with NAO and Pepper simulators (very slow execution)
-* LLM (Large Language Model) code is only a dummy
+* Chatbot (LLM - Large Language Model) code is only a dummy
+* Currently usage of Miniconda3 is required (usage is hard coded within sobotify)
+* Usage of non-ASCII characters (such as German umlauts) in diretory or file names will (likely) cause issues 
 
 # Quick Start
 
@@ -24,8 +26,9 @@ It has been tested with Python 3.8 on Windows. Future versions should also suppo
 
       install.bat
 
-   to automatically download and install all required tools and packages. It downloads several other project and tools (miniconda, Mosquitto, VOSK, FFMPEG, pybullet, qibullet, Python SDK for Pepper/NAO (pynaoqi),...).   
-   Please check their licenses before installation and usage. You can find the corresponding download URLs in [install.bat](install.bat) and Python package (PyPi) names in [requirements.txt](requirements.txt). pybullet is downloaded from the conda package repository (conda-forge)   
+   to automatically download and install all required tools and packages. It downloads several other project and tools (Miniconda, Mosquitto, VOSK, FFMPEG, pybullet, qibullet, Python SDK for Pepper/NAO (pynaoqi),...).   
+   Please check their licenses before installation and usage. You can find the corresponding download URLs in [install.bat](install.bat) and Python package (PyPi) names in [requirements.txt](requirements.txt). pybullet is downloaded from the conda package repository (conda-forge)
+* Keep the default settings within Miniconda and Mosquitto installation
 
 ## One-Click-Testing
 
