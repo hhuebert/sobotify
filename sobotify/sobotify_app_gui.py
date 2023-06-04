@@ -241,10 +241,7 @@ class SobotifyAppGui(object):
 		self.project_proc=None
 
 	def edit_project(self):
-		arguments=["start"]
-		arguments.append(get_project_file_name(self.combobox_curr_project_sel.get()))
-		print(arguments)
-		project_editor_proc=subprocess.call(arguments,shell=True)
+		project_editor_proc=os.startfile(get_project_file_name(self.combobox_curr_project_sel.get()))
 
 
 	def create_project(self):
