@@ -215,21 +215,25 @@ class SobotifyAppGui(object):
 	
 	def stop_project(self):
 		if not self.project_proc==None: 
-			project_process=psutil.Process(self.project_proc.pid)
-			project_children=project_process.children(recursive=True)
-			print(project_children)
-			for child in project_children:
-				try:
-					#print(f"kill process {child.name} with pid: {child.pid}")
-					child.kill()
-				except:
-					#print(f"process {child.name} with pid: {child.pid} already finished")					
-					pass
 			try:
-				#print(f"kill process with pid: {self.project_proc.pid}")
-				self.project_proc.kill()
+				project_process=psutil.Process(self.project_proc.pid)
+				project_children=project_process.children(recursive=True)
+				print(project_children)
+				for child in project_children:
+					try:
+						#print(f"kill process {child.name} with pid: {child.pid}")
+						child.kill()
+					except:
+						#print(f"process {child.name} with pid: {child.pid} already finished")					
+						pass
+				try:
+					#print(f"kill process with pid: {self.project_proc.pid}")
+					self.project_proc.kill()
+				except:
+					#print(f"process with pid: {self.project_proc.pid} already finished")					
+					pass
 			except:
-				#print(f"process with pid: {self.project_proc.pid} already finished")					
+				#print(f"process with pid: {self.project_proc.pid} does not exist (anymore)")					
 				pass
 		else:
 			#print("no process to kill")

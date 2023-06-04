@@ -181,22 +181,29 @@ class SobotifyGestureGui(object):
 	
 	def stop_gesture(self):
 		if not self.gesture_proc==None: 
-			gesture_process=psutil.Process(self.gesture_proc.pid)
-			gesture_children=gesture_process.children(recursive=True)
-			print(gesture_children)
-			for child in gesture_children:
-				try:
-					print(f"kill process {child.name} with pid: {child.pid}")
-					child.kill()
-				except:
-					print(f"process {child.name} with pid: {child.pid} already finished")					
 			try:
-				print(f"kill process with pid: {self.gesture_proc.pid}")
-				self.gesture_proc.kill()
+				gesture_process=psutil.Process(self.gesture_proc.pid)
+				gesture_children=gesture_process.children(recursive=True)
+				print(gesture_children)
+				for child in gesture_children:
+					try:
+						#print(f"kill process {child.name} with pid: {child.pid}")
+						child.kill()
+					except:
+						#print(f"process {child.name} with pid: {child.pid} already finished")
+						pass					
+				try:
+					#print(f"kill process with pid: {self.gesture_proc.pid}")
+					self.gesture_proc.kill()
+				except:
+					#print(f"process with pid: {self.gesture_proc.pid} already finished")					
+					pass
 			except:
-				print(f"process with pid: {self.gesture_proc.pid} already finished")					
+				#print(f"process with pid: {self.gesture_proc.pid} does not exist (anymore)")					
+				pass
 		else:
-			print("no process to kill")
+			#print("no process to kill")
+			pass
 		self.gesture_proc=None
 
 	def edit_gesture(self):
@@ -223,21 +230,25 @@ class SobotifyGestureGui(object):
 
 	def stop_extract(self):
 		if not self.extract_proc==None: 
-			extract_process=psutil.Process(self.extract_proc.pid)
-			extract_children=extract_process.children(recursive=True)
-			print(extract_children)
-			for child in extract_children:
-				try:
-					#print(f"kill process {child.name} with pid: {child.pid}")
-					child.kill()
-				except:
-					#print(f"process {child.name} with pid: {child.pid} already finished")
-					pass					
 			try:
-				#print(f"kill process with pid: {self.extract_proc.pid}")
-				self.extract_proc.kill()
+				extract_process=psutil.Process(self.extract_proc.pid)
+				extract_children=extract_process.children(recursive=True)
+				print(extract_children)
+				for child in extract_children:
+					try:
+						#print(f"kill process {child.name} with pid: {child.pid}")
+						child.kill()
+					except:
+						#print(f"process {child.name} with pid: {child.pid} already finished")
+						pass					
+				try:
+					#print(f"kill process with pid: {self.extract_proc.pid}")
+					self.extract_proc.kill()
+				except:
+					#print(f"process with pid: {self.extract_proc.pid} already finished")					
+					pass					
 			except:
-				#print(f"process with pid: {self.extract_proc.pid} already finished")					
+				#print(f"process with pid: {self.gesture_proc.pid} does not exist (anymore)")						
 				pass					
 		else:
 			#print("no process to kill")
