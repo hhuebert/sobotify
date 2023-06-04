@@ -20,6 +20,15 @@ DEFAULT_ROBOT_IP="192.168.0.141"
 DEFAULT_ROBOT_NAMES=("stickman","pepper","nao")
 DEFAULT_NEW_PROJECT_NAME=("MyProject")
 
+if os.path.isfile(os.path.join(os.path.expanduser("~"),"miniconda3","condabin","conda.bat")):
+	conda_exe=os.path.join(os.path.expanduser("~"),"miniconda3","condabin","conda.bat")
+elif os.path.isfile(os.path.join(os.path.expanduser("~"),"AppData","Local","miniconda3","condabin","conda.bat")):
+	conda_exe=os.path.join(os.path.expanduser("~"),"AppData","Local","miniconda3","condabin","conda.bat")
+else :
+	print ("Cannot find Conda executable path. Abort")
+	exit()
+
+
 class sound_devices(object):
 
 	def __init__(self):
@@ -186,7 +195,7 @@ class SobotifyAppGui(object):
 		sobotify_path=os.path.dirname(os.path.abspath(__file__))
 		script_path=os.path.join(sobotify_path,'apps',self.app,self.app+'.py')
 		conda_env = "sobotify"
-		arguments=[os.path.expanduser("~")+"\miniconda3\condabin\conda.bat"]
+		arguments=[conda_exe]
 		arguments.append("run")
 		arguments.extend(('-n',conda_env))
 		arguments.append("--no-capture-output")

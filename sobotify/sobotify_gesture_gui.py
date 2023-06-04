@@ -19,6 +19,13 @@ DEFAULT_ROBOT_NAMES=("stickman","pepper","nao")
 DEFAULT_NEW_PROJECT_NAME=("MyGesture")
 DEFAULT_LANGUAGES=("german","english")
 
+if os.path.isfile(os.path.join(os.path.expanduser("~"),"miniconda3","condabin","conda.bat")):
+	conda_exe=os.path.join(os.path.expanduser("~"),"miniconda3","condabin","conda.bat")
+elif os.path.isfile(os.path.join(os.path.expanduser("~"),"AppData","Local","miniconda3","condabin","conda.bat")):
+	conda_exe=os.path.join(os.path.expanduser("~"),"AppData","Local","miniconda3","condabin","conda.bat")
+else :
+	print ("Cannot find Conda executable path. Abort")
+	exit()
 
 def get_gestures() :
 	gestures=[]
@@ -157,7 +164,7 @@ class SobotifyGestureGui(object):
 			conda_env = "sobotify_naoqi"
 		else : 
 			conda_env = "sobotify" 
-		arguments=[os.path.expanduser("~")+"\miniconda3\condabin\conda.bat"]
+		arguments=[conda_exe]
 		arguments.append("run")
 		arguments.extend(('-n',conda_env))
 		arguments.append("--no-capture-output")

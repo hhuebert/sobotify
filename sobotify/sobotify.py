@@ -27,6 +27,14 @@ llm_temperature_default  = 0.5             # temperature value for the llm model
 llm_max_length_default   = 100             # maximum length of the generated text')
 
 
+if os.path.isfile(os.path.join(os.path.expanduser("~"),"miniconda3","condabin","conda.bat")):
+	conda_exe=os.path.join(os.path.expanduser("~"),"miniconda3","condabin","conda.bat")
+elif os.path.isfile(os.path.join(os.path.expanduser("~"),"AppData","Local","miniconda3","condabin","conda.bat")):
+	conda_exe=os.path.join(os.path.expanduser("~"),"AppData","Local","miniconda3","condabin","conda.bat")
+else :
+	print ("Cannot find Conda executable path. Abort")
+	exit()
+
 class sobotify (object) :
 
     def __init__(self,start_mqtt_server=True,app_name="app",start_mqtt_client=True,mosquitto_path=mosquitto_path_default,mosquitto_ip=mosquitto_ip_default,debug=False) :
@@ -154,7 +162,7 @@ class sobotify (object) :
             if robot_name.lower() == "pepper" or robot_name.lower() == "nao" :
                 robot_conda_env = "sobotify_naoqi"
         if not robot_conda_env == "" :
-            arguments=[os.path.expanduser("~")+"\miniconda3\condabin\conda.bat"]
+            arguments=[conda_exe]
             arguments.append("run")
             arguments.extend(('-n',robot_conda_env))
             arguments.append("--no-capture-output")

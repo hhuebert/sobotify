@@ -39,10 +39,21 @@ set FFMPEG_PATH=%USERPROFILE%\.sobotify\
 CALL :download %FFMPEG_URL% %FFMPEG% "%FFMPEG_PATH%" ffmpeg
 REM ======================================================================================
 
+REM ======================================================================================
+REM find and set CONDA executable path
+if EXIST "%USERPROFILE%\miniconda3\condabin\conda.bat" (
+    set CONDA="%USERPROFILE%\miniconda3\condabin\conda.bat" 
+) else if EXIST "%USERPROFILE%\AppData\Local\miniconda3\condabin\conda.bat" (
+    set CONDA="%USERPROFILE%\AppData\Local\miniconda3\condabin\conda.bat" 
+) else (
+    echo cannot find CONDA environment. Installation aborted!
+    pause
+    exit
+)
+REM ======================================================================================
 
 REM ======================================================================================
 REM Create python environment for sobotify
-set CONDA="%USERPROFILE%\miniconda3\condabin\conda.bat" 
 set CONDA_ENV=sobotify
 CALL %CONDA% create -y -n %CONDA_ENV% python=3.8 
 CALL %CONDA% config --add channels conda-forge
@@ -76,7 +87,6 @@ REM ============================================================================
 
 REM ======================================================================================
 REM Create python environment for naoqi
-set CONDA="%USERPROFILE%\miniconda3\condabin\conda.bat" 
 set CONDA_ENV_NAOQI=sobotify_naoqi
 CALL %CONDA% create -y -n %CONDA_ENV_NAOQI% python=2.7 
 CALL %CONDA% run -n %CONDA_ENV_NAOQI% pip install paho-mqtt==1.6.1
