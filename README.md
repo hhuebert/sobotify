@@ -2,23 +2,21 @@
 ## sobotify: turn your robot into a SOcial roBOT
 
 sobotify is a framework for turning a robot into a social robot. 
-Currently it supports controlling the Pepper robot and a virtual "robot" (stickman). It is planned to support further robots (NAO, Cozmo, MyKeepon, ...).
+Currently it supports controlling the Pepper and NAO robots as well as a virtual "robot" (stickman). It is planned to support further robots (Cozmo, MyKeepon, ...).
  
-It has been tested with Python 3.8 on Windows. Future versions should also support Linux.
+It has been tested with Python 3.8 (and Python 2.7 for accessing NAO/Pepper) on Windows 10. Future versions should also support Linux.
 
 # Known Issues/Restrictions
-* NAO support not fully tested yet
-* Issues with NAO and Pepper simulators (very slow execution)
+* Currently Miniconda3 is required for creating python environments (usage is hard coded within sobotify)
+* Usage of non-ASCII characters (such as German umlauts) in directory or file names will (likely) cause issues 
 * Chatbot (LLM - Large Language Model) code is only a dummy
-* Currently usage of Miniconda3 is required (usage is hard coded within sobotify)
-* Usage of non-ASCII characters (such as German umlauts) in diretory or file names will (likely) cause issues 
+* Issues with NAO and Pepper simulators (very slow execution)
 
 # Quick Start
 
 ## Easy Install
 
 * Download the current version of sobotify here : https://github.com/hhuebert/sobotify/archive/refs/heads/main.zip
-
 * Unzip the sobotify-main.zip file 
 * Copy the unpacked sobotify-main folder to a permanent location (i.e. where it can stay, as this will be the installation folder), for example copy it to your home directory, such as C:\Users\MyName\sobotify-main
 * go into the sobotify top folder (sobotify-main\sobotify)
@@ -26,7 +24,7 @@ It has been tested with Python 3.8 on Windows. Future versions should also suppo
 
       install.bat
 
-   to automatically download and install all required tools and packages. It downloads several other project and tools (Miniconda, Mosquitto, VOSK, FFMPEG, pybullet, qibullet, Python SDK for Pepper/NAO (pynaoqi),...).   
+   to automatically download and install all required tools and packages. It downloads several other project and tools ([Miniconda](https://docs.conda.io/en/latest/miniconda.html), [Mosquitto](https://mosquitto.org/), [VOSK](https://alphacephei.com/vosk/), [FFMPEG](https://ffmpeg.org/), pybullet, qibullet, [Python SDK for Pepper/NAO (pynaoqi)](https://www.aldebaran.com/en/support),...).   
    Please check their licenses before installation and usage. You can find the corresponding download URLs in [install.bat](install.bat) and Python package (PyPi) names in [requirements.txt](requirements.txt). pybullet is downloaded from the conda package repository (conda-forge)
 * Keep the default settings within Miniconda and Mosquitto installation
 
@@ -58,11 +56,11 @@ Create a directory .sobotify\data\ in your home directory, e.g. C:\Users\MyName\
 In this folder sobotify will store all motion and speech data by default.
 
 ### Vosk
-For speech recognition sobotify uses Vosk. Depending on the language you want to use, you have to download the apporiate language model. 
+For speech recognition sobotify uses Vosk. Depending on the language you want to use, you have to download the approriate language model. 
 * Create at first a directory in your %USERPROFILE%\.sobotify\vosk\models to store the models 
 * Download models from https://alphacephei.com/vosk/models, 
-* unpack them, rename the folder to e.g. "english or "german"
-* copy them to folders to the directory %USERPROFILE%\.sobotify\vosk\models
+* unpack them and rename the folder to "english or "german"
+* copy the folders to the directory %USERPROFILE%\.sobotify\vosk\models
 (e.g. the README file of the english model can then be found at %USERPROFILE%\.sobotify\vosk\models\english\README)
 If you copy them to a different location, then provide the path to sobotify with the option vosk_model_path (e.g. --vosk_model_path %userprofile%\Downloads\vosks\models)
 
@@ -83,7 +81,7 @@ If you copy it to a different location, then provide the path to "bin" sub direc
 
 ### Set of Python environment 
 
-The following instruction are based on using Conda to set up the two different Python versions required for the Sobotify main part (Python 3.8) and for the Pepper robot (Python 2.7)
+The following instruction are based on using Miniconda3 to set up the two different Python versions required for the Sobotify main part (Python 3.8) and for the Pepper robot (Python 2.7)
 * Get and install for example miniconda https://docs.conda.io/en/latest/miniconda.html
 However, you can also use regular Python installation instead of Conda, as sobotify is not dependent on any other Conda packages (everything requried can be installe with pip) 
 
@@ -170,8 +168,8 @@ or
     python sobotify\robotcontrol\robotcontrol.py --robot_name stickman --language english --message "MyTest1|Hello"
 
 ## License:
-Sobotify itself is licensed under MIT license. However, some part of the code are taken from other project which are under other licenses (e.g. Apache License). The license is then stated in the code. 
-Additionally, sobotify uses several packages (see [requirements.txt](requirements.txt)), please check there license and terms of use before using sobotify.
+Sobotify itself is licensed under MIT license. However, some part of the code are taken from other project which are under other licenses (e.g. Apache License Version 2.0). The license is then stated in the code. 
+Additionally, sobotify uses several packages (see [requirements.txt](requirements.txt)), please check their licenses and terms of use before using sobotify.
 
 ## Credits: 
 Part of sobotify include and are based on others code, especially from Fraporta (https://github.com/FraPorta/pepper_openpose_teleoperation) and also elggem (https://github.com/elggem/naoqi-pose-retargeting), which also uses code from Kazuhito00 (https://github.com/Kazuhito00/mediapipe-python-sample). 
