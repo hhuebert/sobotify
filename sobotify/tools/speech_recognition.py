@@ -17,7 +17,8 @@ from sobotify.commons.mqttclient import mqttClient
 class voskListener:
 
     def __init__(self,mqtt,mosquitto_ip,keyword,model_path,language,sound_device,timeout=20, timeout_silence=2):        
-        self.stop_recording_flag=False;
+        self.stop_recording_flag=False
+        self.start_recording_flag=False
         self.keyword=keyword.lower()
         self.sound_device=int(sound_device)
         self.mqtt=mqtt
@@ -143,6 +144,9 @@ class voskListener:
             return query_text
 
     def start_recording(self,message):
+        self.start_recording_flag=True
+
+    def do_recording(self):
         print("start recording")
         winsound.Beep(1000,1000)
         query_text=self.record()
@@ -158,6 +162,10 @@ def speechrecognition(mqtt,mosquitto_ip,keyword,vosk_model_path,language,sound_d
             query_text=listener.get_query()
             if mqtt=="on" :
                 listener.mqtt_client.publish("speech-recognition/statement",query_text)
+        if listener.start_recording_flag==True:
+            listener.start_recording_flag=False
+            listener.do_recording()
+        time.sleep(0.5)
 
 if __name__ == "__main__":
     parser=argparse.ArgumentParser(description='speech recognition with mqtt client')
