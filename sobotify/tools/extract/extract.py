@@ -23,7 +23,7 @@ def getRobot(name) :
         return None
 
 
-def analyze(video_file,data_path,robot_name,ffmpeg_path,vosk_model_path,language):
+def extract(video_file,data_path,robot_name,ffmpeg_path,vosk_model_path,language):
     #REM for recording on Android Phone with Bluetooth Headset/microphone use : https://play.google.com/store/apps/details?id=com.bedoig.BTmono&hl=de&gl=US
     print("extracting gesture and speech in video file ", video_file, "and store results to ", data_path)
     print("extract time stamps")
@@ -40,17 +40,17 @@ def analyze(video_file,data_path,robot_name,ffmpeg_path,vosk_model_path,language
         if not landmarks2angles_converter is None :
             fileName, ext = os.path.splitext(os.path.basename(video_file))
             world_landmarks_filename= os.path.join(data_path,fileName+"_wlmarks.csv")
-            print("convert landmarks to robot angles")
+            print("convert landmarks to robot movement data for " + robot)
             landmarks2angles_converter(world_landmarks_filename,data_path)
     print("... done extracting gesture and speech!")
 
 if __name__ == '__main__':
     parser=argparse.ArgumentParser(description='extract human gestures/poses from video file and store them as landmarks in csv text file')
     parser.add_argument('--video_file',default='video.mp4',help='path to the video input file')
-    parser.add_argument('--robot_name',default='stickman',help='name of the robot (stickman,pepper)')
+    parser.add_argument('--robot_name',default='all',help='name of the robot (all,stickman,pepper,nao,cozmo)')
     parser.add_argument('--ffmpeg_path',default=os.path.join(os.path.expanduser("~"),".sobotify","ffmpeg","bin"),help='directory path to ffmpeg tools (bin directory)')
     parser.add_argument('--vosk_model_path',default=os.path.join(os.path.expanduser("~"),".sobotify","vosk","models"),help='path to vosk_model')
     parser.add_argument('--language',default="english",help='choose language (english,german)')
     parser.add_argument('--data_path',default=os.path.join(os.path.expanduser("~"),".sobotify","data"),help='path to movement/speech data')
     args=parser.parse_args()
-    analyze(args.video_file,args.data_path,args.robot_name,args.ffmpeg_path,args.vosk_model_path,args.language)    
+    extract(args.video_file,args.data_path,args.robot_name,args.ffmpeg_path,args.vosk_model_path,args.language)    
