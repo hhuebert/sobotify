@@ -38,6 +38,10 @@ def getRobot(name,robot_ip) :
         elif name=='nao_sim' :
             import sobotify.robots.nao.nao_sim as nao_sim
             return nao_sim.speech(),nao_sim.motion()
+        elif name=='cozmo' :
+            import sobotify.robots.cozmo.cozmo as cozmo
+            my_cozmo=cozmo.cozmo()
+            return my_cozmo,my_cozmo
         else :
             print("unknow robot :" + str(name))
             exit()

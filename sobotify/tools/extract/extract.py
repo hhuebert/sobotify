@@ -4,7 +4,7 @@ import sobotify.tools.extract.video2landmarks as video2landmarks
 import sobotify.tools.extract.audio2srt as audio2srt
 import sobotify.tools.extract.video2timestamps as video2timestamps
 
-LIST_OF_ROBOTS=("stickman","pepper","nao")
+LIST_OF_ROBOTS=("stickman","pepper","nao","cozmo")
 
 def getRobot(name) :
     if name=='stickman' :
@@ -14,6 +14,9 @@ def getRobot(name) :
         return landmarks2angles.landmarks2angles
     elif name=='nao' :
         import sobotify.robots.nao.landmarks2angles as landmarks2angles
+        return landmarks2angles.landmarks2angles
+    elif name=='cozmo' :
+        import sobotify.robots.cozmo.landmarks2angles as landmarks2angles
         return landmarks2angles.landmarks2angles
     else :
         print("unknow robot :" + str(name))
