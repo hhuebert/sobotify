@@ -26,26 +26,31 @@ It has been tested with Python 3.8 (and Python 2.7 for accessing NAO/Pepper) on 
 
    to automatically download and install all required tools and packages. It downloads several other project and tools ([Miniconda](https://docs.conda.io/en/latest/miniconda.html), [Mosquitto](https://mosquitto.org/), [VOSK](https://alphacephei.com/vosk/), [FFMPEG](https://ffmpeg.org/), pybullet, qibullet, [Python SDK for Pepper/NAO (pynaoqi)](https://www.aldebaran.com/en/support),...).   
    Please check their licenses before installation and usage. You can find the corresponding download URLs in [install.bat](install.bat) and Python package (PyPi) names in [requirements.txt](requirements.txt). pybullet is downloaded from the conda package repository (conda-forge)
-* Keep the default settings within Miniconda and Mosquitto installation
+* Keep the default settings during installation of Miniconda and Mosquitto
 
-## One-Click-Testing
+## Usage and Testing
 
-Double-click the batch file 
-start_app.bat to start an app.
+You can use the following batch files to quickly start different usage scenarios.  
 
-* For starting a predefined app (e.g. the quiz app) **double-clicking** the following file to start the GUI:      
+* For starting a predefined app (e.g. the quiz app) double-click the following file to start the GUI:      
 
       start_app.bat
 
-* For extracting gestures and speech from a video file **double-clicking** the following file to start the GUI: 
-  (Important: you always need a speech with the gesture, otherwise the gestures will not be replayed)
+* For running a previously recorded gesture and speech on the robot double-click the following file to start the GUI:  
+  
 
-      examples\start_gesture.bat
-
-* Start the example app "debate partner" by **double-clicking** the following batch file :
+      start_gesture.bat
+  1. You have to record a gesture and speech, for example with your webcam or smartphone (Important: you always need a speech with the gesture, otherwise the gesture will not be replayed)
+  2. Use the "add/delete" button to get to a new window, where you can select the video file, the language of your speech and then press "add" for extracting and adding gesture and speech to you database. 
+  3. Close the window and watch the CMD window to see the progress of the extraction process, it might take several minutes depending on the length of your video (final message is "...done extracting gesture and speech!")
+  4. After completion, press the reload button and the new gesture is added to the list
+  5. choose the gesture
+  6. choose the language of your speech in the main window 
+  7. press the start button
+* Start the example app "debate partner" by **double-clicking** the following batch file :  
 (You might want to adjust the robot name, robot IP address, the keyword, language or sound device in the batch file beforehand. IMPORTANT: after usage, CLOSE all command windows, that have been opened by the script.)
 
-      start_debate_partner.bat  
+      examples\start_debate_partner.bat  
 
 ## Manual Installation
 
@@ -93,7 +98,7 @@ Create a Python 3.8 environment for most of the sobotify tools:
       conda activate sobotify
       conda config --add channels conda-forge
       conda install pybullet
-      cd to sobotify folder (where README.md is)
+      :: cd to sobotify folder (where README.md is)
       pip install -e . -r requirements.txt
 
 #### Python 2.7 environment (Pepper and Nao)
@@ -107,13 +112,14 @@ Create a Python 2.7 envirnoment including the Python SDK (pynaoqi) and a if you 
 
        conda create -y -n sobotify_naoqi python=2.7
        conda activate sobotify_naoqi
-       cd to sobotify folder (where README.md is)
+       :: cd to sobotify folder (where README.md is)
        pip install -e . -r requirements.txt
-       conda env config vars set PYTHONPATH=%USERPROFILE%\.sobotify\pynaoqi
+       conda env config vars set PYTHONPATH="%USERPROFILE%\.sobotify\pynaoqi\lib"
     
 ## Commandline Testing
 
-For commandline testing you need to open a miniconda prompt. Then you can use the following commands. Before using the actual sobotify commands, you need to activate the sobotify enviroment (as can be seen below)
+For commandline testing you need to open a miniconda prompt. Then you can use the following commands. Before using the actual sobotify commands, you need to activate the sobotify conda enviroment (as can be seen below).
+You can finish each programm with the CTRL-C key combination.
 
 ### "Hello World" on robots
 
@@ -122,7 +128,7 @@ For testing "Hello world" with the stickman use :
     conda activate sobotify
     python sobotify\sobotify.py -r
 
-For testing Hello World with pepper:
+For testing Hello World with peppers:
 
     conda activate sobotify_naoqi
     python .\sobotify\robotcontrol\robotcontrol.py --robot_name pepper --robot_ip 192.168.0.141
@@ -139,33 +145,35 @@ or for running on the Pepper robot at 192.168.0.141 in german language with the 
     python examples\debate_partner.py --language="german" --keyword="Banane" --robot_name pepper --robot_ip 192.168.0.141
 
 ### Extracting gesture and speech from a video file
-  For converting a video to robot control file (movement and speech) use  
+  For converting a video to robot control file (movement and speech) for the pepper robot you can use  
 
     conda activate sobotify
     python sobotify\sobotify.py -e --video_file MyTest1.mp4 --language english --robot_name pepper 
 
-  or
+  or for converting for all robots you can use "all"
 
     conda activate sobotify
-    python sobotify\tools\extract\extract.py --video_file MyTest1.mp4 --language english --robot_name pepper 
+    python sobotify\tools\extract\extract.py --video_file MyTest1.mp4 --language english --robot_name all 
 
 This will create the robot control files in the  in the data base (by default: %USERPROFILE%\.sobotify\data\):
 * MyTest1.srt ==> spoken words with timing information (for robot speech)
 * MyTest1_lmarks.csv ==> landmarks for controlling the stickman
 * MyTest1_pepper.csv ==> joint angles for controlling peppers joints (movement) 
+* MyTest1_nao.csv ==> joint angles for controlling nao joints (movement) 
 * MyTest1_wlmarks.csv ==> world landmarks (internal data) 
 * MyTest1.tsp ==> time stamps (internal data)
 
 ### Running the extracted gesture/speech on the robot
-For running  the previously extracted gesture/speech from the video MyTest1 with the stickman use : 
+For running  the previously extracted gesture/speech from the video MyTest1 with the stickman use :
+(Important: Don't forget the **trailing "|"** after the name) 
 
     conda activate sobotify
-    python sobotify\sobotify.py -r --robot_name stickman --language english --message "MyTest1|Hello" 
+    python sobotify\sobotify.py -r --robot_name stickman --language english --message "MyTest1|" 
 
 or     
 
     conda activate sobotify
-    python sobotify\robotcontrol\robotcontrol.py --robot_name stickman --language english --message "MyTest1|Hello"
+    python sobotify\robotcontrol\robotcontrol.py --robot_name stickman --language english --message "MyTest1|"
 
 ## License:
 Sobotify itself is licensed under MIT license. However, some part of the code are taken from other project which are under other licenses (e.g. Apache License Version 2.0). The license is then stated in the code. 
