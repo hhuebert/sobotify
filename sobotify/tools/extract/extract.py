@@ -29,7 +29,7 @@ def analyze(video_file,data_path,robot_name,ffmpeg_path,vosk_model_path,language
     audio2srt.audio2srt(video_file,data_path,ffmpeg_path,vosk_model_path,language)
     print("extract landmarks")
     video2landmarks.video2landmarks(video_file,data_path)
-    robots=()
+    robots=[]
     if robot_name=="all": robots=LIST_OF_ROBOTS
     else : robots.append(robot_name)
     for robot in robots :
