@@ -4,7 +4,7 @@ import sobotify.tools.extract.video2landmarks as video2landmarks
 import sobotify.tools.extract.audio2srt as audio2srt
 import sobotify.tools.extract.video2timestamps as video2timestamps
 
-LIST_OF_ROBOTS=("stickman","pepper","nao","cozmo")
+LIST_OF_ROBOTS=("stickman","pepper","nao","cozmo","mykeepon")
 
 def getRobot(name) :
     if name=='stickman' :
@@ -17,6 +17,9 @@ def getRobot(name) :
         return landmarks2angles.landmarks2angles
     elif name=='cozmo' :
         import sobotify.robots.cozmo.landmarks2angles as landmarks2angles
+        return landmarks2angles.landmarks2angles
+    elif name=='mykeepon' :
+        import sobotify.robots.mykeepon.landmarks2angles as landmarks2angles
         return landmarks2angles.landmarks2angles
     else :
         print("unknow robot :" + str(name))
@@ -47,7 +50,7 @@ def extract(video_file,data_path,robot_name,ffmpeg_path,vosk_model_path,language
 if __name__ == '__main__':
     parser=argparse.ArgumentParser(description='extract human gestures/poses from video file and store them as landmarks in csv text file')
     parser.add_argument('--video_file',default='video.mp4',help='path to the video input file')
-    parser.add_argument('--robot_name',default='all',help='name of the robot (all,stickman,pepper,nao,cozmo)')
+    parser.add_argument('--robot_name',default='all',help='name of the robot (all,stickman,pepper,nao,cozmo,mykeepon)')
     parser.add_argument('--ffmpeg_path',default=os.path.join(os.path.expanduser("~"),".sobotify","ffmpeg","bin"),help='directory path to ffmpeg tools (bin directory)')
     parser.add_argument('--vosk_model_path',default=os.path.join(os.path.expanduser("~"),".sobotify","vosk","models"),help='path to vosk_model')
     parser.add_argument('--language',default="english",help='choose language (english,german)')

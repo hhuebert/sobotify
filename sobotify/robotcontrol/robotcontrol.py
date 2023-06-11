@@ -42,6 +42,9 @@ def getRobot(name,robot_ip) :
             import sobotify.robots.cozmo.cozmo as cozmo
             my_cozmo=cozmo.cozmo()
             return my_cozmo,my_cozmo
+        elif name=='mykeepon' :
+            import sobotify.robots.mykeepon.mykeepon as mykeepon
+            return mykeepon.speech(),mykeepon.motion()
         else :
             print("unknow robot :" + str(name))
             exit()

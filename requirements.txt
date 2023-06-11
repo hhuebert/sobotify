@@ -13,6 +13,7 @@ openpyxl==3.1.2; python_version > '2.7'
 pandas==2.0.1; python_version > '2.7'
 psutil==5.9.5; python_version > '2.7'
 pycozmo==0.8.0; python_version > '2.7'
+pyserial==3.5; python_version > '2.7'
 
 paho-mqtt==1.6.1; python_version == '2.7'
 srt==3.5.0; python_version == '2.7'

@@ -17,7 +17,7 @@ MainWindow.title("Sobotify App")
 project_path_default     = os.path.join(os.path.expanduser("~"),".sobotify","projects") # 'path to movement/speech data')
 
 DEFAULT_ROBOT_IP="192.168.0.141"
-DEFAULT_ROBOT_NAMES=("stickman","pepper","nao","cozmo")
+DEFAULT_ROBOT_NAMES=("stickman","pepper","nao","cozmo","mykeepon")
 DEFAULT_NEW_PROJECT_NAME=("MyProject")
 
 if os.path.isfile(os.path.join(os.path.expanduser("~"),"miniconda3","condabin","conda.bat")):
