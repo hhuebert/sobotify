@@ -6,6 +6,7 @@ from sobotify import sobotify
 from read_project_data import get_tasks
 from read_project_data import get_general_info
 from read_project_data import get_project_settings
+import ast
 
 class quiz:
 
@@ -14,9 +15,28 @@ class quiz:
         self.sobot=sobotify.sobotify(app_name="quiz-training",debug=False)
         self.sobot.start_robotcontroller(robot_name=robot_name,robot_ip=robot_ip, language=language)
         self.sobot.start_listener(language=language,sound_device=sound_device)
+        self.sobot.start_grammar_checking(language=language)
         self.general_info=get_general_info(project_file)
         self.tasks=get_tasks(project_file)
         print (" ... done")
+
+    def evaluate_grammar(self,text):
+        errors_raw=self.sobot.grammar_check(text)
+        errors=ast.literal_eval(errors_raw)
+        for error in errors :
+            issue_text=error.get("issue","")
+            message=error.get("message","")
+            short_message=error.get("short_message","")
+            replacement=error.get("replacement","")
+            print ("--------------------------------------------------------------------------------------------")
+            print ("Error         : " + issue_text)
+            print ("Message       : " + message)
+            print ("Short message : " + short_message)
+            print ("Suggestion    : " + issue_text + " => " + replacement)
+        if len(errors)==0:
+            return False
+        else :
+            return True
 
     def search_answers(self,keywords,answer) :
         for keyword in keywords :
@@ -34,7 +54,7 @@ class quiz:
         self.sobot.speak(task["question"])
         for i in range(3) :
             if i>0 : self.sobot.speak(task["question2"])
-            answer=self.sobot.listen()
+            self.evaluate_grammar(answer)
             if len(answer)<=1: self.sobot.speak(self.general_info["noanswer"])
             else :
                 if self.search_answer_groups(task["answers"],answer) : 

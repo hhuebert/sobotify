@@ -25,6 +25,10 @@ sound_device_default     = 0               # number of sound device, can be foun
 llm_model_default        = 'EleutherAI/llm-j-6B'  # name of the llm model (e.g. EleutherAI/llm-j-6B or bigscience/bloom-560m)')
 llm_temperature_default  = 0.5             # temperature value for the llm model (between 0.0 and 1.0)')
 llm_max_length_default   = 100             # maximum length of the generated text')
+text_default             = ""              # text to checked for grammar
+URL_default              = "http://localhost:8081/v2/check" # LanguageTool server URL
+languagetool_path_default = os.path.join(os.path.expanduser("~"),".sobotify","languagetool")
+java_path_default         = os.path.join(os.environ["JAVA_HOME"],"bin")
 
 
 if os.path.isfile(os.path.join(os.path.expanduser("~"),"miniconda3","condabin","conda.bat")):
@@ -48,11 +52,14 @@ class sobotify (object) :
         self.robot_done_flag=False
         self.statement_pending=False
         self.statement = ""
+        self.grammar_checking_result_available=False
+        self.grammar_checking_result = ""
         self.start_mqtt_client=start_mqtt_client
         self.init_speech_recognition_done_flag = False
         self.init_chatbot_done_flag = False
         self.init_robot_done_flag = False
-        
+        self.init_grammar_checking_done_flag =True
+
         if start_mqtt_server==True:
             self.start_mosquitto(mosquitto_path)
         if self.start_mqtt_client==True :
@@ -104,6 +111,19 @@ class sobotify (object) :
     
     def chat(self,message):
          self.mqtt_client.publish("llm/query",message)
+
+    def store_grammar_check_result(self,result) :
+        self.grammar_checking_result = result
+        print("got grammar check result: "+ self.grammar_checking_result)
+        self.grammar_checking_result_available=True
+
+    def grammar_check(self,text):
+        self.mqtt_client.publish("grammar_checking/text",text)
+        self.mqtt_client.subscribe("grammar_checking/result",self.store_grammar_check_result)
+        while not self.grammar_checking_result_available:
+            time.sleep(1)    
+        self.grammar_checking_result_available=False
+        return self.grammar_checking_result
 
     def start_extract(self,video_file=video_file_default,data_path=data_path_default,robot_name=robot_name_default,
                       ffmpeg_path=ffmpeg_path_default,vosk_model_path=vosk_model_path_default,language=language_default):
@@ -249,6 +269,38 @@ class sobotify (object) :
         if mqtt== True: 
             self.wait_for_init_chatbot_done()
 
+    ########################################################################################################
+    def init_grammar_checking_done(self,message) :
+        print("got init done: "+ message)
+        self.init_grammar_checking_done_flag =True
+
+    def wait_for_init_grammar_checking_done(self):
+        self.mqtt_client.subscribe("grammar_checking/status/init-done",self.init_grammar_checking_done)
+        print("waiting for grammar_checking to finish initalization ...")             
+        while not self.init_grammar_checking_done_flag==True:
+            time.sleep(1)   
+        print(" ... done")  
+    
+    def start_grammar_checking(self,mqtt=True,mosquitto_ip=mosquitto_ip_default,languagetool_path=languagetool_path_default,java_path=java_path_default,language=language_default,URL=URL_default,text=text_default):
+        sobotify_path=os.path.dirname(os.path.abspath(__file__))
+        script_path=os.path.join(sobotify_path,'tools','grammar_checking.py')
+        arguments=[sys.executable,script_path]
+        if mqtt== True: 
+            arguments.extend(('--mqtt',"on"))
+        arguments.extend(('--mosquitto_ip',mosquitto_ip))
+        arguments.extend(('--language',language))
+        arguments.extend(('--languagetool_path',languagetool_path))
+        arguments.extend(('--java_path',java_path))
+        arguments.extend(('--languagetool_url',URL))
+        arguments.extend(('--text',text))
+        if self.debug==True:
+            print (*arguments)
+        self.grammar_checking_proc=subprocess.Popen(arguments,creationflags=subprocess.CREATE_NEW_CONSOLE)
+        print ('started grammar checking, pid=',self.grammar_checking_proc.pid)
+        if mqtt== True: 
+            self.wait_for_init_grammar_checking_done()
+    ########################################################################################################
+
     def terminate(self):
         if not self.analyze_proc==0: self.analyze_proc.kill()
         if not self.mosquitto_proc==0: self.mosquitto_proc.kill()
@@ -279,6 +331,7 @@ if __name__ == "__main__":
     parser.add_argument('-r',default="false",action="store_true",help='start robot controller')
     parser.add_argument('-l',default="false",action="store_true",help='start listener (speech recognition)')
     parser.add_argument('-c',default="false",action="store_true",help='start chatbot')
+    parser.add_argument('-g',default="false",action="store_true",help='start grammar checker')
     parser.add_argument('--mosquitto_ip',default='127.0.0.1',help='ip address of the mosquitto server')
     parser.add_argument('--mosquitto_path',default='',help='path to directory of the mosquitto executable')
     parser.add_argument('--robot_name',default='stickman',help='name of the robot (stickman,pepper,nao)')
@@ -297,6 +350,10 @@ if __name__ == "__main__":
     parser.add_argument('--llm_model',default='EleutherAI/llm-j-6B',help='name of the llm model (e.g. EleutherAI/llm-j-6B or bigscience/bloom-560m)')
     parser.add_argument('--llm_temperature',default=0.5,type=float,help='temperature value for the llm model (between 0.0 and 1.0)')
     parser.add_argument('--llm_max_length',default=100,type=int,help='maximum length of the generated text')
+    parser.add_argument('--text',default='',help='Text to be checked by the grammar checker')
+    parser.add_argument('--languagetool_path',default=os.path.join(os.path.expanduser("~"),".sobotify","languagetool"),help='directory path to LanguageTool')
+    parser.add_argument('--java_path',default=os.path.join(os.environ["JAVA_HOME"],"bin"),help='directory path to java executable')
+    parser.add_argument('--languagetool_url',default=URL_default,help='URL of LanguageTool server')
     args=parser.parse_args()
 
 
@@ -310,7 +367,8 @@ if __name__ == "__main__":
         sobot.start_listener(args.m,args.mosquitto_ip,args.vosk_model_path,args.language,args.keyword,args.sound_device)
     if args.c==True:
         sobot.start_chatbot(args.m,args.mosquitto_ip,args.llm_model,args.llm_temperature,args.llm_max_length)
- 
-    
+    if args.g==True:
+        sobot.start_grammar_checking(args.m,args.mosquitto_ip,args.languagetool_path,args.java_path,args.language,args.languagetool_url,args.text)
+
     while(True):
         time.sleep(1000)
