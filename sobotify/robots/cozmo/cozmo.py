@@ -10,6 +10,7 @@ import os
 import threading
 import time
 from PIL import Image
+import cv2 as cv
 import numpy as np
 import pycozmo
 import pyttsx3
@@ -31,6 +32,7 @@ class cozmo:
         # Initialize Cozmo with pycozmo
         self.tts_engine = pyttsx3.init()
         self.setLanguage("english")
+        self.image_available=False
 
         self.stop_movement=threading.Event()
         self.stop_movement.clear()
@@ -81,17 +83,17 @@ class cozmo:
             print("The file does not exist")
 
     def on_camera_image(self,cli, image):
-        current_time = datetime.now()
-        timestamp = current_time.strftime("%Y-%m-%d_%Hh%Mmin%Ssec")
-        filename = "img_"+ timestamp +".png"
-        self.img = image
-        image.save(filename, "PNG")
+        npa=np.array(image)
+        self.img=cv.cvtColor(npa,cv.COLOR_RGB2BGR)
+        self.image_available=True
 
-    def get_camera_image(self):
+    def get_image(self):
+        self.image_available=False
         self.cli.add_handler(pycozmo.event.EvtNewRawCameraImage, self.on_camera_image, one_shot=True)
-        # Wait for image to be captured.
-        time.sleep(0.5)
-        return self.img
+        while not self.image_available:
+            time.sleep(0.1)
+            print("waiting for image")
+        return True,self.img
 
     def show_expression(self,expression: any):
         # Base face expression.

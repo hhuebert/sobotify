@@ -25,6 +25,9 @@ sound_device_default     = 0               # number of sound device, can be foun
 llm_model_default        = 'EleutherAI/llm-j-6B'  # name of the llm model (e.g. EleutherAI/llm-j-6B or bigscience/bloom-560m)')
 llm_temperature_default  = 0.5             # temperature value for the llm model (between 0.0 and 1.0)')
 llm_max_length_default   = 100             # maximum length of the generated text')
+show_video_default       = "on"            # show video during emotion detection
+frame_rate_default       = 1               # frame rate for emotion detection
+cam_device_default       = "0"             # camera device for emotion detection
 text_default             = ""              # text to checked for grammar
 URL_default              = "http://localhost:8081/v2/check" # LanguageTool server URL
 languagetool_path_default = os.path.join(os.path.expanduser("~"),".sobotify","languagetool")
@@ -52,12 +55,15 @@ class sobotify (object) :
         self.robot_done_flag=False
         self.statement_pending=False
         self.statement = ""
+        self.dominant_emotion_available=False
+        self.dominant_emotion = ""
         self.grammar_checking_result_available=False
         self.grammar_checking_result = ""
         self.start_mqtt_client=start_mqtt_client
         self.init_speech_recognition_done_flag = False
         self.init_chatbot_done_flag = False
         self.init_robot_done_flag = False
+        self.init_emotion_detection_done_flag = False 
         self.init_grammar_checking_done_flag =True
 
         if start_mqtt_server==True:
@@ -89,18 +95,26 @@ class sobotify (object) :
         self.robot_done_flag=False
         print(" ... done")             
 
-    def listen(self,listen_to_keyword=False,keyword=keyword_default):
+    def listen(self,listen_to_keyword=False,keyword=keyword_default,detect_emotion=False):
         if (listen_to_keyword==True) :
             self.mqtt_client.publish("speech-recognition/control/record/listen_to_keyword",keyword)
         else :
+            if detect_emotion:
+                self.detect(command="start")
             self.mqtt_client.subscribe("speech-recognition/statement",self.store_statement)
             self.mqtt_client.publish("speech-recognition/control/record/start","")
             while not self.statement_pending:
                 time.sleep(1)    
             self.statement_pending=False
-            return self.statement
+            if detect_emotion:
+                emotion=self.detect(command="stop")
+                return self.statement, emotion
+            else:
+                return self.statement
 
-    def speak(self,message,speed=0):
+    def speak(self,message,speed=0,detect_emotion=False):
+        if detect_emotion:
+            self.detect(command="start")
         if  (speed==0) :
             self.mqtt_client.publish("robot/control/set-min-speed",min_speech_speed_default)
             self.mqtt_client.publish("robot/control/set-max-speed",max_speech_speed_default)
@@ -108,9 +122,30 @@ class sobotify (object) :
             self.mqtt_client.publish("robot/control/set-speed",speed)
         self.mqtt_client.publish("robot/speak-and-gesture",message)
         self.wait_for_robot()
+        if detect_emotion:
+            emotion=self.detect(command="stop")
+            return emotion
     
     def chat(self,message):
          self.mqtt_client.publish("llm/query",message)
+
+    def store_dominant_emotion(self,dominant_emotion) :
+        self.dominant_emotion = dominant_emotion
+        print("got dominant_emotion: "+ self.dominant_emotion)
+        self.dominant_emotion_available=True
+
+    def detect(self,command,type="emotion"):
+        if command=="start":
+            if type=="emotion":
+                self.mqtt_client.publish("emotion_detection/start")
+        elif command=="stop":
+            if type=="emotion":
+                self.mqtt_client.publish("emotion_detection/stop")
+                self.mqtt_client.subscribe("emotion_detection/dominant_emotion",self.store_dominant_emotion)
+                while not self.dominant_emotion_available:
+                    time.sleep(1)    
+                self.dominant_emotion_available=False
+                return self.dominant_emotion
 
     def store_grammar_check_result(self,result) :
         self.grammar_checking_result = result
@@ -270,6 +305,37 @@ class sobotify (object) :
             self.wait_for_init_chatbot_done()
 
     ########################################################################################################
+    def init_emotion_detection_done(self,message) :
+        print("got init done: "+ message)
+        self.init_emotion_detection_done_flag =True
+
+    def wait_for_init_emotion_detection_done(self):
+        self.mqtt_client.subscribe("emotion_detection/status/init-done",self.init_emotion_detection_done)
+        print("waiting for emotion_detection to finish initalization ...")             
+        while not self.init_emotion_detection_done_flag==True:
+            time.sleep(1)   
+        print(" ... done")  
+    
+    def start_emotion_detection(self,mqtt=True,mosquitto_ip=mosquitto_ip_default,robot_name=robot_name_default,robot_ip=robot_ip_default,cam_device=cam_device_default,frame_rate=frame_rate_default,show_video=show_video_default):
+        sobotify_path=os.path.dirname(os.path.abspath(__file__))
+        script_path=os.path.join(sobotify_path,'tools','emotion_detection.py')
+        arguments=[sys.executable,script_path]
+        if mqtt== True: 
+            arguments.extend(('--mqtt',"on"))
+        arguments.extend(('--mosquitto_ip',mosquitto_ip))
+        arguments.extend(('--robot_name',robot_name))
+        arguments.extend(('--robot_ip',robot_ip))
+        arguments.extend(('--cam_device',cam_device))
+        arguments.extend(('--frame_rate',str(frame_rate)))
+        arguments.extend(('--show_video',show_video))
+        if self.debug==True:
+            print (*arguments)
+        self.emotion_detection_proc=subprocess.Popen(arguments,creationflags=subprocess.CREATE_NEW_CONSOLE)
+        print ('started emotion detection, pid=',self.emotion_detection_proc.pid)
+        if mqtt== True: 
+            self.wait_for_init_emotion_detection_done()
+
+    ########################################################################################################
     def init_grammar_checking_done(self,message) :
         print("got init done: "+ message)
         self.init_grammar_checking_done_flag =True
@@ -331,6 +397,7 @@ if __name__ == "__main__":
     parser.add_argument('-r',default="false",action="store_true",help='start robot controller')
     parser.add_argument('-l',default="false",action="store_true",help='start listener (speech recognition)')
     parser.add_argument('-c',default="false",action="store_true",help='start chatbot')
+    parser.add_argument('-f',default="false",action="store_true",help='start emotion detection')
     parser.add_argument('-g',default="false",action="store_true",help='start grammar checker')
     parser.add_argument('--mosquitto_ip',default='127.0.0.1',help='ip address of the mosquitto server')
     parser.add_argument('--mosquitto_path',default='',help='path to directory of the mosquitto executable')
@@ -354,6 +421,9 @@ if __name__ == "__main__":
     parser.add_argument('--languagetool_path',default=os.path.join(os.path.expanduser("~"),".sobotify","languagetool"),help='directory path to LanguageTool')
     parser.add_argument('--java_path',default=os.path.join(os.environ["JAVA_HOME"],"bin"),help='directory path to java executable')
     parser.add_argument('--languagetool_url',default=URL_default,help='URL of LanguageTool server')
+    parser.add_argument('--cam_device',default='0',help='camera device name or number for emotion detection')
+    parser.add_argument('--frame_rate',default=1,type=float,help='frame rate for emotion detection')
+    parser.add_argument('--show_video',default="on",help='enable/disable video output of emotion detection on screen')
     args=parser.parse_args()
 
 
@@ -367,6 +437,8 @@ if __name__ == "__main__":
         sobot.start_listener(args.m,args.mosquitto_ip,args.vosk_model_path,args.language,args.keyword,args.sound_device)
     if args.c==True:
         sobot.start_chatbot(args.m,args.mosquitto_ip,args.llm_model,args.llm_temperature,args.llm_max_length)
+    if args.f==True:
+        sobot.start_emotion_detection(args.m,args.mosquitto_ip,args.robot_name,args.robot_ip,args.cam_device,args.frame_rate,args.show_video)
     if args.g==True:
         sobot.start_grammar_checking(args.m,args.mosquitto_ip,args.languagetool_path,args.java_path,args.language,args.languagetool_url,args.text)
 
