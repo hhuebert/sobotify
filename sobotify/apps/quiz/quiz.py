@@ -54,6 +54,7 @@ class quiz:
         self.sobot.speak(task["question"])
         for i in range(3) :
             if i>0 : self.sobot.speak(task["question2"])
+            answer=self.sobot.listen()
             self.evaluate_grammar(answer)
             if len(answer)<=1: self.sobot.speak(self.general_info["noanswer"])
             else :
