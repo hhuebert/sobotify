@@ -161,7 +161,7 @@ class sobotify (object) :
         return self.grammar_checking_result
 
     def start_extract(self,video_file=video_file_default,data_path=data_path_default,robot_name=robot_name_default,
-                      ffmpeg_path=ffmpeg_path_default,vosk_model_path=vosk_model_path_default,language=language_default):
+                      ffmpeg_path=ffmpeg_path_default,vosk_model_path=vosk_model_path_default,language=language_default,show_video=show_video_default):
         sobotify_path=os.path.dirname(os.path.abspath(__file__))
         arguments=[sys.executable,os.path.join(sobotify_path,'tools','extract','extract.py')]
         arguments.extend(('--video_file',video_file))
@@ -170,6 +170,7 @@ class sobotify (object) :
         arguments.extend(('--vosk_model_path',vosk_model_path))  
         arguments.extend(('--data_path',data_path))
         arguments.extend(('--language',language))
+        arguments.extend(('--show_video',show_video))
         if self.debug==True:
             print (*arguments)
         self.analyze_proc=subprocess.Popen(arguments)
@@ -423,14 +424,14 @@ if __name__ == "__main__":
     parser.add_argument('--languagetool_url',default=URL_default,help='URL of LanguageTool server')
     parser.add_argument('--cam_device',default='0',help='camera device name or number for emotion detection')
     parser.add_argument('--frame_rate',default=1,type=float,help='frame rate for emotion detection')
-    parser.add_argument('--show_video',default="on",help='enable/disable video output of emotion detection on screen')
+    parser.add_argument('--show_video',default="on",help='enable/disable video output of emotion detection or gesture extraction on screen')
     args=parser.parse_args()
 
 
     sobot = sobotify(start_mqtt_server=args.m,start_mqtt_client=False, mosquitto_path=args.mosquitto_path,debug=args.d)
 
     if args.e==True:
-        sobot.start_extract(args.video_file,args.data_path,args.robot_name,args.ffmpeg_path,args.vosk_model_path,args.language)
+        sobot.start_extract(args.video_file,args.data_path,args.robot_name,args.ffmpeg_path,args.vosk_model_path,args.language,args.show_video)
     if args.r==True:
         sobot.start_robotcontroller(args.m,args.mosquitto_ip,args.robot_name,args.robot_ip,args.robot_conda_env,args.data_path,args.language,args.min_speech_speed,args.max_speech_speed, args.message)
     if args.l==True:

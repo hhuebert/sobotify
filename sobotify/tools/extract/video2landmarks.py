@@ -17,6 +17,9 @@ import sys
 import os
 from datetime import datetime
 
+import sobotify.robots.stickman.stickman as stickman
+
+
 def store_landmarks(landmarks,time_stamp,filename) :
     landmarks_array = []
     for index, landmark in enumerate(landmarks):
@@ -31,7 +34,10 @@ def store_landmarks(landmarks,time_stamp,filename) :
     return landmarks_array
 
 
-def video2landmarks(video_file,data_path):
+def video2landmarks(video_file,data_path,show_video):
+
+    if (show_video=="on"):
+        motion_visualizer=stickman.motion()
 
     cap_width  = 960 # default=960
     cap_height = 540 # default=540
@@ -72,9 +78,13 @@ def video2landmarks(video_file,data_path):
         if not ret:
             break
         #image = cv.flip(image, 1)
+        if (show_video=="on"):
+            image_small=cv.resize(image,(0,0),fx=0.5,fy=0.5)
+            cv.imshow("Image",image_small)
+            if cv.waitKey(1) == ord("q"):
+                break
         image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
         results = pose.process(image)
-
         pts_string , time_stamp_string = time_stamps.readline().split('=')
         try:
             time_stamp=float(time_stamp_string)
@@ -82,17 +92,22 @@ def video2landmarks(video_file,data_path):
             #print (results.pose_world_landmarks.landmark)
 
             if results.pose_landmarks is not None:
-                store_landmarks(results.pose_landmarks.landmark,time_stamp,landmarks_filename)
+                landmarks_array=store_landmarks(results.pose_landmarks.landmark,time_stamp,landmarks_filename)
+                if show_video=="on":
+                    motion_visualizer.move(landmarks_array)
             if results.pose_world_landmarks is not None:
                 world_landmarks_array = store_landmarks(results.pose_world_landmarks.landmark,time_stamp,world_landmarks_filename)            
         except:
             break
     cap.release()
-
+    if (show_video=="on"):
+        cv.destroyAllWindows()
+    
 if __name__ == '__main__':
     parser=argparse.ArgumentParser(description='extract human gestures/poses from video file and store them as landmarks in csv text file')
     parser.add_argument('--video_file',default='video.mp4',help='path to the video input file')
     parser.add_argument('--data_path',default=os.path.expanduser("~")+"/.sobotify/data",help='path to movement/speech data')
+    parser.add_argument('--show_video',default="on",help='enable/disable video output on screen')
     args=parser.parse_args()
-    video2landmarks(args.video_file,args.data_path)
+    video2landmarks(args.video_file,args.data_path,args.show_video)
     

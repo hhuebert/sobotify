@@ -26,7 +26,7 @@ def getRobot(name) :
         return None
 
 
-def extract(video_file,data_path,robot_name,ffmpeg_path,vosk_model_path,language):
+def extract(video_file,data_path,robot_name,ffmpeg_path,vosk_model_path,language,show_video):
     #REM for recording on Android Phone with Bluetooth Headset/microphone use : https://play.google.com/store/apps/details?id=com.bedoig.BTmono&hl=de&gl=US
     print("extracting gesture and speech in video file ", video_file, "and store results to ", data_path)
     print("extract time stamps")
@@ -34,7 +34,7 @@ def extract(video_file,data_path,robot_name,ffmpeg_path,vosk_model_path,language
     print("speech recognition")
     audio2srt.audio2srt(video_file,data_path,ffmpeg_path,vosk_model_path,language)
     print("extract landmarks")
-    video2landmarks.video2landmarks(video_file,data_path)
+    video2landmarks.video2landmarks(video_file,data_path,show_video)
     robots=[]
     if robot_name=="all": robots=LIST_OF_ROBOTS
     else : robots.append(robot_name)
@@ -55,5 +55,6 @@ if __name__ == '__main__':
     parser.add_argument('--vosk_model_path',default=os.path.join(os.path.expanduser("~"),".sobotify","vosk","models"),help='path to vosk_model')
     parser.add_argument('--language',default="english",help='choose language (english,german)')
     parser.add_argument('--data_path',default=os.path.join(os.path.expanduser("~"),".sobotify","data"),help='path to movement/speech data')
+    parser.add_argument('--show_video',default="on",help='enable/disable video output on screen')
     args=parser.parse_args()
-    extract(args.video_file,args.data_path,args.robot_name,args.ffmpeg_path,args.vosk_model_path,args.language)    
+    extract(args.video_file,args.data_path,args.robot_name,args.ffmpeg_path,args.vosk_model_path,args.language,args.show_video)    
