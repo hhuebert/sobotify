@@ -1,4 +1,4 @@
-set ROBOT_NAME=pepper
+set ROBOT_NAME=all
 set LANGUAGE=english
 @ECHO OFF
 REM ======================================================================================
