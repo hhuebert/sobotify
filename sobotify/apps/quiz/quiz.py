@@ -8,15 +8,21 @@ from read_project_data import get_general_info
 from read_project_data import get_project_settings
 import ast
 
+emotion_detection=True
+check_grammar=False
+
 class quiz:
 
     def __init__(self,robot_name,robot_ip,language,sound_device,mosquitto_ip,project_file) :
         print ("init quiz training ...")
+        self.language=language
         self.sobot=sobotify.sobotify(app_name="quiz-training",debug=False)
-        self.sobot.start_robotcontroller(robot_name=robot_name,robot_ip=robot_ip, language=language)
-        self.sobot.start_listener(language=language,sound_device=sound_device)
-        #self.sobot.start_emotion_detection(robot_name=robot_name,robot_ip=robot_ip)
-        self.sobot.start_grammar_checking(language=language)
+        self.sobot.start_robotcontroller(robot_name=robot_name,robot_ip=robot_ip, language=self.language)
+        self.sobot.start_listener(language=self.language,sound_device=sound_device)
+        if emotion_detection==True :
+            self.sobot.start_emotion_detection(robot_name=robot_name,robot_ip=robot_ip)
+        if check_grammar==True :
+            self.sobot.start_grammar_checking(language=self.language)
         self.general_info=get_general_info(project_file)
         self.tasks=get_tasks(project_file)
         print (" ... done")
@@ -39,6 +45,19 @@ class quiz:
         else :
             return True
 
+    def emotion_feedback(self,emotion):
+        if emotion=="happy" :
+            if self.language.lower()=="english":
+                self.sobot.speak("very nice, I see you are enjoying our quiz")
+            elif self.language.lower()=="german":
+                self.sobot.speak("sehr schön, ich sehe dir macht unser Quiz spaß")
+        else :
+            if self.language.lower()=="english":
+                self.sobot.speak("you don't seem so happy, I hope you are enjoying our quiz")
+            elif self.language.lower()=="german":
+                self.sobot.speak("du siehst nicht so glücklich aus, ich hoffe, dir gefällt unser Quiz")
+
+
     def search_answers(self,keywords,answer) :
         for keyword in keywords :
             if keyword.lower() in answer.lower() :
@@ -55,14 +74,14 @@ class quiz:
         self.sobot.speak(task["question"])
         for i in range(3) :
             if i>0 : self.sobot.speak(task["question2"])
-            answer=self.sobot.listen()
-            self.evaluate_grammar(answer)
-            #answer,emotion=self.sobot.listen(detect_emotion=True)
-            #print (emotion)
-            #if emotion=="happy" :
-            #    self.sobot.speak("sehr schön, ich sehe dir macht unser Quiz spaß")
-            #else :
-            #    self.sobot.speak("du siehst nicht so glücklich aus, ich hoffe, dir gefällt unser Quiz")
+            if emotion_detection==True :
+                answer,emotion=self.sobot.listen(detect_emotion=True)
+                print (emotion)
+                self.emotion_feedback(emotion)
+            else:
+                answer=self.sobot.listen()
+            if check_grammar==True :
+                self.evaluate_grammar(answer)
             if len(answer)<=1: self.sobot.speak(self.general_info["noanswer"])
             else :
                 if self.search_answer_groups(task["answers"],answer) : 
@@ -75,9 +94,11 @@ class quiz:
 
     def run(self) :
         correct_answers=0
-        self.sobot.speak(self.general_info["welcome"],speed=70)
-        #emotion=self.sobot.speak(self.general_info["welcome"],speed=70,detect_emotion=True)
-        #print(emotion)
+        if emotion_detection==True :
+            emotion=self.sobot.speak(self.general_info["welcome"],speed=70,detect_emotion=True)
+            print(emotion)
+        else:
+            self.sobot.speak(self.general_info["welcome"],speed=70)
         for task in self.tasks:
             if self.process_task(task): correct_answers+=1
             time.sleep(1)    
