@@ -71,7 +71,7 @@ def video2landmarks(video_file,data_path):
         ret, image = cap.read()
         if not ret:
             break
-        image = cv.flip(image, 1)
+        #image = cv.flip(image, 1)
         image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
         results = pose.process(image)
 
