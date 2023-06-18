@@ -18,9 +18,9 @@ class mqttClient(object):
             exit()
         self.client.loop_start()
 
-    def subscribe(self,topic,callback) :
+    def subscribe(self,topic,callback,raw_data=False) :
         self.client.subscribe(topic)
-        self.callback[topic]=callback
+        self.callback[topic]=[callback,raw_data]
 
     def publish(self,subscibe_topic,message="") :
         self.client.publish(subscibe_topic,message)
@@ -29,10 +29,13 @@ class mqttClient(object):
         print ("published! - " + str(rc))
 
     def on_message(self, client, userdata, msg):
-        message = msg.payload.decode('utf-8')
         topic = msg.topic
-        print ("received on topic: " + topic + " ====> message: " + message )
-        callback=self.callback[topic]
+        if self.callback[topic][1]==False:
+            message = msg.payload.decode('utf-8')
+            print ("received on topic: " + topic + " ====> message: " + message )
+        else :
+            message = msg.payload
+        callback=self.callback[topic][0]
         callback(message)
 
     def on_connect(self, client, userdata, flags, rc):

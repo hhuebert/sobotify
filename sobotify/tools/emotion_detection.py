@@ -6,6 +6,7 @@ import time
 import argparse
 from sobotify.commons.mqttclient import mqttClient
 import cv2 as cv
+import numpy as np
 from deepface import DeepFace
 from datetime import datetime
 
@@ -27,14 +28,41 @@ def getRobot(name,robot_ip,cam_device) :
 
 class EmotionDetection:
 
-    def __init__(self,robot_name,robot_ip,cam_device) :
+    def __init__(self,mqtt,mosquitto_ip,robot_name,robot_ip,cam_device) :
+        self.mqtt=mqtt
+        if self.mqtt=="on" :
+            self.mqtt_client = mqttClient(mosquitto_ip,"emotion_detection")
+            self.mqtt_client.subscribe("robot_control/image",self.store_image,raw_data=True)
+            self.mqtt_client.subscribe("emotion_detection/start",self.start_detection)
+            self.mqtt_client.subscribe("emotion_detection/stop",self.stop_detection)
+        else :
+            self.robot=getRobot(robot_name,robot_ip,cam_device) 
         print ("init emotion detection ...", flush=True)
+        self.image_available=False
         self.start_detection_flag=False
         self.stop_detection_flag=False
         self.query=''
-        self.robot=getRobot(robot_name,robot_ip,cam_device)
+        if self.mqtt=="on" :
+            self.mqtt_client.publish("emotion_detection/status/init-done")
         print (" finished")
-        
+
+    def store_image(self,image) :
+        img_byte=bytearray(image)
+        im_array=np.asarray(img_byte)
+        self.image=cv.imdecode(im_array,cv.IMREAD_COLOR)
+        self.image_available=True
+
+    def get_image(self) :
+        if self.mqtt=="on" :
+            self.mqtt_client.publish("robot_control/command/get_image")
+            while not self.image_available:
+                time.sleep(0.01)    
+            self.image_available=False
+            return self.image
+        else: 
+            ret,self.image=self.robot.get_image()
+            return self.image
+
     def detect(self,show_video,fps) :
 
         emotions_accum={}
@@ -53,7 +81,7 @@ class EmotionDetection:
             while delta_time < 1/fps:
                 delta_time=(datetime.now()-last_time).total_seconds()
             last_time=datetime.now()
-            ret,img=self.robot.get_image()
+            img=self.get_image()
             img_height=img.shape[0]
             img_width=img.shape[1]
             if img_width>600:
@@ -62,34 +90,33 @@ class EmotionDetection:
             else:
                 text_size=0.5
                 text_width=1
-            if ret:
-                try:
-                    emotions=DeepFace.analyze(img,actions=["emotion"])
-                    if len(emotions)>0:
-                        x=emotions[0]["region"]["x"]
-                        y=emotions[0]["region"]["y"]
-                        w=emotions[0]["region"]["w"]
-                        h=emotions[0]["region"]["h"]
-                        dominant_emotion=emotions[0]["dominant_emotion"]
-                        #print(emotions[0]["emotion"])
-                        for emotion,value in emotions[0]["emotion"].items() :
-                            #print(emotion+"::"+str(value))
-                            emotions_accum[emotion]+=value
-                        emotions_accum['amount']+=1
-                        #print(emotions_accum)
+            try:
+                emotions=DeepFace.analyze(img,actions=["emotion"])
+                if len(emotions)>0:
+                    x=emotions[0]["region"]["x"]
+                    y=emotions[0]["region"]["y"]
+                    w=emotions[0]["region"]["w"]
+                    h=emotions[0]["region"]["h"]
+                    dominant_emotion=emotions[0]["dominant_emotion"]
+                    #print(emotions[0]["emotion"])
+                    for emotion,value in emotions[0]["emotion"].items() :
+                        #print(emotion+"::"+str(value))
+                        emotions_accum[emotion]+=value
+                    emotions_accum['amount']+=1
+                    #print(emotions_accum)
 
-                        cv.rectangle(img,(x,y),(x+w,y+h),(255,0,0),3)
-                        cv.putText(img,dominant_emotion,(int(x+w/8),int(y+h/4)),cv.FONT_HERSHEY_DUPLEX,text_size,(0,255,0),text_width)
-                except:
-                    cv.putText(img,"no face detected",(int(img_width/8),int(img_height/8)),cv.FONT_HERSHEY_DUPLEX,text_size,(0,0,255),text_width)
+                    cv.rectangle(img,(x,y),(x+w,y+h),(255,0,0),3)
+                    cv.putText(img,dominant_emotion,(int(x+w/8),int(y+h/4)),cv.FONT_HERSHEY_DUPLEX,text_size,(0,255,0),text_width)
+            except:
+                cv.putText(img,"no face detected",(int(img_width/8),int(img_height/8)),cv.FONT_HERSHEY_DUPLEX,text_size,(0,0,255),text_width)
 
-                if show_video=="on":
-                    cv.imshow("Image",img)
-                    if cv.waitKey(1) == ord("q"):
-                        break
-                if self.stop_detection_flag == True :
-                    self.stop_detection_flag=False
+            if show_video=="on":
+                cv.imshow("Image",img)
+                if cv.waitKey(1) == ord("q"):
                     break
+            if self.stop_detection_flag == True :
+                self.stop_detection_flag=False
+                break
         cv.destroyAllWindows()
 
         #print(emotions_accum)
@@ -105,17 +132,13 @@ class EmotionDetection:
 
 
 def emotion_detection(mqtt,mosquitto_ip,robot_name,robot_ip,cam_device,frame_rate,show_video) :
-    em_detect = EmotionDetection(robot_name,robot_ip,cam_device)
+    em_detect = EmotionDetection(mqtt,mosquitto_ip,robot_name,robot_ip,cam_device)
     if mqtt=="on" :
-        mqtt_client = mqttClient(mosquitto_ip,"emotion_detection")
-        mqtt_client.subscribe("emotion_detection/start",em_detect.start_detection)
-        mqtt_client.subscribe("emotion_detection/stop",em_detect.stop_detection)
-        mqtt_client.publish("emotion_detection/status/init-done")
         while True:
             if em_detect.start_detection_flag:
                 em_detect.start_detection_flag=False
                 emotion=em_detect.detect(show_video,frame_rate)
-                mqtt_client.publish("emotion_detection/dominant_emotion",emotion)
+                em_detect.mqtt_client.publish("emotion_detection/dominant_emotion",emotion)
             time.sleep(1)
     else :
         emotion=em_detect.detect(show_video,frame_rate)

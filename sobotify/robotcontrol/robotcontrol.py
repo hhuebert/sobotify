@@ -6,6 +6,7 @@ import csv
 import srt
 from datetime import datetime
 from time import sleep
+import cv2 as cv
 
 from sobotify.commons.mqttclient import mqttClient
 import sobotify.robotcontrol.data
@@ -16,35 +17,35 @@ DEBUG_SYNC2=False
 DEBUG_TXT_REPLACE=False
 speed_factor = 1.0
 
-def getRobot(name,robot_ip) :
+def getRobot(name,robot_ip,cam_device) :
         if name=='stickman' :
             import sobotify.robots.stickman.stickman as stickman
-            return stickman.speech(),stickman.motion()
+            return stickman.speech(),stickman.motion(),stickman.vision(cam_device)
         elif name=='pepper' :
             if not (sys.version_info[0]==2 and sys.version_info[1]==7) :
                 print("Pepper robot can only be used with Python version 2.7.x (your version is " + str(sys.version_info[0])+"."+str(sys.version_info[1])+")")
                 exit()
             import sobotify.robots.pepper.pepper as pepper
-            return pepper.speech(robot_ip),pepper.motion(robot_ip)
+            return pepper.speech(robot_ip),pepper.motion(robot_ip),pepper.vision(cam_device)
         elif name=='pepper_sim' :
             import sobotify.robots.pepper.pepper_sim as pepper_sim
-            return pepper_sim.speech(),pepper_sim.motion()
+            return pepper_sim.speech(),pepper_sim.motion(),pepper_sim.vision(cam_device)
         elif name=='nao' :
             if not (sys.version_info[0]==2 and sys.version_info[1]==7) :
                 print("Nao robot can only be used with Python version 2.7.x (your version is " + str(sys.version_info[0])+"."+str(sys.version_info[1])+")")
                 exit()
             import sobotify.robots.nao.nao as nao
-            return nao.speech(robot_ip),nao.motion(robot_ip)
+            return nao.speech(robot_ip),nao.motion(robot_ip),nao.vision(cam_device)
         elif name=='nao_sim' :
             import sobotify.robots.nao.nao_sim as nao_sim
-            return nao_sim.speech(),nao_sim.motion()
+            return nao_sim.speech(),nao_sim.motion(),nao_sim.vision(cam_device)
         elif name=='cozmo' :
             import sobotify.robots.cozmo.cozmo as cozmo
             my_cozmo=cozmo.cozmo()
-            return my_cozmo,my_cozmo
+            return my_cozmo,my_cozmo,my_cozmo
         elif name=='mykeepon' :
             import sobotify.robots.mykeepon.mykeepon as mykeepon
-            return mykeepon.speech(),mykeepon.motion()
+            return mykeepon.speech(),mykeepon.motion(),mykeepon.vision(cam_device)
         else :
             print("unknow robot :" + str(name))
             exit()
@@ -142,7 +143,7 @@ class TextTool :
 
 class RobotControl(): 
 
-    def __init__(self,mqtt,mosquitto_ip,data_path, language, min_speech_speed, max_speech_speed,robot_name,robot_ip):
+    def __init__(self,mqtt,mosquitto_ip,data_path, language, min_speech_speed, max_speech_speed,robot_name,robot_ip,cam_device):
         self.mqtt=mqtt
         if mqtt=="on" :
             self.mqtt_client = mqttClient(mosquitto_ip,"robot")
@@ -150,7 +151,8 @@ class RobotControl():
             self.mqtt_client.subscribe("robot/control/set-speed",self.set_speed)
             self.mqtt_client.subscribe("robot/control/set-max-speed",self.set_max_speed)
             self.mqtt_client.subscribe("robot/control/set-min-speed",self.set_min_speed)
-        self.speech,self.motion = getRobot(robot_name,robot_ip)
+            self.mqtt_client.subscribe("robot_control/command/get_image",self.get_image)
+        self.speech,self.motion,self.vision = getRobot(robot_name,robot_ip,cam_device)
         self.speech.setLanguage(language)
         self.text_tool = TextTool()
         self.running = False
@@ -166,6 +168,14 @@ class RobotControl():
         if mqtt=="on" :
             self.mqtt_client.publish("robot/status/init-done")
 
+
+    def get_image(self,message) : 
+        ret,image=self.vision.get_image()
+        if ret==True:
+            ret, img=cv.imencode(".ppm",image)
+            if ret==True:
+                img_byte=bytearray(img)
+                self.mqtt_client.publish("robot_control/image",img_byte)
 
     def set_speed(self,message):
         self.set_min_speed(message)
@@ -298,9 +308,9 @@ class RobotControl():
             self.running = False
         self.speech.terminate()
 
-def robotcontroller(mqtt,mosquitto_ip,data_path,language,min_speech_speed,max_speech_speed,robot_name,robot_ip,message,gesture) :
+def robotcontroller(mqtt,mosquitto_ip,data_path,language,min_speech_speed,max_speech_speed,robot_name,robot_ip,message,gesture,cam_device) :
     print ("starting robot controller ...")
-    robot = RobotControl(mqtt,mosquitto_ip,data_path,language,min_speech_speed,max_speech_speed,robot_name,robot_ip)
+    robot = RobotControl(mqtt,mosquitto_ip,data_path,language,min_speech_speed,max_speech_speed,robot_name,robot_ip,cam_device)
     if mqtt=="on" :
         while True:
             sleep(1000)
@@ -326,7 +336,8 @@ if __name__ == "__main__":
     parser.add_argument('--language',default="english",help='choose language (english,german)')
     parser.add_argument('--min_speech_speed',default=70,help='minimum speech speed of robot')
     parser.add_argument('--max_speech_speed',default=110,help='maximum speech speed of robot')
+    parser.add_argument('--cam_device',default='0',help='camera device name or number')
     args=parser.parse_args()   
-    robotcontroller(args.mqtt,args.mosquitto_ip,args.data_path,args.language,args.min_speech_speed,args.max_speech_speed,args.robot_name,args.robot_ip,args.message,args.gesture)
+    robotcontroller(args.mqtt,args.mosquitto_ip,args.data_path,args.language,args.min_speech_speed,args.max_speech_speed,args.robot_name,args.robot_ip,args.message,args.gesture,args.cam_device)
 
  

@@ -15,6 +15,7 @@ from signal import signal, SIGINT
 from time import time, sleep,localtime,strftime
 import pyttsx3
 import sobotify.commons.speak 
+import cv2 as cv
 
 limitsLShoulderPitch = [-2.0857, 2.0857]
 #limitsLShoulderRoll  = [-0.3142, 1.3265]  
@@ -138,5 +139,25 @@ class speech():
         # maybe check if say command terminated (or kill the process)
         pass
 
+class vision():
 
+    def __init__(self,device) : 
+        if device.isnumeric():
+            self.cam = cv.VideoCapture(int(device))
+        else:
+            self.cam = cv.VideoCapture(device)
+        if not self.cam.isOpened():
+            print ("Error opening Camera")
+
+    def get_image(self) : 
+        if self.cam.isOpened():
+            ret,img=self.cam.read()
+            if not ret:
+                print ("Couldn't get image")
+
+        return ret,img
+    
+    def terminate(self):
+        self.cam.release()
+        pass    
 
