@@ -5,6 +5,8 @@
 Attribution: Part of this code is based on 
 https://github.com/adanali3801/pycozmo
 (MIT Licensed)
+and the examples from here:
+https://github.com/zayfod/pycozmo
 """
 import os
 import threading
@@ -16,14 +18,9 @@ import pycozmo
 import pyttsx3
 from signal import signal, SIGINT
 from datetime import datetime
+import threading
 
-def text_to_audiofile(text:str, filename='temp_text_to_audio'):
-    text_to_audio_engine = pyttsx3.init()
-    text_to_audio_engine.setProperty('voice', "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech\Voices\Tokens\TTS_MS_EN-US_ZIRA_11.0")
-    #text_to_audio_engine.setProperty('voice', "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech\Voices\Tokens\TTS_MS_DE-DE_HEDDA_11.0")      
-    text_to_audio_engine.save_to_file(text, filename+'.wav')
-    text_to_audio_engine.runAndWait()
-    return filename+'.wav'
+temp_audio_file=os.path.join(os.path.expanduser("~"),".sobotify","temp_audio_file.wav")
 
 class cozmo:
 
@@ -33,6 +30,10 @@ class cozmo:
         self.tts_engine = pyttsx3.init()
         self.setLanguage("english")
         self.image_available=False
+        self.lift_angle=pycozmo.MIN_HEAD_ANGLE.radians
+        self.head_angle=pycozmo.MIN_LIFT_HEIGHT.mm
+        self.next_face="neutral"
+        self.last_face="neutral"
 
         self.stop_movement=threading.Event()
         self.stop_movement.clear()
@@ -62,23 +63,37 @@ class cozmo:
         #self.speed=speed
         #self.speech.setParameter("speed", self.speed)
 
+    def move_head(self):
+        self.cli.set_head_angle(self.head_angle)
+
+    def move_lift(self):
+        self.cli.set_lift_height(self.lift_angle)
+
     def move(self,line):
+        
         print (line)
-        if float(line[0])==1.0:
-            print("MAX")
-            self.cli.set_lift_height(pycozmo.MAX_LIFT_HEIGHT.mm)
-        else:
-            print("MIN")
-            self.cli.set_lift_height(pycozmo.MIN_LIFT_HEIGHT.mm)
+        self.lift_angle=float(line[0])
+        self.head_angle=float(line[1])
+        self.next_face=line[2].strip()
+        #self.move_head()
+        #self.move_lift()
+        thread_move_head = threading.Thread(target=self.move_head)
+        thread_move_lift = threading.Thread(target=self.move_lift)
+        thread_show_expression = threading.Thread(target=self.show_expression)
+        thread_move_head.start()
+        thread_move_lift.start()
+        thread_show_expression.start()
+        thread_move_head.join()
+        thread_move_lift.join()
+        thread_show_expression.join()
 
     def say(self,Text):
-        filename="temp_text_to_audio.wav"
-        self.tts_engine.save_to_file(Text, filename)
+        self.tts_engine.save_to_file(Text, temp_audio_file)
         self.tts_engine.runAndWait()
-        self.cli.play_audio(filename)
+        self.cli.play_audio(temp_audio_file)
         self.cli.wait_for(pycozmo.event.EvtAudioCompleted)
-        if os.path.exists(filename):
-            os.remove(filename)
+        if os.path.exists(temp_audio_file):
+            os.remove(temp_audio_file)
         else:
             print("The file does not exist")
 
@@ -95,44 +110,74 @@ class cozmo:
             print("waiting for image")
         return True,self.img
 
-    def show_expression(self,expression: any):
-        # Base face expression.
-        base_face = pycozmo.expressions.Neutral()
+    def show_expression(self):
+        # List of face expressions.
+        expressions = {
+            "neutral"        : pycozmo.expressions.Neutral(),
+            "anger"          : pycozmo.expressions.Anger(),
+            "sadness"        : pycozmo.expressions.Sadness(),
+            "happiness"      : pycozmo.expressions.Happiness(),
+            "surprise"       : pycozmo.expressions.Surprise(),
+            "disgust"        : pycozmo.expressions.Disgust(),
+            "fear"           : pycozmo.expressions.Fear(),
+            "pleading"       : pycozmo.expressions.Pleading(),
+            "vulnerability"  : pycozmo.expressions.Vulnerability(),
+            "despair"        : pycozmo.expressions.Despair(),
+            "guilt"          : pycozmo.expressions.Guilt(),
+            "disappointment" : pycozmo.expressions.Disappointment(),
+            "embarrassment"  : pycozmo.expressions.Embarrassment(),
+            "horror"         : pycozmo.expressions.Horror(),
+            "skepticism"     : pycozmo.expressions.Skepticism(),
+            "annoyance"      : pycozmo.expressions.Annoyance(),
+            "fury"           : pycozmo.expressions.Fury(),
+            "suspicion"      : pycozmo.expressions.Suspicion(),
+            "rejection"      : pycozmo.expressions.Rejection(),
+            "boredom"        : pycozmo.expressions.Boredom(),
+            "tiredness"      : pycozmo.expressions.Tiredness(),
+            "asleep"         : pycozmo.expressions.Asleep(),
+            "confusion"      : pycozmo.expressions.Confusion(),
+            "amazement"      : pycozmo.expressions.Amazement(),
+            "excitement"     : pycozmo.expressions.Excitement(),
+        }
+
         rate = pycozmo.robot.FRAME_RATE
         timer = pycozmo.util.FPSTimer(rate)
-        # Transition from base face to expression and back.
-        for from_face, to_face in ((base_face, expression), (expression, base_face)):
+        last_expression=expressions.get(self.last_face.lower(),pycozmo.expressions.Neutral())
+        next_expression=expressions.get(self.next_face.lower(),pycozmo.expressions.Neutral())
 
-            if to_face != base_face:
-                print(to_face.__class__.__name__)
+        # Generate transition frames.
+        face_generator = pycozmo.procedural_face.interpolate(last_expression, next_expression, rate // 3)
+        for face in face_generator:
 
-            # Generate transition frames.
-            face_generator = pycozmo.procedural_face.interpolate(from_face, to_face, rate // 3)
-            for face in face_generator:
+            # Render face image.
+            im = face.render()
 
-                # Render face image.
-                im = face.render()
+            # The Cozmo protocol expects a 128x32 image, so take only the even lines.
+            np_im = np.array(im)
+            np_im2 = np_im[::2]
+            im2 = Image.fromarray(np_im2)
 
-                # The Cozmo protocol expects a 128x32 image, so take only the even lines.
-                np_im = np.array(im)
-                np_im2 = np_im[::2]
-                im2 = Image.fromarray(np_im2)
+            # Display face image.
+            self.cli.display_image(im2)
 
-                # Display face image.
-                self.cli.display_image(im2)
+            # Maintain frame rate.
+            timer.sleep()
 
-                # Maintain frame rate.
-                timer.sleep()
-                
-            # Pause for X*s.
-            for i in range(rate):
-                timer.sleep()
+        self.last_face=self.next_face
 
     def terminate(self):
         self.cli.set_lift_height(pycozmo.MIN_LIFT_HEIGHT.mm)
+        if os.path.exists(temp_audio_file):
+            os.remove(temp_audio_file)
+        else:
+            print("The file does not exist")
 
     def terminate2(self):
         self.cli.set_lift_height(pycozmo.MIN_LIFT_HEIGHT.mm)
         time.sleep(2)
         self.cli.disconnect()
         self.cli.stop()
+        if os.path.exists(temp_audio_file):
+            os.remove(temp_audio_file)
+        else:
+            print("The file does not exist")

@@ -9,6 +9,11 @@ import numpy as np
 prev_angle_time=-1
 curr_angle_high=True
 
+#MAX_HEAD_ANGLE.radians =  0.7766715171374767
+#MIN_HEAD_ANGLE.radians= -0.4363323129985824
+#MAX_LIFT_HEIGHT.mm = 92.0
+#MIN_LIFT_HEIGHT.mm = 32.0
+
 def store_angles(world_landmarks_array, time_stamp,angles_filename):
     angles= [0.0]
     global prev_angle_time
@@ -17,9 +22,9 @@ def store_angles(world_landmarks_array, time_stamp,angles_filename):
         prev_angle_time=time_stamp
         curr_angle_high = not curr_angle_high
         if curr_angle_high==True:
-            angles = [1.0]
+            angles = [30,0.5,"neutral"]
         else:
-            angles = [0.0]
+            angles = [90,0.5,"neutral"]
         return True, angles
     else:
         return False, angles
