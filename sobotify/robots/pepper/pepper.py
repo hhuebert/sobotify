@@ -10,6 +10,8 @@ https://github.com/elggem/naoqi-pose-retargeting/blob/main/teleop.py
 from naoqi import ALProxy
 #from ALProxy_dummy import ALProxy
 import cv2 as cv
+import vision_definitions
+import numpy as np
 
 limitsLShoulderPitch = [-2.0857, 2.0857]
 limitsLShoulderRoll  = [ 0.0087, 1.5620]
@@ -130,22 +132,34 @@ class speech():
 
 class vision():
 
-    def __init__(self,device) : 
-        if device.isnumeric():
-            self.cam = cv.VideoCapture(int(device))
+    def __init__(self,robot_ip,device) : 
+        if unicode(device).isnumeric():
+            self.vid_module_name="sobotify"
+            self.video_service =  ALProxy("ALVideoDevice", robot_ip, 9559)
+            #resolution = vision_definitions.kQVGA
+            resolution = vision_definitions.kVGA
+            color_space = vision_definitions.kBGRColorSpace
+            framerate = 10
+            list_subs= self.video_service.getSubscribers()
+            for sub in list_subs:
+                if self.vid_module_name in sub:
+                    print ("unsubscribe " + sub)
+                    self.video_service.unsubscribe(sub)
+            self.nameId = self.video_service.subscribeCamera("sobotify", int(device),resolution, color_space, framerate)
         else:
-            self.cam = cv.VideoCapture(device)
-        if not self.cam.isOpened():
-            print ("Error opening Camera")
+            print ("Wrong camera device, please use 0 or 1")
+
 
     def get_image(self) : 
-        if self.cam.isOpened():
-            ret,img=self.cam.read()
-            if not ret:
-                print ("Couldn't get image")
-
-        return ret,img
+        image=self.video_service.getImageRemote(self.nameId)
+        image_width=image[0]
+        image_height=image[1]
+        image_data=image[6]
+        image_byte_array=bytearray(image_data);
+        image_np_array_1d=np.asarray(image_byte_array,dtype=np.uint8)
+        image_np_array_3d=image_np_array_1d.reshape(image_height,image_width,3)
+        return True,image_np_array_3d
     
     def terminate(self):
-        self.cam.release()
-        pass    
+        self.video_service.unsubscribe(self.nameId)
+        pass   

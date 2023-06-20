@@ -26,7 +26,7 @@ def getRobot(name,robot_ip,cam_device) :
                 print("Pepper robot can only be used with Python version 2.7.x (your version is " + str(sys.version_info[0])+"."+str(sys.version_info[1])+")")
                 exit()
             import sobotify.robots.pepper.pepper as pepper
-            return pepper.speech(robot_ip),pepper.motion(robot_ip),pepper.vision(cam_device)
+            return pepper.speech(robot_ip),pepper.motion(robot_ip),pepper.vision(robot_ip,cam_device)
         elif name=='pepper_sim' :
             import sobotify.robots.pepper.pepper_sim as pepper_sim
             return pepper_sim.speech(),pepper_sim.motion(),pepper_sim.vision(cam_device)
@@ -35,7 +35,7 @@ def getRobot(name,robot_ip,cam_device) :
                 print("Nao robot can only be used with Python version 2.7.x (your version is " + str(sys.version_info[0])+"."+str(sys.version_info[1])+")")
                 exit()
             import sobotify.robots.nao.nao as nao
-            return nao.speech(robot_ip),nao.motion(robot_ip),nao.vision(cam_device)
+            return nao.speech(robot_ip),nao.motion(robot_ip),nao.vision(robot_ip,cam_device)
         elif name=='nao_sim' :
             import sobotify.robots.nao.nao_sim as nao_sim
             return nao_sim.speech(),nao_sim.motion(),nao_sim.vision(cam_device)
