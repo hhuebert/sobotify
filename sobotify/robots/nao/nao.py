@@ -12,6 +12,8 @@ from naoqi import ALProxy
 import cv2 as cv
 import vision_definitions
 import numpy as np
+from datetime import datetime
+import random
 
 limitsLShoulderPitch = [-2.0857, 2.0857]
 #limitsLShoulderRoll  = [-0.3142, 1.3265]  
@@ -47,6 +49,7 @@ class motion():
 
     def __init__(self,robot_ip):
         self.fileExtension = "_nao" 
+        self.last_extended_motion=datetime.now()
         try: 
             self.motion =  ALProxy("ALMotion", robot_ip, 9559)
             self.posture = ALProxy("ALRobotPosture", robot_ip, 9559)
@@ -64,12 +67,6 @@ class motion():
         # Speed limits for the joints
         self.fractionMaxSpeed = 0.15  # 0.15 was
         
-        # move hands
-        #self.motion.setStiffnesses("LWristYaw", 1.0)
-        #self.motion.setStiffnesses("RWristYaw", 1.0)
-        #names  = ["LWristYaw","RWristYaw"]
-        #angles  = [1.8,-1.8]
-        #self.motion.setAngles(names, angles, self.fractionMaxSpeed)
         
         # Set stiffness of the interested joint
         stiffness = 1
@@ -81,6 +78,8 @@ class motion():
         self.motion.setStiffnesses("RShoulderRoll", stiffness)
         self.motion.setStiffnesses("RElbowYaw", stiffness)
         self.motion.setStiffnesses("RElbowRoll", stiffness)
+        self.motion.setStiffnesses("LWristYaw", stiffness)
+        self.motion.setStiffnesses("RWristYaw", stiffness)
         #self.motion.setStiffnesses("HipPitch", stiffness)
         
         # Example showing how to activate "Arms" anticollision
@@ -92,7 +91,23 @@ class motion():
     def getFileExtension(self):
         return self.fileExtension
         
+    def extended_movement(self):
+        curr_time=datetime.now()
+        delta_time=(curr_time-self.last_extended_motion).total_seconds()
+        if delta_time>0.5:
+            self.last_extended_motion=curr_time
+            print ("head and wrist movement")
+            angle_Yaw   = random.uniform(-0.05,0.05)
+            angle_Pitch = random.uniform(-0.1,0)
+            angle_RWristYaw = random.uniform(-0.5,0.5)
+            angle_LWristYaw = random.uniform(-0.5,0.5)
+            fractionMaxSpeed  = random.uniform(0.05,0.08)
+            names  = ["HeadYaw", "HeadPitch", "RWristYaw", "LWristYaw"]
+            angles = [angle_Yaw,angle_Pitch,angle_RWristYaw,angle_LWristYaw]
+            self.motion.setAngles(names, angles, fractionMaxSpeed)
+
     def move(self,line):
+        self.extended_movement()
         names = ["LShoulderPitch","LShoulderRoll", "LElbowYaw", "LElbowRoll", \
                  "RShoulderPitch","RShoulderRoll", "RElbowYaw", "RElbowRoll"]
         
