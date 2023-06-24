@@ -93,6 +93,8 @@ class voskListener:
                     text_result=json.loads(rec.Result())["text"].lower()
                     query_text+= " " + text_result
                     print("text : "+text_result)
+                    if len(text_result)>0:
+                        self.mqtt_client.publish("speech-recognition/text",text_result)
 
                 # if the partial result is extended with a new word
                 else:
@@ -100,6 +102,8 @@ class voskListener:
                     if not partial_result=="" :
                         start_quiet=datetime.now()  
                     print("partial text : "+ partial_result)
+                    if len(partial_result)>0:
+                        self.mqtt_client.publish("speech-recognition/partial-text",partial_result)
 
 
     def start_recording_after_keyword(self,message) :
