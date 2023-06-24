@@ -5,7 +5,7 @@ import subprocess
 import time
 import platform
 import signal
-
+import inspect
 
 mosquitto_ip_default     = '127.0.0.1'      # ip address of the mosquitto server'
 mosquitto_path_default   = ''               # path to directory of the mosquitto executable')
@@ -44,7 +44,7 @@ else :
 
 class sobotify (object) :
 
-    def __init__(self,start_mqtt_server=True,app_name="app",start_mqtt_client=True,mosquitto_path=mosquitto_path_default,mosquitto_ip=mosquitto_ip_default,debug=False) :
+    def __init__(self,start_mqtt_server=True,app_name="app",start_mqtt_client=True,mosquitto_path=mosquitto_path_default,mosquitto_ip=mosquitto_ip_default,debug=False,log=False) :
         print ("init sobotify")
         self.debug=debug
         self.analyze_proc=0
@@ -65,12 +65,22 @@ class sobotify (object) :
         self.init_robot_done_flag = False
         self.init_emotion_detection_done_flag = False 
         self.init_grammar_checking_done_flag =True
+        self.init_logging_server_done_flag=False
+        self.log_enabled=log
 
         if start_mqtt_server==True:
             self.start_mosquitto(mosquitto_path)
         if self.start_mqtt_client==True :
             from sobotify.commons.mqttclient import mqttClient
             self.mqtt_client = mqttClient(mosquitto_ip,app_name)
+        if self.log_enabled==True :
+            self.start_logging_server()
+            from sobotify.commons.logger import LoggerClient
+            self.logger=LoggerClient(self.mqtt_client)
+
+    def log(self,message,topic=""):
+        if self.log_enabled==True :
+            self.logger.message(message,topic,level=2)
 
     def subscribe_chatbot(self,callback):
          self.mqtt_client.subscribe("llm/reply",callback)
@@ -196,6 +206,31 @@ class sobotify (object) :
         time.sleep(3)
         print ('started mosquitto, pid=',self.mosquitto_proc.pid)
 
+    ########################################################################################################
+    def init_logging_server_done(self,message) :
+        print("got init done: "+ message)
+        self.init_logging_server_done_flag =True
+
+    def wait_for_init_logging_server_done(self):
+        self.mqtt_client.subscribe("logging_server/status/init-done",self.init_logging_server_done)
+        print("waiting for logging server to finish initalization ...")             
+        while not self.init_logging_server_done_flag==True:
+            time.sleep(0.5)   
+        print(" ... done")  
+
+    def start_logging_server(self,mqtt=True,mosquitto_ip=mosquitto_ip_default):
+        sobotify_path=os.path.dirname(os.path.abspath(__file__))
+        script_path=os.path.join(sobotify_path,'commons','logger.py')
+        arguments=[sys.executable,script_path]
+        if mqtt== True: 
+            arguments.extend(('--mqtt',"on"))
+        arguments.extend(('--mosquitto_ip',mosquitto_ip))
+        if self.debug==True:
+            print (*arguments)
+        self.logging_server_proc=subprocess.Popen(arguments,creationflags=subprocess.CREATE_NEW_CONSOLE)
+        print ('started logging server, pid=',self.logging_server_proc.pid)
+        if mqtt== True: 
+            self.wait_for_init_logging_server_done()
 
     ########################################################################################################
     def init_robot_done(self,message) :

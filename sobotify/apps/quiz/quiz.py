@@ -16,7 +16,7 @@ class quiz:
     def __init__(self,robot_name,robot_ip,language,sound_device,mosquitto_ip,project_file) :
         print ("init quiz training ...")
         self.language=language
-        self.sobot=sobotify.sobotify(app_name="quiz-training",debug=False)
+        self.sobot=sobotify.sobotify(app_name="quiz-training",debug=False,log=False)
         self.sobot.start_robotcontroller(robot_name=robot_name,robot_ip=robot_ip, language=self.language)
         self.sobot.start_listener(language=self.language,sound_device=sound_device)
         if emotion_detection==True :
@@ -25,6 +25,7 @@ class quiz:
             self.sobot.start_grammar_checking(language=self.language)
         self.general_info=get_general_info(project_file)
         self.tasks=get_tasks(project_file)
+        self.sobot.log("Starting Quiz app","app_info")
         print (" ... done")
 
     def evaluate_grammar(self,text):
@@ -60,6 +61,7 @@ class quiz:
 
     def search_answers(self,keywords,answer) :
         for keyword in keywords :
+            self.sobot.log(f"search for keyword: {keyword} in {keywords}")
             if keyword.lower() in answer.lower() :
                 return True
         return False   
@@ -99,7 +101,8 @@ class quiz:
             print(emotion)
         else:
             self.sobot.speak(self.general_info["welcome"],speed=70)
-        for task in self.tasks:
+        for number,task in enumerate(self.tasks):
+            self.sobot.log(f"starting task {number}")
             if self.process_task(task): correct_answers+=1
             time.sleep(1)    
             

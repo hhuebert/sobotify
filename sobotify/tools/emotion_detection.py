@@ -5,6 +5,7 @@ from sys import exit
 import time
 import argparse
 from sobotify.commons.mqttclient import mqttClient
+from sobotify.commons.logger import LoggerClient
 import cv2 as cv
 import numpy as np
 from deepface import DeepFace
@@ -44,12 +45,14 @@ class EmotionDetection:
         self.query=''
         if self.mqtt=="on" :
             self.mqtt_client.publish("emotion_detection/status/init-done")
+            self.log=LoggerClient(self.mqtt_client)
         print (" finished")
 
     def store_image(self,image) :
         img_byte=bytearray(image)
         im_array=np.asarray(img_byte)
         self.image=cv.imdecode(im_array,cv.IMREAD_COLOR)
+        self.log.image(self.image,"raw")
         self.image_available=True
 
     def get_image(self) :
@@ -110,6 +113,7 @@ class EmotionDetection:
             except:
                 cv.putText(img,"no face detected",(int(img_width/8),int(img_height/8)),cv.FONT_HERSHEY_DUPLEX,text_size,(0,0,255),text_width)
 
+            self.log.image(img,"fer")
             if show_video=="on":
                 cv.imshow("Image",img)
                 if cv.waitKey(1) == ord("q"):
