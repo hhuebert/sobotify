@@ -102,6 +102,7 @@ class EmotionDetection:
                     h=emotions[0]["region"]["h"]
                     dominant_emotion=emotions[0]["dominant_emotion"]
                     #print(emotions[0]["emotion"])
+                    self.mqtt_client.publish("emotion_detection/emotions",str(emotions[0]["emotion"]))
                     for emotion,value in emotions[0]["emotion"].items() :
                         #print(emotion+"::"+str(value))
                         emotions_accum[emotion]+=value
