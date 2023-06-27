@@ -31,6 +31,7 @@ class EmotionDetection:
 
     def __init__(self,mqtt,mosquitto_ip,robot_name,robot_ip,cam_device) :
         self.mqtt=mqtt
+        self.last_time=datetime.now()
         if self.mqtt=="on" :
             self.mqtt_client = mqttClient(mosquitto_ip,"emotion_detection")
             self.mqtt_client.subscribe("robot_control/image",self.store_image,raw_data=True)
@@ -78,12 +79,11 @@ class EmotionDetection:
         emotions_accum['neutral']=0.0
         emotions_accum['amount']=0
 
-        last_time=datetime.now()
         while True :
-            delta_time=(datetime.now()-last_time).total_seconds()
+            delta_time=(datetime.now()-self.last_time).total_seconds()
             while delta_time < 1/fps:
-                delta_time=(datetime.now()-last_time).total_seconds()
-            last_time=datetime.now()
+                delta_time=(datetime.now()-self.last_time).total_seconds()
+            self.last_time=datetime.now()
             img=self.get_image()
             img_height=img.shape[0]
             img_width=img.shape[1]

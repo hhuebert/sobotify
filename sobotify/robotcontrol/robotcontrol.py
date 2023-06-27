@@ -145,9 +145,15 @@ class RobotControl():
 
     def __init__(self,mqtt,mosquitto_ip,data_path, language, min_speech_speed, max_speech_speed,robot_name,robot_ip,cam_device):
         self.mqtt=mqtt
+        self.received_message=False    
+        self.get_image_flag=False
+        thread_vision = threading.Thread(target=self.send_image)
+        thread_vision.start()
+        thread_action = threading.Thread(target=self.action)
+        thread_action.start()
         if mqtt=="on" :
             self.mqtt_client = mqttClient(mosquitto_ip,"robot")
-            self.mqtt_client.subscribe("robot/speak-and-gesture",self.action)
+            self.mqtt_client.subscribe("robot/speak-and-gesture",self.receive_message)
             self.mqtt_client.subscribe("robot/control/set-speed",self.set_speed)
             self.mqtt_client.subscribe("robot/control/set-max-speed",self.set_max_speed)
             self.mqtt_client.subscribe("robot/control/set-min-speed",self.set_min_speed)
@@ -168,14 +174,20 @@ class RobotControl():
         if mqtt=="on" :
             self.mqtt_client.publish("robot/status/init-done")
 
-
     def get_image(self,message) : 
-        ret,image=self.vision.get_image()
-        if ret==True:
-            ret, img=cv.imencode(".ppm",image)
-            if ret==True:
-                img_byte=bytearray(img)
-                self.mqtt_client.publish("robot_control/image",img_byte)
+        self.get_image_flag=True
+
+    def send_image(self) : 
+        while True:
+            if self.get_image_flag:
+                self.get_image_flag=False
+                ret,image=self.vision.get_image()
+                if ret==True:
+                    ret, img=cv.imencode(".ppm",image)
+                    if ret==True:
+                        img_byte=bytearray(img)
+                        self.mqtt_client.publish("robot_control/image",img_byte)
+            sleep(0.2)
 
     def set_speed(self,message):
         self.set_min_speed(message)
@@ -269,35 +281,44 @@ class RobotControl():
             self.movement(random_motion_reader)
             if random_motion_file != None :
                 random_motion_file.close()
- 
-    def action(self,message):     
-        if (sys.version_info[0]==2 and sys.version_info[1]==7) :
-            message= convert_to_ascii(message)
-        parts = message.split("|")
-        if len(parts)>1:
-            self.tag = parts[0]
-            self.text_tool.text=parts[1]
-            self.current_datapath= self.data_path
-        else :
-            self.tag = "random"
-            self.text_tool.text=parts[0]
-            self.current_datapath= self.data_path_random
-        self.text_tool.replacements = readFile(self.tag + "_replace.txt",self.current_datapath)
-        self.srtText                = readSrtFile(self.tag + ".srt",self.current_datapath)
-        if (sys.version_info[0]==2 and sys.version_info[1]==7) :
-            self.srtText= convert_to_ascii(self.srtText)
-        self.start_time = datetime.now()
-        print ("action starts at   : " + str(self.start_time))
-        thread_speech = threading.Thread(target=self.say)
-        thread_motion = threading.Thread(target=self.move)
-        thread_speech.start()
-        thread_motion.start()
-        thread_speech.join()
-        thread_motion.join()
-        self.motion.terminate()
-        if self.mqtt=="on" :
-            self.mqtt_client.publish("robot/done","")
-        print ("action done at     : " + str(datetime.now()))
+
+
+    def receive_message(self,message): 
+        self.message=message
+        self.received_message=True  
+
+    def action(self):     
+        while True:
+            if self.received_message:
+                self.received_message=False
+                if (sys.version_info[0]==2 and sys.version_info[1]==7) :
+                    self.message= convert_to_ascii(message)
+                parts = self.message.split("|")
+                if len(parts)>1:
+                    self.tag = parts[0]
+                    self.text_tool.text=parts[1]
+                    self.current_datapath= self.data_path
+                else :
+                    self.tag = "random"
+                    self.text_tool.text=parts[0]
+                    self.current_datapath= self.data_path_random
+                self.text_tool.replacements = readFile(self.tag + "_replace.txt",self.current_datapath)
+                self.srtText                = readSrtFile(self.tag + ".srt",self.current_datapath)
+                if (sys.version_info[0]==2 and sys.version_info[1]==7) :
+                    self.srtText= convert_to_ascii(self.srtText)
+                self.start_time = datetime.now()
+                print ("action starts at   : " + str(self.start_time))
+                thread_speech = threading.Thread(target=self.say)
+                thread_motion = threading.Thread(target=self.move)
+                thread_speech.start()
+                thread_motion.start()
+                thread_speech.join()
+                thread_motion.join()
+                self.motion.terminate()
+                if self.mqtt=="on" :
+                    self.mqtt_client.publish("robot/done","")
+                print ("action done at     : " + str(datetime.now()))
+            sleep(0.2)
         
     def start(self):
         self.running = True
@@ -317,10 +338,10 @@ def robotcontroller(mqtt,mosquitto_ip,data_path,language,min_speech_speed,max_sp
     else :
         if gesture=="":
             print ("received message:", message)
-            robot.action(message)
+            robot.receive_message(message)
         else :
             print ("received gesture:", gesture)
-            robot.action(gesture+"|")
+            robot.receive_message(gesture+"|")
         robot.terminate()
 
 
