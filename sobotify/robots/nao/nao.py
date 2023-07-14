@@ -14,6 +14,8 @@ import vision_definitions
 import numpy as np
 from datetime import datetime
 import random
+import ast
+import math
 
 limitsLShoulderPitch = [-2.0857, 2.0857]
 #limitsLShoulderRoll  = [-0.3142, 1.3265]  
@@ -24,6 +26,9 @@ limitsLElbowRoll     = [-1.5446, -0.0349]
 limitsRShoulderPitch = [-2.0857, 2.0857]
 #limitsRShoulderRoll  = [-1.3265, 0.3142]
 limitsRShoulderRoll  = [-1.3265, 0]
+limitsRElbowYaw      = [-2.0857, 2.0857]
+limitsRElbowRoll     = [ 0.0349, 1.5446]
+
 limitsRElbowYaw      = [-2.0857, 2.0857]
 limitsRElbowRoll     = [ 0.0349, 1.5446]
 
@@ -45,11 +50,45 @@ def angles_in_range(angles) :
     return angles_ok
 
 
+min_angle_Yaw=-2.0857
+max_angle_Yaw=2.0857
+
+min_angle_Pitch=-0.330041
+max_angle_Pitch=0.200015
+
+min_offset_x=0.2
+min_offset_y=0.2
+
+search_x=0.05
+
+
+#hor_fov=56.3
+hor_fov=48.0
+ver_fov=43.7
+
+def head_angles_in_range(angle_Yaw,angle_Pitch):
+    # add code here
+    if (angle_Yaw<min_angle_Yaw) or angle_Yaw>max_angle_Yaw:
+        return False
+    if (angle_Pitch<min_angle_Pitch) or angle_Pitch>max_angle_Pitch:
+        return False    
+    return True
+
+
+r_hor=1/math.sin(hor_fov/2/180*math.pi)
+r_ver=1/math.sin(ver_fov/2/180*math.pi)
+
+def get_angles(offset_x,offset_y):
+    angle_x=round(math.asin(offset_x/r_hor),2)
+    angle_y=round(math.asin(offset_y/r_ver),2)
+    return angle_x,angle_y
+
 class motion(): 
 
     def __init__(self,robot_ip):
         self.fileExtension = "_nao" 
         self.last_extended_motion=datetime.now()
+        self.search_angle_diff_x=search_x
         try: 
             self.motion =  ALProxy("ALMotion", robot_ip, 9559)
             self.posture = ALProxy("ALRobotPosture", robot_ip, 9559)
@@ -91,6 +130,49 @@ class motion():
     def getFileExtension(self):
         return self.fileExtension
         
+    def follow_head(self,data):
+        head_data=ast.literal_eval(data)
+        offset_x=head_data.get("offset_x",0)
+        offset_y=head_data.get("offset_y",0)
+        if abs(offset_x)>min_offset_x or abs(offset_y)>min_offset_y:
+            img_width=head_data.get("img_width",640)
+            img_height=head_data.get("img_height",480)
+
+            angle_diff_x,angle_diff_y=get_angles(offset_x,offset_y)
+            print (angle_diff_x)
+            print (angle_diff_y)
+            current_angles=self.motion.getAngles("Head",True)
+            current_angles_yaw=current_angles[0]
+            current_angles_pitch=current_angles[1]
+            print (current_angles)
+            angle_Yaw=current_angles_yaw-angle_diff_x
+            angle_Pitch=current_angles_pitch+angle_diff_y
+            if head_angles_in_range(angle_Yaw,angle_Pitch):
+                print ("angle ok")
+                fractionMaxSpeed  = 0.1
+                names  = ["HeadYaw", "HeadPitch"]
+                angles = [angle_Yaw,angle_Pitch]
+                self.motion.setAngles(names, angles, fractionMaxSpeed)
+            else:    
+                print ("angle out of range")
+
+
+    def search_head(self):
+        current_angles=self.motion.getAngles("Head",True)
+        current_angles_yaw=current_angles[0]
+        current_angles_pitch=current_angles[1]
+        print (current_angles)
+        angle_Yaw=current_angles_yaw-self.search_angle_diff_x
+        if head_angles_in_range(angle_Yaw,current_angles_pitch):
+            print ("angle ok")
+            fractionMaxSpeed  = 0.1
+            names  = ["HeadYaw", "HeadPitch"]
+            angles = [angle_Yaw,current_angles_pitch]
+            self.motion.setAngles(names, angles, fractionMaxSpeed)
+        else:    
+            self.search_angle_diff_x=-self.search_angle_diff_x
+            print ("angle out of range")
+
     def extended_movement(self):
         curr_time=datetime.now()
         delta_time=(curr_time-self.last_extended_motion).total_seconds()

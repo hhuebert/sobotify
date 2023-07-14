@@ -14,6 +14,7 @@ import numpy as np
 import cv2 as cv
 from sobotify.commons.external.utils import draw_landmarks
 import sobotify.commons.speak 
+import ast
 
 class LandmarkItem:
     def __init__(self,x,y,z,visibility):
@@ -63,7 +64,21 @@ class motion():
         cv.setWindowProperty(self.name, cv.WND_PROP_TOPMOST,1)
         if cv.waitKey(1) == ord('q'):
             exit()
-            
+
+    def follow_head(self,data):
+        head_data=ast.literal_eval(data)
+        offset_x=head_data.get("offset_x",0)
+        offset_y=head_data.get("offset_y",0)
+        img_width=head_data.get("img_width",640)
+        img_height=head_data.get("img_height",480)
+
+        #angle_x,angle_y=angles(offset_x,offset_y)
+        print ("offsetx="+str(offset_x))
+        print ("offsety="+str(offset_y))
+
+    def search_head(self):
+        print ("search head")
+
     def terminate(self):
        cv.destroyAllWindows()
 

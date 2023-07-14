@@ -19,6 +19,10 @@ import pyttsx3
 from signal import signal, SIGINT
 from datetime import datetime
 import threading
+import ast
+
+min_offset_x=0.2
+min_offset_y=0.2
 
 temp_audio_file=os.path.join(os.path.expanduser("~"),".sobotify","temp_audio_file.wav")
 
@@ -30,11 +34,12 @@ class cozmo:
         self.tts_engine = pyttsx3.init()
         self.setLanguage("english")
         self.image_available=False
+        self.update_robot_state=False
         self.lift_angle=pycozmo.MIN_HEAD_ANGLE.radians
         self.head_angle=pycozmo.MIN_LIFT_HEIGHT.mm
         self.next_face="neutral"
         self.last_face="neutral"
-
+        self.step = 1
         self.stop_movement=threading.Event()
         self.stop_movement.clear()
         self.cli = pycozmo.Client()
@@ -46,7 +51,21 @@ class cozmo:
         self.cli.enable_camera(enable=True, color=False)
         # Set volume
         self.cli.set_volume(65535)
+        self.drive(duration=3)
         self.img=None
+
+    def on_robot_state(self,cli, pkt: pycozmo.protocol_encoder.RobotState):
+        self.update_robot_state=True
+        self.current_head_angle = pkt.head_angle_rad
+        #print (f"current angle={pkt.head_angle_rad}")
+
+    def get_head_angle(self):
+        self.update_robot_state=False
+        self.cli.add_handler(pycozmo.protocol_encoder.RobotState, self.on_robot_state, one_shot=True)
+        while not self.update_robot_state == True:
+            time.sleep(0.1)
+            print("waiting for angle update")
+        return self.current_head_angle
 
     def getFileExtension(self):
         return self.fileExtension
@@ -62,6 +81,84 @@ class cozmo:
         pass
         #self.speed=speed
         #self.speech.setParameter("speed", self.speed)
+        
+    def set_head_angle(self, angle):
+        self.cli.set_head_angle(angle=angle)
+
+    def drive(self, duration:float, speed:float = 50) -> None:
+        self.cli.drive_wheels(lwheel_speed=speed, rwheel_speed=speed, duration=duration)
+        
+    def turn_right(self, duration:float, speed:float = 50) -> None:
+        self.cli.drive_wheels(lwheel_speed=speed, rwheel_speed=-speed, duration=duration)
+    
+    def turn_left(self, duration:float, speed:float = 50) -> None:
+        self.cli.drive_wheels(lwheel_speed=-speed, rwheel_speed=speed, duration=duration)
+
+    def follow_head(self,data):
+        self.step = 1
+        head_data=ast.literal_eval(data)
+        offset_x=head_data.get("offset_x",0)
+        offset_y=head_data.get("offset_y",0)
+        #img_width=head_data.get("img_width",640)
+        #img_height=head_data.get("img_height",480)
+        if offset_x>min_offset_x :
+            self.turn_right(0.1)
+        elif offset_x<-min_offset_x :
+            self.turn_left(0.1)
+
+        if offset_y>min_offset_y :
+            self.set_head_angle(self.get_head_angle()-0.1)
+        elif offset_y<-min_offset_y :
+            self.set_head_angle(self.get_head_angle()+0.1)
+
+    def search_head(self):
+        if self.step == 1:
+            print("Cozmo: Searching for a face.")
+            self.turn_right(1.5, speed=20)
+            time.sleep(1.2)
+            self.step += 1
+        elif self.step == 2:
+            self.set_head_angle(0.4)
+            time.sleep(1.2)
+            self.step += 1
+        elif self.step == 3:
+            self.set_head_angle(0.8)
+            time.sleep(1.2)
+            self.step += 1
+        elif self.step == 4:
+            self.turn_left(1.5, speed=20)
+            time.sleep(1.2)
+            self.step += 1
+        elif self.step == 5:
+            self.set_head_angle(0.4)
+            time.sleep(1.2)
+            self.step += 1
+        elif self.step == 6:
+            self.set_head_angle(0.8)
+            self.step += 1
+        elif self.step == 7:
+            self.turn_left(1.5, speed=20)
+            time.sleep(1.2)
+            self.step += 1
+        elif self.step == 8:
+            self.set_head_angle(0.4)
+            time.sleep(1.2)
+            self.step += 1
+        elif self.step == 9:
+            self.set_head_angle(0.8)
+            self.step += 1
+        elif self.step == 10:
+            self.step += 1
+            self.turn_right(1.5, speed=20)
+            time.sleep(1.2)
+        elif self.step == 11:
+            self.set_head_angle(0.4)
+            time.sleep(1.2)
+            self.step += 1
+        elif self.step == 12:
+            self.set_head_angle(0.8)
+            time.sleep(1.2)
+            self.step = 1
 
     def move_head(self):
         self.cli.set_head_angle(self.head_angle)

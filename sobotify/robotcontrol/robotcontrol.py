@@ -147,10 +147,15 @@ class RobotControl():
         self.mqtt=mqtt
         self.received_message=False    
         self.get_image_flag=False
+        self.head_update_flag=False
+        self.speech,self.motion,self.vision = getRobot(robot_name,robot_ip,cam_device)
         thread_vision = threading.Thread(target=self.send_image)
         thread_vision.start()
         thread_action = threading.Thread(target=self.action)
         thread_action.start()
+        self.head_following_enabled=True
+        thread_head_following = threading.Thread(target=self.head_following)
+        thread_head_following.start()
         if mqtt=="on" :
             self.mqtt_client = mqttClient(mosquitto_ip,"robot")
             self.mqtt_client.subscribe("robot/speak-and-gesture",self.receive_message)
@@ -158,7 +163,7 @@ class RobotControl():
             self.mqtt_client.subscribe("robot/control/set-max-speed",self.set_max_speed)
             self.mqtt_client.subscribe("robot/control/set-min-speed",self.set_min_speed)
             self.mqtt_client.subscribe("robot_control/command/get_image",self.get_image)
-        self.speech,self.motion,self.vision = getRobot(robot_name,robot_ip,cam_device)
+            self.mqtt_client.subscribe("robot_control/command/follow_head",self.head_update)
         self.speech.setLanguage(language)
         self.text_tool = TextTool()
         self.running = False
@@ -173,6 +178,24 @@ class RobotControl():
         self.max_speech_speed=int(max_speech_speed)
         if mqtt=="on" :
             self.mqtt_client.publish("robot/status/init-done")
+
+    def head_update(self,message) : 
+        self.head_data=message
+        self.head_update_flag=True
+
+    def head_following(self) : 
+        last_head_update = datetime.now()
+        while True:
+            if self.head_following_enabled==True:
+                if self.head_update_flag:
+                    self.head_update_flag=False
+                    last_head_update = datetime.now()
+                    self.motion.follow_head(self.head_data)
+                else :
+                    delta_time=(datetime.now()-last_head_update).total_seconds()
+                    if (delta_time>3):
+                        self.motion.search_head()
+            sleep(0.1)
 
     def get_image(self,message) : 
         self.get_image_flag=True
@@ -290,6 +313,7 @@ class RobotControl():
     def action(self):     
         while True:
             if self.received_message:
+                self.head_following_enabled=False
                 self.received_message=False
                 if (sys.version_info[0]==2 and sys.version_info[1]==7) :
                     self.message= convert_to_ascii(self.message)
@@ -318,6 +342,7 @@ class RobotControl():
                 if self.mqtt=="on" :
                     self.mqtt_client.publish("robot/done","")
                 print ("action done at     : " + str(datetime.now()))
+                self.head_following_enabled=True
             sleep(0.2)
         
     def start(self):
