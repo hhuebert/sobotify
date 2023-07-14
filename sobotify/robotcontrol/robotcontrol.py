@@ -292,7 +292,7 @@ class RobotControl():
             if self.received_message:
                 self.received_message=False
                 if (sys.version_info[0]==2 and sys.version_info[1]==7) :
-                    self.message= convert_to_ascii(message)
+                    self.message= convert_to_ascii(self.message)
                 parts = self.message.split("|")
                 if len(parts)>1:
                     self.tag = parts[0]
