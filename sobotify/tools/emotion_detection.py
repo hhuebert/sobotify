@@ -59,8 +59,13 @@ class EmotionDetection:
     def get_image(self) :
         if self.mqtt=="on" :
             self.mqtt_client.publish("robot_control/command/get_image")
+            last_request=datetime.now()
             while not self.image_available:
                 time.sleep(0.01)    
+                delta_time=(datetime.now()-last_request).total_seconds()
+                if delta_time>3:
+                    last_request=datetime.now()
+                    self.mqtt_client.publish("robot_control/command/get_image")
             self.image_available=False
             return self.image
         else: 
