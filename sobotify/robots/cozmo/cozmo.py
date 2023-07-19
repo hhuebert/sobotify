@@ -53,10 +53,12 @@ class cozmo:
         self.cli.set_volume(65535)
         self.drive(duration=3)
         self.img=None
+        print (f"battery voltage = {self.get_battery_state()}")
 
     def on_robot_state(self,cli, pkt: pycozmo.protocol_encoder.RobotState):
         self.update_robot_state=True
         self.current_head_angle = pkt.head_angle_rad
+        self.current_battery_voltage = pkt.battery_voltage
         #print (f"current angle={pkt.head_angle_rad}")
 
     def get_head_angle(self):
@@ -66,6 +68,14 @@ class cozmo:
             time.sleep(0.1)
             print("waiting for angle update")
         return self.current_head_angle
+
+    def get_battery_state(self):
+        self.update_robot_state=False
+        self.cli.add_handler(pycozmo.protocol_encoder.RobotState, self.on_robot_state, one_shot=True)
+        while not self.update_robot_state == True:
+            time.sleep(0.1)
+            print("waiting for batery voltage state update")
+        return self.current_battery_voltage
 
     def getFileExtension(self):
         return self.fileExtension
