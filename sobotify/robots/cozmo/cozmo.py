@@ -46,6 +46,7 @@ class cozmo:
         self.cli.start()
         self.cli.connect()
         self.cli.wait_for_robot()
+        self.cli.load_anims()
         self.cli.set_head_angle(angle=0.6)
         # Enable camera
         self.cli.enable_camera(enable=True, color=False)
@@ -170,6 +171,13 @@ class cozmo:
             time.sleep(1.2)
             self.step = 1
 
+    def play_animation(self, animation_name):
+        # Play an animation.
+        print ("play animation " + animation_name)
+        self.cli.play_anim(animation_name)
+        self.cli.wait_for(pycozmo.event.EvtAnimationCompleted)
+        print ("play animation done")
+
     def move_head(self):
         self.cli.set_head_angle(self.head_angle)
 
@@ -183,24 +191,28 @@ class cozmo:
             self.turn_left(abs(self.wheel_angle))
 
     def move(self,line):     
-        self.lift_angle=float(line[0])
-        self.head_angle=float(line[1])
-        self.wheel_angle=float(line[2])
-        self.next_face=line[3].strip()
-        #self.move_head()
-        #self.move_lift()
-        thread_move_head = threading.Thread(target=self.move_head)
-        thread_move_lift = threading.Thread(target=self.move_lift)
-        thread_move_wheels = threading.Thread(target=self.move_wheels)
-        thread_show_expression = threading.Thread(target=self.show_expression)
-        thread_move_head.start()
-        thread_move_lift.start()
-        thread_move_wheels.start()
-        thread_show_expression.start()
-        thread_move_head.join()
-        thread_move_lift.join()
-        thread_move_wheels.join()
-        thread_show_expression.join()
+        if len(line)>=5 and line[4].strip() :
+            self.animation=line[4].strip()
+            self.play_animation(self.animation)
+        else : 
+            self.lift_angle=float(line[0])
+            self.head_angle=float(line[1])
+            self.wheel_angle=float(line[2])
+            self.next_face=line[3].strip()
+            #self.move_head()
+            #self.move_lift()
+            thread_move_head = threading.Thread(target=self.move_head)
+            thread_move_lift = threading.Thread(target=self.move_lift)
+            thread_move_wheels = threading.Thread(target=self.move_wheels)
+            thread_show_expression = threading.Thread(target=self.show_expression)
+            thread_move_head.start()
+            thread_move_lift.start()
+            thread_move_wheels.start()
+            thread_show_expression.start()
+            thread_move_head.join()
+            thread_move_lift.join()
+            thread_move_wheels.join()
+            thread_show_expression.join()
 
     def say(self,Text):
         self.tts_engine.save_to_file(Text, temp_audio_file)
