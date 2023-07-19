@@ -64,7 +64,7 @@ def convert_to_ascii(text):
     text= text.encode(encoding="ASCII",errors="ignore")
     return text
 
-def readFile(filename,data_path):
+def readReplacementFile(filename,data_path):
     try: 
         file_name = data_path + "/" + filename
         if DEBUG_CALLS==True: 
@@ -73,8 +73,10 @@ def readFile(filename,data_path):
         lines = file1.readlines()
         file1.close()
     except: 
-        print("warning: file not found: " + file_name)
-        lines=""
+        print("warning: replacement file not found: " + file_name)
+        print("         ==> using default replacement")
+        lines=[]
+        lines.append("!Text!###0\n")
     return lines
 
 def readCSVFile(filename,data_path):
@@ -99,8 +101,9 @@ def readSrtFile(filename,data_path):
         srtFile = open(file_name,'r')
         srtText = srtFile.read()
     except: 
-        print("no srt file found: " + file_name)
-        srtText=""
+        print("warning : srt file not found: " + file_name)
+        print("          ==> using default srt file content")
+        srtText="1\n00:00:00,000 --> 00:00:05,000\n!Text!"
     return srtText 
 
 class TextTool :
@@ -326,7 +329,7 @@ class RobotControl():
                     self.tag = "random"
                     self.text_tool.text=parts[0]
                     self.current_datapath= self.data_path_random
-                self.text_tool.replacements = readFile(self.tag + "_replace.txt",self.current_datapath)
+                self.text_tool.replacements = readReplacementFile(self.tag + "_replace.txt",self.current_datapath)
                 self.srtText                = readSrtFile(self.tag + ".srt",self.current_datapath)
                 if (sys.version_info[0]==2 and sys.version_info[1]==7) :
                     self.srtText= convert_to_ascii(self.srtText)
