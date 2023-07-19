@@ -226,6 +226,9 @@ class cozmo:
         return True,self.img
 
     def show_expression(self):
+        if not self.next_face or self.next_face==self.last_face:
+            return
+        print (f"change expression to {self.next_face}")
         # List of face expressions.
         expressions = {
             "neutral"        : pycozmo.expressions.Neutral(),
