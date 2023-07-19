@@ -172,6 +172,7 @@ class RobotControl():
         self.running = False
         self.talking = False
         self.tag = None
+        self.ready_to_move=False
         self.srtText = None
         self.start_time = None
         self.data_path=data_path
@@ -259,6 +260,8 @@ class RobotControl():
         
     def say(self):
         self.talking = True;
+        while self.ready_to_move==False:
+            sleep(0.1)
         start = datetime.now()
         print ("speech starts at   : " + self.deltatime(start))
         for lines in srt.parse(self.srtText):
@@ -279,7 +282,12 @@ class RobotControl():
         for i,landm in enumerate(reader) :
             if (self.talking==False) :
                 break;
-            time_stamp= float(landm[0])*speed_factor
+            try:   
+                # try if float conversion works, then it's a time stamp, 
+                # otherwise it's a pre or post statement (then skip)
+                time_stamp= float(landm[0])*speed_factor
+            except:
+                continue
             landm.pop(0)
             self.sync(start,time_stamp)
             if DEBUG_SYNC==True: 
@@ -297,8 +305,35 @@ class RobotControl():
                     print ("no movement : " + str(time_stamp))
         print ("\nmovement done at   : " + self.deltatime(datetime.now()))                              
 
+    def get_extra_gestures(self,motion_file,motion_reader) :
+        pre_gesture=""
+        post_gesture=""
+        try:
+            for line in motion_reader:
+                pass
+                #print (line)
+            if line[0]=="post":
+                #print(f"post={line}")
+                line.pop(0)
+                post_gesture=line
+            motion_file.seek(0)
+            first_line=next(motion_reader)
+            if  first_line[0]=="pre":
+                #print(f"pre={first_line}")
+                first_line.pop(0)
+                pre_gesture=first_line
+            else :
+                motion_file.seek(0)
+        except:
+            pass
+        return pre_gesture,post_gesture
+
     def move(self):
         motion_file,motion_reader = readCSVFile(self.tag + self.motion.getFileExtension() + ".csv",self.current_datapath)  
+        pre_gesture,post_gesture = self.get_extra_gestures(motion_file,motion_reader) 
+        if pre_gesture:
+            self.motion.move(pre_gesture)
+        self.ready_to_move=True        
         self.movement(motion_reader)
         if motion_file != None :
             motion_file.close()
@@ -307,6 +342,9 @@ class RobotControl():
             self.movement(random_motion_reader)
             if random_motion_file != None :
                 random_motion_file.close()
+        self.ready_to_move=False
+        if post_gesture:
+            self.motion.move(post_gesture)
 
 
     def receive_message(self,message): 
