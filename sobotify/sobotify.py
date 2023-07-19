@@ -122,7 +122,7 @@ class sobotify (object) :
             else:
                 return self.statement
 
-    def speak(self,message,speed=0,detect_emotion=False):
+    def speak(self,message,gesture="",speed=0,detect_emotion=False):
         if detect_emotion:
             self.detect(command="start")
         if  (speed==0) :
@@ -130,6 +130,8 @@ class sobotify (object) :
             self.mqtt_client.publish("robot/control/set-max-speed",max_speech_speed_default)
         else :
             self.mqtt_client.publish("robot/control/set-speed",speed)
+        if gesture:
+            message=gesture+"|"+message
         self.mqtt_client.publish("robot/speak-and-gesture",message)
         self.wait_for_robot()
         if detect_emotion:
