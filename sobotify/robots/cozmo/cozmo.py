@@ -176,22 +176,30 @@ class cozmo:
     def move_lift(self):
         self.cli.set_lift_height(self.lift_angle)
 
-    def move(self,line):
-        
-        print (line)
+    def move_wheels(self):
+        if self.wheel_angle<0:
+            self.turn_right(abs(self.wheel_angle))
+        else:
+            self.turn_left(abs(self.wheel_angle))
+
+    def move(self,line):     
         self.lift_angle=float(line[0])
         self.head_angle=float(line[1])
-        self.next_face=line[2].strip()
+        self.wheel_angle=float(line[2])
+        self.next_face=line[3].strip()
         #self.move_head()
         #self.move_lift()
         thread_move_head = threading.Thread(target=self.move_head)
         thread_move_lift = threading.Thread(target=self.move_lift)
+        thread_move_wheels = threading.Thread(target=self.move_wheels)
         thread_show_expression = threading.Thread(target=self.show_expression)
         thread_move_head.start()
         thread_move_lift.start()
+        thread_move_wheels.start()
         thread_show_expression.start()
         thread_move_head.join()
         thread_move_lift.join()
+        thread_move_wheels.join()
         thread_show_expression.join()
 
     def say(self,Text):
