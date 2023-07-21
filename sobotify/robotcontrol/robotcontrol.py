@@ -44,7 +44,7 @@ def getRobot(name,robot_ip,robot_options,cam_device) :
                 print("Nao robot can only be used with Python version 2.7.x (your version is " + str(sys.version_info[0])+"."+str(sys.version_info[1])+")")
                 exit()
             import sobotify.robots.nao.nao as nao
-            return nao.speech(robot_ip),nao.motion(robot_ip),nao.vision(robot_ip,cam_device)
+            return nao.speech(robot_ip),nao.motion(robot_ip,robot_options_args.nao),nao.vision(robot_ip,cam_device)
         elif name=='nao_sim' :
             import sobotify.robots.nao.nao_sim as nao_sim
             return nao_sim.speech(),nao_sim.motion(),nao_sim.vision(cam_device)

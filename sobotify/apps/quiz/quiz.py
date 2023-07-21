@@ -17,6 +17,7 @@ class quiz:
         print ("init quiz training ...")
         self.language=language
         self.sobot=sobotify.sobotify(app_name="quiz-training",debug=False,log=False)
+        #self.sobot.start_robotcontroller(robot_name=robot_name,robot_ip=robot_ip,robot_options="--nao posture=crouch",language=self.language)
         self.sobot.start_robotcontroller(robot_name=robot_name,robot_ip=robot_ip, language=self.language)
         self.sobot.start_listener(language=self.language,sound_device=sound_device)
         if emotion_detection==True :

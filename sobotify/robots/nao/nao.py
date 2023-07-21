@@ -32,6 +32,11 @@ limitsRElbowRoll     = [ 0.0349, 1.5446]
 limitsRElbowYaw      = [-2.0857, 2.0857]
 limitsRElbowRoll     = [ 0.0349, 1.5446]
 
+# LShoulderPitch, LShoulderRoll, LElbowYaw, LElbowRoll, LWristYaw, LHand
+LArms_crouch_angles= [1.4342480897903442, 0.14722204208374023, -0.8115279674530029, -1.0430779457092285, 0.13341593742370605, 0.01639997959136963]
+# RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll, RWristYaw, RHand
+RArms_crouch_angles= [1.4281959533691406, -0.14117002487182617, 0.8114440441131592, 1.0400938987731934, -0.12122797966003418, 0.016000032424926758]
+
 def out_of_limit(val, limits):
     return val < limits[0] or val > limits[1]
 
@@ -90,7 +95,13 @@ def get_angles(offset_x,offset_y):
 
 class motion(): 
 
-    def __init__(self,robot_ip):
+    def __init__(self,robot_ip,robot_options):
+        self.robot_options=robot_options
+        print("robot options :"+str(self.robot_options)) 
+        if "posture=crouch" in self.robot_options :
+            self.posture_crouch=True
+        else:
+            self.posture_crouch=False
         self.fileExtension = "_nao" 
         self.last_extended_motion=datetime.now()
         self.search_angle_diff_x=search_x
@@ -100,11 +111,20 @@ class motion():
         except Exception : 
             print ("Cannot connect to Nao robot at IP address: "+str(robot_ip))
             exit()  
-        
-        # Wake up robot
-        self.motion.wakeUp()
-        
-        self.posture.goToPosture("Stand", 0.5)
+
+        if self.posture_crouch==True:
+            self.posture.goToPosture("Crouch", 0.5)
+            self.motion.setStiffnesses("Body", 0.0)
+            #self.motion.setStiffnesses("LLeg", 0.25)
+            #self.motion.setStiffnesses("RLeg", 0.25)
+            self.motion.setStiffnesses("LHipYawPitch", 0.25)
+            self.motion.setStiffnesses("RHipYawPitch", 0.25)
+            self.motion.setStiffnesses("LHipPitch", 0.25)
+            self.motion.setStiffnesses("RHipPitch", 0.25)
+        else:
+            # Wake up robot
+            self.motion.wakeUp()
+            self.posture.goToPosture("Stand", 0.5)
 
         self.motion.setStiffnesses("Head", 1.0)
 
@@ -112,8 +132,17 @@ class motion():
 
         # Speed limits for the joints
         self.fractionMaxSpeed = 0.15  # 0.15 was
+                
+        # Set stiffness of the interested joint
+        self.set_arm_stiffness(1)
         
+        # Example showing how to activate "Arms" anticollision
+        chainName = "Arms"
+        enable  = True
+        isSuccess = self.motion.setCollisionProtectionEnabled(chainName, enable)
+        print ("Anticollision activation on arms: " + str(isSuccess))
         
+    def set_arm_stiffness(self,stiffness):
         # Set stiffness of the interested joint
         stiffness = 1
         self.motion.setStiffnesses("LShoulderPitch", stiffness)
@@ -126,14 +155,7 @@ class motion():
         self.motion.setStiffnesses("RElbowRoll", stiffness)
         self.motion.setStiffnesses("LWristYaw", stiffness)
         self.motion.setStiffnesses("RWristYaw", stiffness)
-        #self.motion.setStiffnesses("HipPitch", stiffness)
-        
-        # Example showing how to activate "Arms" anticollision
-        chainName = "Arms"
-        enable  = True
-        isSuccess = self.motion.setCollisionProtectionEnabled(chainName, enable)
-        print ("Anticollision activation on arms: " + str(isSuccess))
-        
+
     def getFileExtension(self):
         return self.fileExtension
         
@@ -210,17 +232,25 @@ class motion():
                 print ("angle out of range")
 
     def move(self,line):
+        self.set_arm_stiffness(1)
         self.extended_movement()
         names = ["LShoulderPitch","LShoulderRoll", "LElbowYaw", "LElbowRoll", \
                  "RShoulderPitch","RShoulderRoll", "RElbowYaw", "RElbowRoll"]
-        
         angles = [float(line[0]), float(line[1]), float(line[2]), float(line[3]), \
                 float(line[4]), float(line[5]), float(line[6]), float(line[7])]
         if angles_in_range(angles) :
             self.motion.setAngles(names, angles, self.fractionMaxSpeed)
             
     def terminate(self):
-        self.posture.goToPosture("Stand", 0.5)
+        if self.posture_crouch==True:
+            #self.posture.goToPosture("Crouch", 0.5)
+            #self.motion.setStiffnesses("Body", 0.0)
+            self.motion.setAngles("LArm",LArms_crouch_angles,self.fractionMaxSpeed)
+            self.motion.setAngles("RArm",RArms_crouch_angles,self.fractionMaxSpeed)
+            self.set_arm_stiffness(0.0)
+            pass
+        else:
+            self.posture.goToPosture("Stand", 0.5)
 
 def convert_to_ascii(text):
     if not isinstance(text,unicode):
