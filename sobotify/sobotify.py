@@ -32,7 +32,7 @@ text_default             = ""              # text to checked for grammar
 URL_default              = "http://localhost:8081/v2/check" # LanguageTool server URL
 languagetool_path_default = os.path.join(os.path.expanduser("~"),".sobotify","languagetool")
 java_path_default         = os.path.join(os.environ["JAVA_HOME"],"bin")
-
+robot_options_default     = ""
 
 if os.path.isfile(os.path.join(os.path.expanduser("~"),"miniconda3","condabin","conda.bat")):
 	conda_exe=os.path.join(os.path.expanduser("~"),"miniconda3","condabin","conda.bat")
@@ -247,7 +247,7 @@ class sobotify (object) :
         print(" ... done")  
 
     def start_robotcontroller(self,mqtt=True,mosquitto_ip=mosquitto_ip_default,robot_name=robot_name_default,robot_ip=robot_ip_default,
-                           robot_conda_env=robot_conda_env_default,data_path=data_path_default,language=language_default,
+                           robot_options=robot_options_default,robot_conda_env=robot_conda_env_default,data_path=data_path_default,language=language_default,
                            min_speech_speed=min_speech_speed_default,max_speech_speed=max_speech_speed_default,message=message_default) :
         sobotify_path=os.path.dirname(os.path.abspath(__file__))
         script_path=os.path.join(sobotify_path,'robotcontrol','robotcontrol.py')
@@ -269,6 +269,7 @@ class sobotify (object) :
         arguments.extend(('--robot_name',robot_name))
         arguments.extend(('--message',message))
         arguments.extend(('--robot_ip',robot_ip))
+        arguments.extend(('--robot_options','"'+robot_options+'"'))
         arguments.extend(('--data_path',data_path))
         arguments.extend(('--language',language))
         arguments.extend(('--min_speech_speed',str(min_speech_speed)))
@@ -441,6 +442,7 @@ if __name__ == "__main__":
     parser.add_argument('--mosquitto_path',default='',help='path to directory of the mosquitto executable')
     parser.add_argument('--robot_name',default='stickman',help='name of the robot (stickman,pepper,nao)')
     parser.add_argument('--robot_ip',default='127.0.0.1',help='ip address of the robot')
+    parser.add_argument('--robot_options',default='',help='robot specific options')
     parser.add_argument('--robot_conda_env',default="",help='conda environment used for robot')
     parser.add_argument('--message',default='Hello World',help='message to be spoken by the robot')
     parser.add_argument('--video_file',default='video.mp4',help='path to the video input file')
@@ -470,7 +472,7 @@ if __name__ == "__main__":
     if args.e==True:
         sobot.start_extract(args.video_file,args.data_path,args.robot_name,args.ffmpeg_path,args.vosk_model_path,args.language,args.show_video)
     if args.r==True:
-        sobot.start_robotcontroller(args.m,args.mosquitto_ip,args.robot_name,args.robot_ip,args.robot_conda_env,args.data_path,args.language,args.min_speech_speed,args.max_speech_speed, args.message)
+        sobot.start_robotcontroller(args.m,args.mosquitto_ip,args.robot_name,args.robot_ip,args.robot_options,args.robot_conda_env,args.data_path,args.language,args.min_speech_speed,args.max_speech_speed, args.message)
     if args.l==True:
         sobot.start_listener(args.m,args.mosquitto_ip,args.vosk_model_path,args.language,args.keyword,args.sound_device)
     if args.c==True:

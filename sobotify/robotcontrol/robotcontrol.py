@@ -17,7 +17,16 @@ DEBUG_SYNC2=False
 DEBUG_TXT_REPLACE=False
 speed_factor = 1.0
 
-def getRobot(name,robot_ip,cam_device) :
+def getRobot(name,robot_ip,robot_options,cam_device) :
+        parser=argparse.ArgumentParser(description='start an mqtt client for controlling a robot')
+        parser.add_argument('--nao',default="",nargs="+",help='nao specific options')
+        parser.add_argument('--nao_sim',default="",nargs="+",help='nao simulator specific options')
+        parser.add_argument('--pepper',default="",nargs="+",help='pepper specific options')
+        parser.add_argument('--pepper_sim',default="",nargs="+",help='pepper simulator specific options')
+        parser.add_argument('--cozmo',default="",nargs="+",help='cozmo specific options')
+        parser.add_argument('--stickman',default="",nargs="+",help='stickman specific options')
+        robot_options_args=parser.parse_args(robot_options.strip('"').split())   
+
         if name=='stickman' :
             import sobotify.robots.stickman.stickman as stickman
             return stickman.speech(),stickman.motion(),stickman.vision(cam_device)
@@ -146,12 +155,12 @@ class TextTool :
 
 class RobotControl(): 
 
-    def __init__(self,mqtt,mosquitto_ip,data_path, language, min_speech_speed, max_speech_speed,robot_name,robot_ip,cam_device):
+    def __init__(self,mqtt,mosquitto_ip,data_path, language, min_speech_speed, max_speech_speed,robot_name,robot_ip,robot_options,cam_device):
         self.mqtt=mqtt
         self.received_message=False    
         self.get_image_flag=False
         self.head_update_flag=False
-        self.speech,self.motion,self.vision = getRobot(robot_name,robot_ip,cam_device)
+        self.speech,self.motion,self.vision = getRobot(robot_name,robot_ip,robot_options,cam_device)
         thread_vision = threading.Thread(target=self.send_image)
         thread_vision.start()
         thread_action = threading.Thread(target=self.action)
@@ -395,9 +404,9 @@ class RobotControl():
             self.running = False
         self.speech.terminate()
 
-def robotcontroller(mqtt,mosquitto_ip,data_path,language,min_speech_speed,max_speech_speed,robot_name,robot_ip,message,gesture,cam_device) :
+def robotcontroller(mqtt,mosquitto_ip,data_path,language,min_speech_speed,max_speech_speed,robot_name,robot_ip,robot_options,message,gesture,cam_device) :
     print ("starting robot controller ...")
-    robot = RobotControl(mqtt,mosquitto_ip,data_path,language,min_speech_speed,max_speech_speed,robot_name,robot_ip,cam_device)
+    robot = RobotControl(mqtt,mosquitto_ip,data_path,language,min_speech_speed,max_speech_speed,robot_name,robot_ip,robot_options,cam_device)
     if mqtt=="on" :
         while True:
             sleep(1000)
@@ -419,12 +428,13 @@ if __name__ == "__main__":
     parser.add_argument('--gesture',default='',help='gesture to be done by the robot')
     parser.add_argument('--robot_name',default='stickman',help='name of the robot (stickman,pepper)')
     parser.add_argument('--robot_ip',default='127.0.0.1',help='ip address of the robot')
+    parser.add_argument('--robot_options',default='',help='robot specific options')
     parser.add_argument('--data_path',default=os.path.join(os.path.expanduser("~"),".sobotify","data"),help='path to movement/speech data')
     parser.add_argument('--language',default="english",help='choose language (english,german)')
     parser.add_argument('--min_speech_speed',default=70,help='minimum speech speed of robot')
     parser.add_argument('--max_speech_speed',default=110,help='maximum speech speed of robot')
     parser.add_argument('--cam_device',default='0',help='camera device name or number')
     args=parser.parse_args()   
-    robotcontroller(args.mqtt,args.mosquitto_ip,args.data_path,args.language,args.min_speech_speed,args.max_speech_speed,args.robot_name,args.robot_ip,args.message,args.gesture,args.cam_device)
+    robotcontroller(args.mqtt,args.mosquitto_ip,args.data_path,args.language,args.min_speech_speed,args.max_speech_speed,args.robot_name,args.robot_ip,args.robot_options,args.message,args.gesture,args.cam_device)
 
  
