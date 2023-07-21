@@ -107,7 +107,9 @@ class motion():
         self.posture.goToPosture("Stand", 0.5)
 
         self.motion.setStiffnesses("Head", 1.0)
-        
+
+        self.last_found_head_angles=self.motion.getAngles("Head",True)
+
         # Speed limits for the joints
         self.fractionMaxSpeed = 0.15  # 0.15 was
         
@@ -158,6 +160,7 @@ class motion():
                 names  = ["HeadYaw", "HeadPitch"]
                 angles = [angle_Yaw,angle_Pitch]
                 self.motion.setAngles(names, angles, fractionMaxSpeed)
+                self.last_found_head_angles=self.motion.getAngles("Head",True)
             else:    
                 print ("angle out of range")
 
@@ -183,15 +186,28 @@ class motion():
         delta_time=(curr_time-self.last_extended_motion).total_seconds()
         if delta_time>0.5:
             self.last_extended_motion=curr_time
-            print ("head and wrist movement")
-            angle_Yaw   = random.uniform(-0.05,0.05)
-            angle_Pitch = random.uniform(-0.1,0)
+            print ("wrist movement")
             angle_RWristYaw = random.uniform(-0.5,0.5)
             angle_LWristYaw = random.uniform(-0.5,0.5)
             fractionMaxSpeed  = random.uniform(0.05,0.08)
-            names  = ["HeadYaw", "HeadPitch", "RWristYaw", "LWristYaw"]
-            angles = [angle_Yaw,angle_Pitch,angle_RWristYaw,angle_LWristYaw]
+            names  = ["RWristYaw", "LWristYaw"]
+            angles = [angle_RWristYaw,angle_LWristYaw]
             self.motion.setAngles(names, angles, fractionMaxSpeed)
+            print ("head movement")
+            last_found_head_angles_yaw=self.last_found_head_angles[0]
+            last_found_head_angles_pitch=self.last_found_head_angles[1]
+            angle_random_offset_Yaw   = random.uniform(-0.05,0.05)
+            angle_random_offset_Pitch = random.uniform(-0.05,0.05)
+            angle_Yaw=last_found_head_angles_yaw+angle_random_offset_Yaw
+            angle_Pitch=last_found_head_angles_pitch+angle_random_offset_Pitch
+            if head_angles_in_range(angle_Yaw,angle_Pitch):
+                print ("angle ok")
+                fractionMaxSpeed  = 0.1
+                names  = ["HeadYaw", "HeadPitch"]
+                angles = [angle_Yaw,angle_Pitch]
+                self.motion.setAngles(names, angles, fractionMaxSpeed)
+            else:    
+                print ("angle out of range")
 
     def move(self,line):
         self.extended_movement()
