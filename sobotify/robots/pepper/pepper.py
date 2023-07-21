@@ -46,8 +46,10 @@ def angles_in_range(angles) :
     return angles_ok
 
 
-min_angle_Yaw=-2.0857
-max_angle_Yaw=2.0857
+#min_angle_Yaw=-2.0857
+#max_angle_Yaw=2.0857
+min_angle_Yaw=-1.0
+max_angle_Yaw=1.0
 
 min_angle_Pitch=-0.330041
 max_angle_Pitch=0.200015
