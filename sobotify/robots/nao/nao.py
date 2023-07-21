@@ -62,9 +62,12 @@ min_offset_y=0.2
 search_x=0.05
 
 
+# according to camera specification
 #hor_fov=56.3
-hor_fov=48.0
-ver_fov=43.7
+#ver_fov=43.7
+# according to measurments of the angles
+hor_fov=45.0
+ver_fov=33.0
 
 def head_angles_in_range(angle_Yaw,angle_Pitch):
     # add code here
