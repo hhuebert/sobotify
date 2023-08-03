@@ -31,7 +31,9 @@ cam_device_default       = "0"             # camera device for emotion detection
 text_default             = ""              # text to checked for grammar
 URL_default              = "http://localhost:8081/v2/check" # LanguageTool server URL
 languagetool_path_default = os.path.join(os.path.expanduser("~"),".sobotify","languagetool")
-java_path_default         = os.path.join(os.environ["JAVA_HOME"],"bin")
+java_path_default         = os.environ.get("JAVA_HOME","")
+if java_path_default: 
+    java_path_default     = os.path.join(java_path_default,"bin")
 robot_options_default     = ""
 
 if os.path.isfile(os.path.join(os.path.expanduser("~"),"miniconda3","condabin","conda.bat")):
