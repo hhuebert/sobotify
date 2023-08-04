@@ -58,22 +58,9 @@ REM Create python environment for sobotify
 set CONDA_ENV=sobotify
 CALL %CONDA% create -y -n %CONDA_ENV% python=3.8 
 CALL %CONDA% config --add channels conda-forge
-CALL %CONDA% run -n %CONDA_ENV% conda install pybullet
-CALL %CONDA% run -n %CONDA_ENV% pip install matplotlib==3.5.1
-CALL %CONDA% run -n %CONDA_ENV% pip install mediapipe==0.8.9.1
-CALL %CONDA% run -n %CONDA_ENV% pip install numpy==1.24.2
-CALL %CONDA% run -n %CONDA_ENV% pip install paho-mqtt==1.6.1
-CALL %CONDA% run -n %CONDA_ENV% pip install pyttsx3==2.90
-CALL %CONDA% run -n %CONDA_ENV% pip install scipy==1.10.1
-CALL %CONDA% run -n %CONDA_ENV% pip install srt==3.5.0
-CALL %CONDA% run -n %CONDA_ENV% pip install sounddevice==0.4.4
-CALL %CONDA% run -n %CONDA_ENV% pip install vosk==0.3.45
-CALL %CONDA% run -n %CONDA_ENV% pip install qibullet==1.4.5
-CALL %CONDA% run -n %CONDA_ENV% pip install protobuf==3.20.1
-CALL %CONDA% run -n %CONDA_ENV% pip install openpyxl==3.1.2
-CALL %CONDA% run -n %CONDA_ENV% pip install pandas==2.0.1
-CALL %CONDA% run -n %CONDA_ENV% pip install psutil==5.9.5
-CALL %CONDA% run -n %CONDA_ENV% pip install -e "%~dp0."
+CALL %CONDA% run --no-capture-output -n %CONDA_ENV% conda install --yes pybullet
+CALL %CONDA% run --no-capture-output -n %CONDA_ENV% pip install -r "%~dp0\requirements.txt"
+CALL %CONDA% run --no-capture-output -n %CONDA_ENV% pip install -e "%~dp0."
 REM ======================================================================================
 
 
@@ -90,17 +77,16 @@ REM ============================================================================
 REM Create python environment for naoqi
 set CONDA_ENV_NAOQI=sobotify_naoqi
 CALL %CONDA% create -y -n %CONDA_ENV_NAOQI% python=2.7 
-CALL %CONDA% run -n %CONDA_ENV_NAOQI% pip install paho-mqtt==1.6.1
-CALL %CONDA% run -n %CONDA_ENV_NAOQI% pip install srt==3.5.0
-CALL %CONDA% run -n %CONDA_ENV_NAOQI% pip install -e "%~dp0."
-CALL %CONDA% run -n %CONDA_ENV_NAOQI% conda env config vars set PYTHONPATH="%NAOQI_PATH%\pynaoqi\lib"
+CALL %CONDA% run --no-capture-output -n %CONDA_ENV% pip install -r "%~dp0\requirements.txt"
+CALL %CONDA% run --no-capture-output -n %CONDA_ENV_NAOQI% pip install -e "%~dp0."
+CALL %CONDA% run --no-capture-output -n %CONDA_ENV_NAOQI% conda env config vars set PYTHONPATH="%NAOQI_PATH%\pynaoqi\lib"
 REM ======================================================================================
 
 
 REM ======================================================================================
 REM Get animations for cozmo robot
 set CONDA_ENV=sobotify
-CALL %CONDA% run -n %CONDA_ENV% python "%CONDA_BASE%\envs\%CONDA_ENV%\Scripts\pycozmo_resources.py" download
+CALL %CONDA% run --no-capture-output -n %CONDA_ENV% python "%CONDA_BASE%\envs\%CONDA_ENV%\Scripts\pycozmo_resources.py" download
 REM ======================================================================================
 
 
@@ -119,11 +105,13 @@ REM ============================================================================
 
 pause
 
+exit
 
 REM ======================================================================================
 REM function to download, extract and copy to sobotify config directory (HOME/.sobotify) 
 :download
 CALL curl -L -O  %~1/%~2.zip
+TIMEOUT /T 3 /NOBREAK
 powershell Expand-Archive -Path %~2.zip -DestinationPath '%~3'
 move  "%~3\%~2" "%~3\%~4"
 DEL %~2.zip
