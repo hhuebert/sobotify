@@ -157,17 +157,18 @@ class RobotControl():
 
     def __init__(self,mqtt,mosquitto_ip,data_path, language, min_speech_speed, max_speech_speed,robot_name,robot_ip,robot_options,cam_device):
         self.mqtt=mqtt
+        self.stop_robotcontrol=False
         self.received_message=False    
         self.get_image_flag=False
         self.head_update_flag=False
         self.speech,self.motion,self.vision = getRobot(robot_name,robot_ip,robot_options,cam_device)
-        thread_vision = threading.Thread(target=self.send_image)
-        thread_vision.start()
-        thread_action = threading.Thread(target=self.action)
-        thread_action.start()
+        self.thread_vision = threading.Thread(target=self.send_image)
+        self.thread_vision.start()
+        self.thread_action = threading.Thread(target=self.action)
+        self.thread_action.start()
         self.head_following_enabled=True
-        thread_head_following = threading.Thread(target=self.head_following)
-        thread_head_following.start()
+        self.thread_head_following = threading.Thread(target=self.head_following)
+        self.thread_head_following.start()
         if mqtt=="on" :
             self.mqtt_client = mqttClient(mosquitto_ip,"robot")
             self.mqtt_client.subscribe("robot/speak-and-gesture",self.receive_message)
@@ -199,6 +200,8 @@ class RobotControl():
     def head_following(self) : 
         last_head_update = datetime.now()
         while True:
+            if self.stop_robotcontrol==True:
+                break
             if self.head_following_enabled==True:
                 if self.head_update_flag:
                     self.head_update_flag=False
@@ -215,6 +218,8 @@ class RobotControl():
 
     def send_image(self) : 
         while True:
+            if self.stop_robotcontrol==True:
+                break
             if self.get_image_flag:
                 self.get_image_flag=False
                 ret,image=self.vision.get_image()
@@ -362,9 +367,10 @@ class RobotControl():
 
     def action(self):     
         while True:
+            if self.stop_robotcontrol==True:
+                break
             if self.received_message:
                 self.head_following_enabled=False
-                self.received_message=False
                 if (sys.version_info[0]==2 and sys.version_info[1]==7) :
                     self.message= convert_to_ascii(self.message)
                 parts = self.message.split("|")
@@ -392,6 +398,7 @@ class RobotControl():
                 if self.mqtt=="on" :
                     self.mqtt_client.publish("robot/done","")
                 print ("action done at     : " + str(datetime.now()))
+                self.received_message=False
                 self.head_following_enabled=True
             sleep(0.2)
         
@@ -400,9 +407,13 @@ class RobotControl():
         print ("Starting Acting")
                                  
     def terminate(self):
+        print ("terminate")
         if self.running:
             self.running = False
         self.speech.terminate()
+        self.stop_robotcontrol=True
+        self.thread_head_following.join()
+        self.thread_vision.join()
 
 def robotcontroller(mqtt,mosquitto_ip,data_path,language,min_speech_speed,max_speech_speed,robot_name,robot_ip,robot_options,message,gesture,cam_device) :
     print ("starting robot controller ...")
@@ -417,6 +428,8 @@ def robotcontroller(mqtt,mosquitto_ip,data_path,language,min_speech_speed,max_sp
         else :
             print ("received gesture:", gesture)
             robot.receive_message(gesture+"|")
+        while robot.received_message==True:
+            sleep(0.5)
         robot.terminate()
 
 
