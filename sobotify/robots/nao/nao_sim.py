@@ -16,6 +16,7 @@ from time import time, sleep,localtime,strftime
 import pyttsx3
 import sobotify.commons.speak 
 import cv2 as cv
+import platform
 
 limitsLShoulderPitch = [-2.0857, 2.0857]
 #limitsLShoulderRoll  = [-0.3142, 1.3265]  
@@ -143,7 +144,10 @@ class vision():
 
     def __init__(self,device) : 
         if device.isnumeric():
-            self.cam = cv.VideoCapture(int(device))
+            if platform.system()=="Windows":  
+                self.cam = cv.VideoCapture(int(device),cv.CAP_DSHOW)
+            else:
+                self.cam = cv.VideoCapture(int(device))
         else:
             self.cam = cv.VideoCapture(device)
         if not self.cam.isOpened():

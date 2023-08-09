@@ -15,6 +15,7 @@ import cv2 as cv
 from sobotify.commons.external.utils import draw_landmarks
 import sobotify.commons.speak 
 import ast
+import platform
 
 class LandmarkItem:
     def __init__(self,x,y,z,visibility):
@@ -110,7 +111,10 @@ class vision():
 
     def __init__(self,device) : 
         if device.isnumeric():
-            self.cam = cv.VideoCapture(int(device))
+            if platform.system()=="Windows":  
+                self.cam = cv.VideoCapture(int(device),cv.CAP_DSHOW)
+            else:
+                self.cam = cv.VideoCapture(int(device))
         else:
             self.cam = cv.VideoCapture(device)
         if not self.cam.isOpened():

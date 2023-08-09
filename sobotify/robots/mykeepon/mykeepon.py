@@ -12,6 +12,7 @@ import sobotify.commons.speak
 import time
 import ast
 import math
+import platform
 
 min_angle_Yaw=-2.0857
 max_angle_Yaw=2.0857
@@ -138,7 +139,10 @@ class vision():
 
     def __init__(self,device) : 
         if device.isnumeric():
-            self.cam = cv.VideoCapture(int(device))
+            if platform.system()=="Windows":  
+                self.cam = cv.VideoCapture(int(device),cv.CAP_DSHOW)
+            else:
+                self.cam = cv.VideoCapture(int(device))
         else:
             self.cam = cv.VideoCapture(device)
         if not self.cam.isOpened():
