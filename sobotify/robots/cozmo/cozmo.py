@@ -7,6 +7,8 @@ https://github.com/adanali3801/pycozmo
 (MIT Licensed)
 and the examples from here:
 https://github.com/zayfod/pycozmo
+and 
+based on contributions by Haeseon Yun
 """
 import os
 import threading
@@ -53,6 +55,8 @@ class cozmo:
         # Set volume
         self.cli.set_volume(65535)
         self.drive(duration=3)
+        self.driveout=pycozmo.util.Pose(150.0, 0.0, 0.0,angle_z=pycozmo.util.Angle(degrees=0.0))
+        self.cli.go_to_pose(self.driveout, relative_to_robot=False)
         self.img=None
         print (f"battery voltage = {self.get_battery_state()}")
 
@@ -176,6 +180,7 @@ class cozmo:
         print ("play animation " + animation_name)
         self.cli.play_anim(animation_name)
         self.cli.wait_for(pycozmo.event.EvtAnimationCompleted)
+        self.cli.go_to_pose(self.driveout, relative_to_robot=False)
         print ("play animation done")
 
     def move_head(self):
