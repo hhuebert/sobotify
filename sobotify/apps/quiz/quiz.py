@@ -48,7 +48,9 @@ class quiz:
             return True
 
     def emotion_feedback(self,emotion):
-        if emotion=="happy" :
+        if emotion=="none" :
+            print("no emotion detected => no feedback")
+        elif emotion=="happy" :
             if self.language.lower()=="english":
                 self.sobot.speak("very nice, I see you are enjoying our quiz")
             elif self.language.lower()=="german":

@@ -178,12 +178,18 @@ class EmotionDetection:
                     break
 
             if self.stop_detection_flag == True :
-                dominant_emotion_accum=max(self.emotions_accum,key=self.emotions_accum.get)
+                if self.emotions_accum["amount"]==0:
+                    dominant_emotion_accum="none"
+                else:
+                    dominant_emotion_accum=max(self.emotions_accum,key=self.emotions_accum.get)
                 self.mqtt_client.publish("emotion_detection/dominant_emotion",dominant_emotion_accum)
                 self.stop_detection_flag=False
                 detect_emotion=False
         cv.destroyAllWindows()
-        dominant_emotion_accum=max(self.emotions_accum,key=self.emotions_accum.get)
+        if self.emotions_accum["amount"]==0:
+            dominant_emotion_accum="none"
+        else:
+            dominant_emotion_accum=max(self.emotions_accum,key=self.emotions_accum.get)
         return dominant_emotion_accum
 
     def start_detection(self,message) :

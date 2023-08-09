@@ -27,16 +27,19 @@ class dialogTraining:
         print (" ... done")
 
     def emotion_feedback(self,emotion):
-        if emotion=="happy" :
+        if emotion=="none" :
+            print("no emotion detected => no feedback")
+            self.sobot.log("emotion_feedback","none") 
+        elif emotion=="happy" :
             time.sleep(1)
             self.sobot.speak(random.choice(self.general_info["happy_emotion_hints"]),gesture=random.choice(self.general_info["happy_gesture"]))
             time.sleep(1)
+            self.sobot.log("emotion_feedback","happy") 
         elif emotion=="sad":
             time.sleep(1)
             self.sobot.speak(random.choice(self.general_info["sad_emotion_hints"]),gesture=random.choice(self.general_info["neutral_gesture"]))
             time.sleep(1)
             self.sobot.log("emotion_feedback","sad") 
-
         elif emotion=="neutral" :
             time.sleep(1)
             self.sobot.speak(random.choice(self.general_info["neutral_emotion_hints"] ),gesture=random.choice(self.general_info["neutral_gesture"]))
