@@ -100,6 +100,7 @@ mkdir "%SOBOTIFY_PROJECT_PATH%"
 mkdir "%SOBOTIFY_PROJECT_PATH%\trash"
 copy "%~dp0\sobotify\apps\quiz\quiz_english.xlsx" "%SOBOTIFY_PROJECT_PATH%"
 copy "%~dp0\sobotify\apps\quiz\quiz_german.xlsx" "%SOBOTIFY_PROJECT_PATH%"
+copy "%~dp0\sobotify\apps\dialog_training\dialog_training.xlsx" "%SOBOTIFY_PROJECT_PATH%"
 
 REM ======================================================================================
 
