@@ -139,10 +139,9 @@ def get_project_info(xls_file_name) :
     general_info["neutral_gesture"]        = getRow(data,GENERAL_INFO_OFFSET+17)
     general_info["sad_emotion_hints"]      = getRow(data,GENERAL_INFO_OFFSET+18)
     general_info["sad_gesture"]            = getRow(data,GENERAL_INFO_OFFSET+19)
-    general_info["sad_emotion_hints"]      = getRow(data,GENERAL_INFO_OFFSET+20)
-    general_info["negative_emotion_hints"] = getRow(data,GENERAL_INFO_OFFSET+21)
-    general_info["negative_gesture"]       = getRow(data,GENERAL_INFO_OFFSET+22)
-    general_info["intermediate_gesture"]   = getRow(data,GENERAL_INFO_OFFSET+23)
+    general_info["negative_emotion_hints"] = getRow(data,GENERAL_INFO_OFFSET+20)
+    general_info["negative_gesture"]       = getRow(data,GENERAL_INFO_OFFSET+21)
+    general_info["intermediate_gesture"]   = getRow(data,GENERAL_INFO_OFFSET+22)
 
     tasks_groups=[]
     for num,task_group_start_no in enumerate(general_info["task_group_start_no"]):
