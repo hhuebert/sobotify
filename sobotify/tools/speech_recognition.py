@@ -137,12 +137,12 @@ class voskListener:
             # wait for keyword
             print("listening and waiting for keyword: "+self.keyword+" ...")
             self.find_keyword(False)
-            winsound.Beep(1000,1000)
+            winsound.Beep(1000,2000)
             print("found keyword => start recording query ...");
             # listen to query
             query_text=self.find_keyword(True)
             print("... stop recording query")
-            winsound.Beep(500,1000)
+            winsound.Beep(500,2000)
             print("your query is: " + query_text)
             time.sleep(1)
             return query_text
@@ -152,9 +152,9 @@ class voskListener:
 
     def do_recording(self):
         print("start recording")
-        winsound.Beep(1000,1000)
+        winsound.Beep(1000,2000)
         query_text=self.record()
-        winsound.Beep(500,1000)
+        winsound.Beep(500,2000)
         if self.mqtt=="on" :
             print("publish message: " + query_text)
             self.mqtt_client.publish("speech-recognition/statement",query_text)
