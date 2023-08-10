@@ -55,8 +55,8 @@ class cozmo:
         self.cli.enable_camera(enable=True, color=False)
         # Set volume
         self.cli.set_volume(65535)
-        self.drive(duration=3)
-        self.driveout=pycozmo.util.Pose(150.0, 0.0, 0.0,angle_z=pycozmo.util.Angle(degrees=0.0))
+        #self.drive(duration=3)
+        self.driveout=pycozmo.util.Pose(200.0, 0.0, 0.0,angle_z=pycozmo.util.Angle(degrees=0.0))
         self.cli.go_to_pose(self.driveout, relative_to_robot=False)
         self.img=None
         print (f"battery voltage = {self.get_battery_state()}")
