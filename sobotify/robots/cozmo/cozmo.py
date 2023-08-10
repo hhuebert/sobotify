@@ -26,7 +26,8 @@ import ast
 min_offset_x=0.2
 min_offset_y=0.2
 
-temp_audio_file=os.path.join(os.path.expanduser("~"),".sobotify","temp_audio_file.wav")
+def timestamp_filesystem():
+        return datetime.now().strftime("%y%m%d_%H%M%S_%f")
 
 class cozmo:
 
@@ -190,6 +191,7 @@ class cozmo:
             thread_show_expression.join()
 
     def say(self,Text):
+        temp_audio_file=os.path.join(os.path.expanduser("~"),".sobotify","temp_audio_file_"+timestamp_filesystem()+".wav")
         self.tts_engine.save_to_file(Text, temp_audio_file)
         self.tts_engine.runAndWait()
         self.cli.play_audio(temp_audio_file)
@@ -272,17 +274,9 @@ class cozmo:
 
     def terminate(self):
         self.cli.set_lift_height(pycozmo.MIN_LIFT_HEIGHT.mm)
-        if os.path.exists(temp_audio_file):
-            os.remove(temp_audio_file)
-        else:
-            print("The file does not exist")
 
     def terminate2(self):
         self.cli.set_lift_height(pycozmo.MIN_LIFT_HEIGHT.mm)
         time.sleep(2)
         self.cli.disconnect()
         self.cli.stop()
-        if os.path.exists(temp_audio_file):
-            os.remove(temp_audio_file)
-        else:
-            print("The file does not exist")
