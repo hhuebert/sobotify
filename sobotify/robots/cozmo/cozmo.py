@@ -215,7 +215,7 @@ class cozmo:
         return True,self.img
 
     def show_expression(self):
-        if not self.next_face or self.next_face==self.last_face:
+        if not self.next_face:
             return
         print (f"change expression to {self.next_face}")
         # List of face expressions.
@@ -244,7 +244,7 @@ class cozmo:
             "asleep"         : pycozmo.expressions.Asleep(),
             "confusion"      : pycozmo.expressions.Confusion(),
             "amazement"      : pycozmo.expressions.Amazement(),
-            "excitement"     : pycozmo.expressions.Excitement(),
+            "excitement"     : pycozmo.expressions.Excitement()
         }
 
         rate = pycozmo.robot.FRAME_RATE
@@ -254,6 +254,7 @@ class cozmo:
 
         # Generate transition frames.
         face_generator = pycozmo.procedural_face.interpolate(last_expression, next_expression, rate // 3)
+        print ("start rendering")
         for face in face_generator:
 
             # Render face image.
@@ -269,6 +270,7 @@ class cozmo:
 
             # Maintain frame rate.
             timer.sleep()
+        print ("done with rendering")
 
         self.last_face=self.next_face
 
