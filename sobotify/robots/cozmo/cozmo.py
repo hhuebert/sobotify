@@ -129,49 +129,19 @@ class cozmo:
     def search_head(self):
         if self.step == 1:
             print("Cozmo: Searching for a face.")
-            self.turn_right(1.5, speed=20)
+            self.set_head_angle(0.8)
             time.sleep(1.2)
             self.step += 1
         elif self.step == 2:
-            self.set_head_angle(0.4)
+            self.set_head_angle(0.6)
             time.sleep(1.2)
             self.step += 1
         elif self.step == 3:
-            self.set_head_angle(0.8)
+            self.set_head_angle(0.4)
             time.sleep(1.2)
             self.step += 1
         elif self.step == 4:
-            self.turn_left(1.5, speed=20)
-            time.sleep(1.2)
-            self.step += 1
-        elif self.step == 5:
-            self.set_head_angle(0.4)
-            time.sleep(1.2)
-            self.step += 1
-        elif self.step == 6:
-            self.set_head_angle(0.8)
-            self.step += 1
-        elif self.step == 7:
-            self.turn_left(1.5, speed=20)
-            time.sleep(1.2)
-            self.step += 1
-        elif self.step == 8:
-            self.set_head_angle(0.4)
-            time.sleep(1.2)
-            self.step += 1
-        elif self.step == 9:
-            self.set_head_angle(0.8)
-            self.step += 1
-        elif self.step == 10:
-            self.step += 1
-            self.turn_right(1.5, speed=20)
-            time.sleep(1.2)
-        elif self.step == 11:
-            self.set_head_angle(0.4)
-            time.sleep(1.2)
-            self.step += 1
-        elif self.step == 12:
-            self.set_head_angle(0.8)
+            self.set_head_angle(0.6)
             time.sleep(1.2)
             self.step = 1
 
