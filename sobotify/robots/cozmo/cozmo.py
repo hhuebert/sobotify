@@ -179,15 +179,15 @@ class cozmo:
             #self.move_lift()
             thread_move_head = threading.Thread(target=self.move_head)
             thread_move_lift = threading.Thread(target=self.move_lift)
-            thread_move_wheels = threading.Thread(target=self.move_wheels)
+            #thread_move_wheels = threading.Thread(target=self.move_wheels)
             thread_show_expression = threading.Thread(target=self.show_expression)
             thread_move_head.start()
             thread_move_lift.start()
-            thread_move_wheels.start()
+            #thread_move_wheels.start()
             thread_show_expression.start()
             thread_move_head.join()
             thread_move_lift.join()
-            thread_move_wheels.join()
+            #thread_move_wheels.join()
             thread_show_expression.join()
 
     def say(self,Text):
