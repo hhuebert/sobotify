@@ -227,7 +227,6 @@ class dialogTraining:
             self.sobot.speak(self.general_info["taskdone"][num],gesture=random.choice(self.general_info["intermediate_gesture"]))
             time.sleep(10)
 
-        self.sobot.speak(self.general_info["taskdone"][1],gesture=random.choice(self.general_info["intermediate_gesture"]))
         self.sobot.speak(self.general_info["farewell"],gesture=random.choice(self.general_info["intermediate_gesture"]))
 
     def terminate(self):
