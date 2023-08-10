@@ -16,6 +16,8 @@ from datetime import datetime
 import random
 import ast
 import math
+import time
+from animations import NAO_animations,NAO_animation_tags
 
 limitsLShoulderPitch = [-2.0857, 2.0857]
 #limitsLShoulderRoll  = [-0.3142, 1.3265]  
@@ -108,6 +110,7 @@ class motion():
         try: 
             self.motion =  ALProxy("ALMotion", robot_ip, 9559)
             self.posture = ALProxy("ALRobotPosture", robot_ip, 9559)
+            self.animation = ALProxy("ALAnimationPlayer", robot_ip, 9559)
         except Exception : 
             print ("Cannot connect to Nao robot at IP address: "+str(robot_ip))
             exit()  
@@ -203,6 +206,28 @@ class motion():
             self.search_angle_diff_x=-self.search_angle_diff_x
             print ("angle out of range")
 
+    def play_animation(self, animation_tag):
+        # Play an animation.
+        animation_list=NAO_animation_tags.get(animation_tag,"")
+        if animation_list:
+            animation=random.choice(animation_list)
+            animation_path=NAO_animations.get(animation,"")
+            # Send robot to Stand
+            self.posture.goToPosture("Stand", 0.2)
+            #time.sleep(1.0)
+            print(animation_path)
+            try:
+                print ("tag: " + animation_tag+", animation "+animation+",path:"+animation_path+",started")
+                self.animation.run(animation_path)        
+            except:
+                print ("tag: " + animation_tag+", animation "+animation+",path:"+animation_path+",not working")
+            #time.sleep(1.0)
+            # Send robot to Stand
+            self.posture.goToPosture("Stand", 0.2)
+            print ("play animation done")
+        else :
+            print ("WARNING: unknown animation tag "+animation_tag) 
+
     def extended_movement(self):
         curr_time=datetime.now()
         delta_time=(curr_time-self.last_extended_motion).total_seconds()
@@ -232,14 +257,18 @@ class motion():
                 print ("angle out of range")
 
     def move(self,line):
-        self.set_arm_stiffness(1)
-        self.extended_movement()
-        names = ["LShoulderPitch","LShoulderRoll", "LElbowYaw", "LElbowRoll", \
-                 "RShoulderPitch","RShoulderRoll", "RElbowYaw", "RElbowRoll"]
-        angles = [float(line[0]), float(line[1]), float(line[2]), float(line[3]), \
-                float(line[4]), float(line[5]), float(line[6]), float(line[7])]
-        if angles_in_range(angles) :
-            self.motion.setAngles(names, angles, self.fractionMaxSpeed)
+        if len(line)>=9 and line[8].strip() :
+            animation=line[8].strip()
+            self.play_animation(animation)
+        else : 
+            self.set_arm_stiffness(1)
+            self.extended_movement()
+            names = ["LShoulderPitch","LShoulderRoll", "LElbowYaw", "LElbowRoll", \
+                    "RShoulderPitch","RShoulderRoll", "RElbowYaw", "RElbowRoll"]
+            angles = [float(line[0]), float(line[1]), float(line[2]), float(line[3]), \
+                    float(line[4]), float(line[5]), float(line[6]), float(line[7])]
+            if angles_in_range(angles) :
+                self.motion.setAngles(names, angles, self.fractionMaxSpeed)
             
     def terminate(self):
         if self.posture_crouch==True:
