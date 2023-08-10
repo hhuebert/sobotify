@@ -37,8 +37,8 @@ class cozmo:
         self.setLanguage("english")
         self.image_available=False
         self.update_robot_state=False
-        self.lift_angle=pycozmo.MIN_HEAD_ANGLE.radians
-        self.head_angle=pycozmo.MIN_LIFT_HEIGHT.mm
+        self.lift_height=pycozmo.MIN_LIFT_HEIGHT.mm
+        self.head_angle=pycozmo.MIN_HEAD_ANGLE.radians
         self.next_face="neutral"
         self.last_face="neutral"
         self.step = 1
@@ -157,7 +157,7 @@ class cozmo:
         self.cli.set_head_angle(self.head_angle)
 
     def move_lift(self):
-        self.cli.set_lift_height(self.lift_angle)
+        self.cli.set_lift_height(self.lift_height)
 
     def move_wheels(self):
         if self.wheel_angle<0:
@@ -170,7 +170,7 @@ class cozmo:
             self.animation=line[4].strip()
             self.play_animation(self.animation)
         else : 
-            self.lift_angle=float(line[0])
+            self.lift_height=float(line[0])
             self.head_angle=float(line[1])
             self.wheel_angle=float(line[2])
             self.next_face=line[3].strip()
