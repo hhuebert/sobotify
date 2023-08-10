@@ -221,7 +221,7 @@ class dialogTraining:
             self.sobot.speak(self.general_info["getprepared_dialog"][num])
             time.sleep(10)
             self.sobot.speak(self.general_info["getstarted"])     
-            for task in self.task_groups[0]:
+            for task in tasks:
                 self.process_task(task)
                 time.sleep(1)    
             self.sobot.speak(self.general_info["taskdone"][num],gesture=random.choice(self.general_info["intermediate_gesture"]))
