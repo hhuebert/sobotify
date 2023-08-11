@@ -29,34 +29,34 @@ class dialogTraining:
     def emotion_feedback(self,emotion):
         if emotion=="none" :
             print("no emotion detected => no feedback")
-            self.sobot.log("emotion_feedback","none") 
+            self.sobot.log("none", "emotion_feedback") 
         elif emotion=="happy" :
             time.sleep(1)
             self.sobot.speak(random.choice(self.general_info["happy_emotion_hints"]),gesture=random.choice(self.general_info["happy_gesture"]))
             time.sleep(1)
-            self.sobot.log("emotion_feedback","happy") 
+            self.sobot.log("happy", "emotion_feedback") 
         elif emotion=="sad":
             time.sleep(1)
             self.sobot.speak(random.choice(self.general_info["sad_emotion_hints"]),gesture=random.choice(self.general_info["neutral_gesture"]))
             time.sleep(1)
-            self.sobot.log("emotion_feedback","sad") 
+            self.sobot.log("sad","emotion_feedback") 
         elif emotion=="neutral" :
             time.sleep(1)
             self.sobot.speak(random.choice(self.general_info["neutral_emotion_hints"] ),gesture=random.choice(self.general_info["neutral_gesture"]))
             time.sleep(1)
-            self.sobot.log("emotion_feedback","neutral") 
+            self.sobot.log("neutral", "emotion_feedback") 
         else: 
             time.sleep(1)
             self.sobot.speak(random.choice(self.general_info["negative_emotion_hints"] ),gesture=random.choice(self.general_info["negative_gesture"] ))
             time.sleep(1)
-            self.sobot.log("emotion_feedback","negative") 
+            self.sobot.log("negative","emotion_feedback") 
         #MAKE random list so that there are various feedback
 
 
     def search_keywords(self,keywords,answer) :
         for keyword in keywords :
             print("seraching for >"+keyword.lower()+"< in >"+answer.lower()+"<")
-            self.sobot.log("search_keywords",keyword.lower()+"< in >"+answer.lower())
+            self.sobot.log(keyword.lower()+"< in >"+answer.lower(),"search_keywords")
             if keyword.lower() in answer.lower() :
                 return True
         return False   
@@ -77,22 +77,22 @@ class dialogTraining:
             #answer=self.sobot.listen()
             answer,listening_emotion=self.sobot.listen(detect_emotion=True)
             print ("LISTENING_EMOTION: " + listening_emotion)
-            self.sobot.log("Listenin_emotion", listening_emotion)
+            self.sobot.log(listening_emotion,"Listenin_emotion")
 
             if len(answer.split())<=1 and not self.search_keyword_groups(task["keywords"],answer) : 
                 time.sleep(1)
                 self.sobot.speak(self.general_info["affirmation"], speed=speed)
-                self.sobot.log("feedback","incorrect") 
+                self.sobot.log("incorrect","feedback") 
                 self.emotion_feedback(listening_emotion)
 
             elif self.search_keyword_groups(task["keywords"],answer) and not self.search_keyword_groups(task["phrase"],answer) and self.search_keyword_groups(task["pronunciation1"],answer) :
                 print ("1")
                 time.sleep(1)
                 self.sobot.speak(task["keyword_hint"])
-                self.sobot.log("hint","keyword_hint")
+                self.sobot.log("keyword_hint","hint")
                 time.sleep(1)
                 self.sobot.speak(task["hint4"])
-                self.sobot.log("hint","hint4")
+                self.sobot.log("hint4","hint")
                 self.emotion_feedback(listening_emotion)
                 #self.sobot.speak(task["phrase_hint"])
                 break
@@ -101,10 +101,10 @@ class dialogTraining:
                 print ("2")
                 time.sleep(1)
                 self.sobot.speak(task["keyword_hint"])
-                self.sobot.log("hint","keyword_hint")
+                self.sobot.log("keyword_hint","hint")
                 time.sleep(1)
                 self.sobot.speak(task["phrase_hint"])
-                self.sobot.log("hint","phrase_hint")
+                self.sobot.log("phrase_hint","hint")
                 self.emotion_feedback(listening_emotion)
                 break
 
@@ -114,14 +114,14 @@ class dialogTraining:
                 self.sobot.speak(self.general_info["full_sentence_request"], speed=speed, gesture=random.choice(self.general_info["happy_gesture"]))
                 time.sleep(1)
                 self.sobot.speak(task["phrase_hint"])
-                self.sobot.log("hint","phrase_hint")
+                self.sobot.log("phrase_hint","hint")
                 self.emotion_feedback(listening_emotion)
                 break
             elif not self.search_keyword_groups(task["keywords"],answer) :
                 print ("4---------NOT Keyword----------")
                 time.sleep(1)
                 self.sobot.speak(task["hint1"],speed=speed)
-                self.sobot.log("hint","hint1")
+                self.sobot.log("hint1","hint")
                 self.emotion_feedback(listening_emotion)
 
                 
@@ -130,7 +130,7 @@ class dialogTraining:
                 time.sleep(1)
                 self.sobot.speak(random.choice(self.general_info["perfect_feedback"]),gesture=random.choice(self.general_info["happy_gesture"]))
                 time.sleep(1)
-                self.sobot.log("achievement","all_correct")
+                self.sobot.log("correct","feedback")
                 self.emotion_feedback(listening_emotion)
 
                 return True
@@ -138,7 +138,7 @@ class dialogTraining:
                 print ("6-------NOT ADJECTIVE----------")
                 time.sleep(1)
                 self.sobot.speak(task["adjective_hint"], speed=speed)
-                self.sobot.log("hint","adjective_hint")
+                self.sobot.log("adjective_hint","hint")
                 self.emotion_feedback(listening_emotion)
                 break
 
@@ -153,7 +153,7 @@ class dialogTraining:
                     print("b----KW PASS---------Phrase PASS-----NOT Adjective----------")
                     time.sleep(1)
                     self.sobot.speak(task["adjective_hint"])
-                    self.sobot.log("hint","adjective_hint")
+                    self.sobot.log("adjective_hint","hint")
                     self.emotion_feedback(listening_emotion)
 
                 else :
@@ -161,11 +161,11 @@ class dialogTraining:
                         print("c-----KW PASS---------Phrase Pass--------NOT Grammar---------")
                         time.sleep(1)
                         self.sobot.speak(task["hint2"], speed=speed)
-                        self.sobot.log("hint","hint2") 
+                        self.sobot.log("hint2","hint") 
                         time.sleep(1)
                         self.sobot.speak(task["hint3"] + task["answer"], speed=speed)
-                        self.sobot.log("hint","hint3") 
-                        self.sobot.log("hint","answer")
+                        self.sobot.log("hint3","hint") 
+                        self.sobot.log("answer","hint")
                         self.emotion_feedback(listening_emotion)
                         return True
 
@@ -174,18 +174,18 @@ class dialogTraining:
                         time.sleep(1)
                         self.sobot.speak(random.choice(self.general_info["great_job_feedback"]), speed=speed, gesture=random.choice(self.general_info["happy_gesture"])) #NEED List of praise sentences. 
                         time.sleep(1)
-                        self.sobot.log("feedback","positive")
+                        self.sobot.log("positive","feedback")
                         if self.search_keyword_groups(task["pronunciation1"],answer):
                             print("e-----KW PASS----Phrase PASS------X Pronunciation-----")
                             time.sleep(1)
                             self.sobot.speak(task["hint4"] + self.general_info["once_again"] + task["answer"], speed=speed)
-                            self.sobot.log("hint","hint4")
-                            self.sobot.log("hint","answer")
+                            self.sobot.log("hint4","hint")
+                            self.sobot.log("answer","hint")
 
                             time.sleep(1)  
                             self.sobot.speak(self.general_info["reply_great"], speed=speed, gesture=random.choice(self.general_info["happy_gesture"]))
                             time.sleep(1)
-                            self.sobot.log("feedback","achievement_positive")
+                            self.sobot.log("achievement_positive","feedback")
                             self.emotion_feedback(listening_emotion)
                             return True
 
@@ -195,7 +195,7 @@ class dialogTraining:
                             time.sleep(1)
                             self.sobot.speak(random.choice(self.general_info["great_job_feedback"]),gesture=random.choice(self.general_info["happy_gesture"]))
                             time.sleep(1)
-                            self.sobot.log("feedback","achievement_positive")
+                            self.sobot.log("achievement_positive","feedback")
                             self.emotion_feedback(listening_emotion)
                             return True
             #elif not self.search_keyword_groups(task["phrase"],answer) and self.search_keyword_groups(task["pronunciation1"],answer): 
@@ -207,10 +207,10 @@ class dialogTraining:
         print("g")
         time.sleep(1)
         self.sobot.speak(task["hint3"])
-        self.sobot.log("hint","hint3") 
+        self.sobot.log("hint3","hint") 
         time.sleep(1)
         self.sobot.speak(task["answer"])
-        self.sobot.log("hint","answer") 
+        self.sobot.log("answer","hint") 
 
     def run(self) :
         self.sobot.speak(self.general_info["welcome"])
