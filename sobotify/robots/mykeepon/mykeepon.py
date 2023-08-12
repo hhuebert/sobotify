@@ -84,11 +84,16 @@ class motion():
         self.pon_pos="DOWN"
 
     def follow_head(self,data):
+        # skip head following for now (to be implemented later)
+        pass
+        """
         head_data=ast.literal_eval(data)
         offset_x=head_data.get("offset_x",0)
         offset_y=head_data.get("offset_y",0)
         if offset_x>min_offset_x or offset_y>min_offset_y:
-            img_width=head_data.get("img_width",640)
+
+            ## with camera on robot head
+            img_width=head_data.get("img_width",640)   
             img_height=head_data.get("img_height",480)
 
             angle_diff_x,angle_diff_y=get_angles(offset_x,offset_y)
@@ -97,13 +102,28 @@ class motion():
                 pass
             else :
                 #pan_right()
-               pass
+                pass
             if angle_diff_y<0 :
-                #pan_down()
+                self.tilt(self.tilt_pos-10)
                 pass
             else :
-                #pan_up()
-               pass
+                self.tilt(self.tilt_pos+10)
+                pass
+
+            ## with fixed camera behind robot
+            if offset_x<0 :
+                #self.pan(int(+30*offset_x))
+                pass
+            else :
+                #self.pan(int(-30*offset_x))
+                pass
+            if offset_y<0 :
+                #self.tilt(int(+50*offset_y))
+                pass
+            else :
+                #self.tilt(int(-50*offset_y))
+                pass                
+        """
 
     def search_head(self):
         print ("search head")
