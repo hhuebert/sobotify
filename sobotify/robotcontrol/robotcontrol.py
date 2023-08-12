@@ -54,7 +54,7 @@ def getRobot(name,robot_ip,robot_options,cam_device) :
             return my_cozmo,my_cozmo,my_cozmo
         elif name=='mykeepon' :
             import sobotify.robots.mykeepon.mykeepon as mykeepon
-            return mykeepon.speech(),mykeepon.motion(),mykeepon.vision(cam_device)
+            return mykeepon.speech(),mykeepon.motion(robot_ip),mykeepon.vision(cam_device)
         else :
             print("unknow robot :" + str(name))
             exit()

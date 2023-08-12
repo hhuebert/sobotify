@@ -117,9 +117,9 @@ class SobotifyAppGui(object):
 		Label(MainWindow, text="________________________ settings ________________________").grid(row=1, column=col,padx=padx,pady=5,columnspan=2)
 
 		Label(MainWindow, text="").grid(row=1, column=col,padx=padx,pady=5)
-		Label(MainWindow, text="robot name",justify=RIGHT,anchor="e").grid(row=2, column=col,padx=padx,pady=5,sticky=E)
-		Label(MainWindow, text="robot IP  ",justify=RIGHT,anchor="e").grid(row=3, column=col,padx=padx,pady=5,sticky=E)
-		Label(MainWindow, text="sound device",justify=RIGHT,anchor="e").grid(row=4, column=col,padx=padx,pady=5,sticky=E)
+		Label(MainWindow, text="robot name   ",justify=RIGHT,anchor="e").grid(row=2, column=col,padx=padx,pady=5,sticky=E)
+		Label(MainWindow, text="robot IP/port",justify=RIGHT,anchor="e").grid(row=3, column=col,padx=padx,pady=5,sticky=E)
+		Label(MainWindow, text="sound device ",justify=RIGHT,anchor="e").grid(row=4, column=col,padx=padx,pady=5,sticky=E)
 
 		# column 2
 		col=2
@@ -169,6 +169,12 @@ class SobotifyAppGui(object):
 				return False
 		return True
 
+	def check_port(self,*args):
+		if "COM" in self.robot_IP.get():
+			return True
+		return False
+
+
 	def update_project_list(self, deleted_project_name="") :
 			self.projects=get_projects()	
 			self.combobox_delete_project['values']=self.projects
@@ -189,7 +195,7 @@ class SobotifyAppGui(object):
 	def start_project(self) :
 		self.app,self.language=get_project_info(self.selected_curr_project.get())
 		self.stop_project()
-		if self.check_IP()==False:
+		if self.check_IP()==False and self.check_port()==False:
 			messagebox.showerror("Robot IP Address Error",f"Invalid robot IP address:\n{self.robot_IP.get()}\nCorrect format is\n4 numbers in range 0..255,\nseparated by dots, for example\n192.168.0.141")
 			return
 		sobotify_path=os.path.dirname(os.path.abspath(__file__))

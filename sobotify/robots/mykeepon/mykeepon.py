@@ -52,9 +52,9 @@ def get_angles(offset_x,offset_y):
 
 class motion(): 
 
-    def __init__(self):
+    def __init__(self,PORT):
         self.fileExtension = "_mykeepon" 
-        self.myKeepOn=serial.Serial('COM10',115200,timeout=1)
+        self.myKeepOn=serial.Serial(PORT,115200,timeout=1)
         message=self.myKeepOn.readline()
         print(message)
         message=self.myKeepOn.readline()
