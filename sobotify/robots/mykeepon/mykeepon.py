@@ -55,29 +55,6 @@ class motion():
     def __init__(self,PORT):
         self.fileExtension = "_mykeepon" 
         self.myKeepOn=serial.Serial(PORT,115200,timeout=1)
-        message=self.myKeepOn.readline()
-        print(message)
-        message=self.myKeepOn.readline()
-        print(message)
-        message=self.myKeepOn.readline()
-        print(message)
-        message=self.myKeepOn.readline()
-        print(message)
-        message=self.myKeepOn.readline()
-        print(message)
-        message=self.myKeepOn.readline()
-        print(message)
-        message=self.myKeepOn.readline()
-        print(message)
-        message=self.myKeepOn.readline()
-        print(message)
-        message=self.myKeepOn.readline()
-        print(message)
-        message=self.myKeepOn.readline()
-        print(message)
-        message=self.myKeepOn.readline()
-        print(message)
-
         self.pan_pos=0
         self.tilt_pos=0
         self.side_pos="CENTERFROMLEFT"       
