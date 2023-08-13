@@ -249,7 +249,7 @@ class sobotify (object) :
         print(" ... done")  
 
     def start_robotcontroller(self,mqtt=True,mosquitto_ip=mosquitto_ip_default,robot_name=robot_name_default,robot_ip=robot_ip_default,
-                           robot_options=robot_options_default,robot_conda_env=robot_conda_env_default,data_path=data_path_default,language=language_default,
+                           robot_options=robot_options_default,cam_device=cam_device_default,robot_conda_env=robot_conda_env_default,data_path=data_path_default,language=language_default,
                            min_speech_speed=min_speech_speed_default,max_speech_speed=max_speech_speed_default,message=message_default) :
         sobotify_path=os.path.dirname(os.path.abspath(__file__))
         script_path=os.path.join(sobotify_path,'robotcontrol','robotcontrol.py')
@@ -276,6 +276,7 @@ class sobotify (object) :
         arguments.extend(('--language',language))
         arguments.extend(('--min_speech_speed',str(min_speech_speed)))
         arguments.extend(('--max_speech_speed',str(max_speech_speed)))
+        arguments.extend(('--cam_device',cam_device))
         if self.debug==True:
             print (*arguments)
         self.rocontrol_proc=subprocess.Popen(arguments,creationflags=subprocess.CREATE_NEW_CONSOLE)
@@ -474,7 +475,7 @@ if __name__ == "__main__":
     if args.e==True:
         sobot.start_extract(args.video_file,args.data_path,args.robot_name,args.ffmpeg_path,args.vosk_model_path,args.language,args.show_video)
     if args.r==True:
-        sobot.start_robotcontroller(args.m,args.mosquitto_ip,args.robot_name,args.robot_ip,args.robot_options,args.robot_conda_env,args.data_path,args.language,args.min_speech_speed,args.max_speech_speed, args.message)
+        sobot.start_robotcontroller(args.m,args.mosquitto_ip,args.robot_name,args.robot_ip,args.robot_options,args.cam_device,args.robot_conda_env,args.data_path,args.language,args.min_speech_speed,args.max_speech_speed, args.message)
     if args.l==True:
         sobot.start_listener(args.m,args.mosquitto_ip,args.vosk_model_path,args.language,args.keyword,args.sound_device)
     if args.c==True:
