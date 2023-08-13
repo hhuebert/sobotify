@@ -155,14 +155,18 @@ class motion():
         
 
     def move(self,line):
-        #self.pan(float(line[0]))
-        #time.sleep(0.2)
-        self.tilt(float(line[1]))
-        time.sleep(0.4)
-        self.side(line[2].upper())
-        time.sleep(0.3)
-        #self.pon(line[3].upper())
-        #time.sleep(0.2)
+        if line[0].strip():
+            self.pan(float(line[0]))
+            time.sleep(0.3)
+        if line[1].strip():
+            self.tilt(float(line[1]))
+            time.sleep(0.4)
+        if line[2].strip():
+            self.side(line[2].strip().upper())
+            time.sleep(0.3)
+        if line[3].strip():
+            self.pon(line[3].strip().upper())
+            time.sleep(0.3)
             
     def terminate(self):
         pass
