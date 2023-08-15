@@ -228,13 +228,19 @@ class dialogTraining:
         self.sobot.log("welcome","feedback")
         self.sobot.speak(self.general_info["welcome"],speed=speed)
         time.sleep(1)
+        self.sobot.listen()
+        self.sobot.log("well_being","user_input") 
         self.sobot.log("welcome2","feedback")
         self.sobot.speak(self.general_info["welcome2"],speed=speed)
         time.sleep(1)
+
         for num,tasks in enumerate(self.task_groups):
             self.sobot.log("get_prepared","feedback")
             self.sobot.speak(self.general_info["getprepared_dialog"][num],speed=speed)
             time.sleep(10)
+            self.sobot.speak("Die Zeit ist fast abgelaufen. Du hast noch 30 Sekunden Zeit.")
+            self.sobot.log("time_left","feedback")
+            time.sleep(5)
             self.sobot.log("get_started","feedback")
             self.sobot.speak(self.general_info["getstarted"],speed=speed)     
             for task in tasks:
