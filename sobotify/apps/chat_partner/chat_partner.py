@@ -3,17 +3,21 @@ from sys import exit
 import time
 import argparse
 from sobotify import sobotify
+from read_project_data import get_project_info
 
-class debate_partner:
+class chat_partner:
 
-    def __init__(self,robot_name,robot_ip,language,keyword,sound_device,mosquitto_ip) :
-        print ("init debate partner ...")
+    def __init__(self,robot_name,robot_ip,language,keyword,sound_device,mosquitto_ip,project_file) :
+        print ("init chat partner ...")
         self.statement_pending=False
         self.reply_pending=False
-        self.sobot=sobotify.sobotify(app_name="debate-partner",mosquitto_ip=mosquitto_ip,debug=False)
-        self.sobot.start_listener(mosquitto_ip=mosquitto_ip,language=language,keyword=keyword,sound_device=sound_device)
-        self.sobot.start_chatbot()
+        self.general_info=get_project_info(project_file)
+        print (self.general_info)
+
+        self.sobot=sobotify.sobotify(app_name="chat-partner",mosquitto_ip=mosquitto_ip,debug=True)
+        self.sobot.start_listener(mosquitto_ip=mosquitto_ip,language=language,keyword=self.general_info["key_word"],sound_device=sound_device)
         self.sobot.start_robotcontroller(robot_name=robot_name,mosquitto_ip=mosquitto_ip,robot_ip=robot_ip, language=language)
+        self.sobot.start_chatbot(llm_name= self.general_info["llm_name"],llm_options= self.general_info["llm_options"])
         self.sobot.subscribe_listener(self.store_statement)
         self.sobot.subscribe_chatbot(self.store_reply)
         print (" ... done")
@@ -29,15 +33,18 @@ class debate_partner:
         self.reply_pending=True
 
     def run(self) :
+        self.sobot.speak(self.general_info["welcome"])
+        self.sobot.speak(self.general_info["key_word_intro"])
+        self.sobot.speak(self.general_info["key_word"])
         self.sobot.listen(listen_to_keyword=True)
         while True:
             if self.statement_pending:
                 self.statement_pending=False
                 self.sobot.chat(self.statement)
-                self.sobot.speak("Hello user, thank you for starting a debate. This is a very interesting topic.")
+                self.sobot.speak(self.general_info["query_intro"])
             if self.reply_pending:
                 self.reply_pending=False
-                self.sobot.speak("My reply is " + self.reply)
+                self.sobot.speak(self.general_info["reply_intro"] + " " + self.reply)
             time.sleep(1)    
 
     def terminate(self):
@@ -58,7 +65,8 @@ if __name__ == "__main__":
     parser.add_argument('--keyword',default='apple tree',help='key word to activate speech recognition')
     parser.add_argument('--language',default="english",help='choose language (english,german)')
     parser.add_argument('--sound_device',default=0,type=int,help='number of sound device, can be found with: import sounddevice;sounddevice.query_devices()')
+    parser.add_argument('--project_file',default='quiz_data.xlsx',help='project file with app data')
     args=parser.parse_args()
 
-    debate = debate_partner(args.robot_name,args.robot_ip,args.language,args.keyword,args.sound_device,args.mosquitto_ip)
+    debate = chat_partner(args.robot_name,args.robot_ip,args.language,args.keyword,args.sound_device,args.mosquitto_ip,args.project_file)
     debate.run()
