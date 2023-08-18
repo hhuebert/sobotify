@@ -11,7 +11,7 @@ TASKS_OFFSET=35
 def getRow(data,row) :
     keyword=[]
     for col in range(2,MAX_NUMBER_OF_ALTERNATIVES) :
-        content=str(data.iloc[row,col]).strip()
+        content=str(data.iloc[row,col]) 
         if not content=="":
             keyword.append(content)
     return keyword
