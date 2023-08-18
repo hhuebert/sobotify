@@ -22,9 +22,8 @@ min_speech_speed_default = 70              # minimum speech speed of robot
 max_speech_speed_default = 110             # maximum speech speed of robot')
 ffmpeg_path_default      = os.path.join(os.path.expanduser("~"),".sobotify","ffmpeg","bin") # directory path to ffmpeg tools (bin directory)
 sound_device_default     = 0               # number of sound device, can be found with: import sounddevice;sounddevice.query_devices()')
-llm_model_default        = 'EleutherAI/llm-j-6B'  # name of the llm model (e.g. EleutherAI/llm-j-6B or bigscience/bloom-560m)')
-llm_temperature_default  = 0.5             # temperature value for the llm model (between 0.0 and 1.0)')
-llm_max_length_default   = 100             # maximum length of the generated text')
+llm_name_default         = 'dummy'         # name of the llm api
+llm_options_default      = ''              # llm options
 show_video_default       = "on"            # show video during emotion detection
 frame_rate_default       = 1               # frame rate for emotion detection
 cam_device_default       = "0"             # camera device for emotion detection
@@ -328,17 +327,17 @@ class sobotify (object) :
             time.sleep(1)   
         print(" ... done")  
     
-    def start_chatbot(self,mqtt=True,mosquitto_ip=mosquitto_ip_default,llm_model=llm_model_default,
-                      llm_temperature=llm_temperature_default,llm_max_length=llm_max_length_default):
+    def start_chatbot(self,mqtt=True,mosquitto_ip=mosquitto_ip_default,llm_name=llm_name_default,
+                      llm_options=llm_options_default):
         sobotify_path=os.path.dirname(os.path.abspath(__file__))
         script_path=os.path.join(sobotify_path,'tools','chatbot.py')
         arguments=[sys.executable,script_path]
         if mqtt== True: 
             arguments.extend(('--mqtt',"on"))
         arguments.extend(('--mosquitto_ip',mosquitto_ip))
-        arguments.extend(('--llm_model',llm_model))
-        arguments.extend(('--llm_temperature',str(llm_temperature)))
-        arguments.extend(('--llm_max_length',str(llm_max_length)))  
+        arguments.extend(('--llm_name',llm_name))
+        arguments.extend(('--llm_options','"'+llm_options+'"'))
+
         if self.debug==True:
             print (*arguments)
         self.llm_proc=subprocess.Popen(arguments,creationflags=subprocess.CREATE_NEW_CONSOLE)
@@ -457,9 +456,8 @@ if __name__ == "__main__":
     parser.add_argument('--max_speech_speed',default=110,help='maximum speech speed of robot')
     parser.add_argument('--ffmpeg_path',default=os.path.join(os.path.expanduser("~"),".sobotify","ffmpeg","bin"),help='directory path to ffmpeg tools (bin directory)')
     parser.add_argument('--sound_device',default=0,type=int,help='number of sound device, can be found with: import sounddevice;sounddevice.query_devices()')
-    parser.add_argument('--llm_model',default='EleutherAI/llm-j-6B',help='name of the llm model (e.g. EleutherAI/llm-j-6B or bigscience/bloom-560m)')
-    parser.add_argument('--llm_temperature',default=0.5,type=float,help='temperature value for the llm model (between 0.0 and 1.0)')
-    parser.add_argument('--llm_max_length',default=100,type=int,help='maximum length of the generated text')
+    parser.add_argument('--llm_name',default="dummy",help='name of llm api')
+    parser.add_argument('--llm_options',default="",help='options for llm')
     parser.add_argument('--text',default='',help='Text to be checked by the grammar checker')
     parser.add_argument('--languagetool_path',default=os.path.join(os.path.expanduser("~"),".sobotify","languagetool"),help='directory path to LanguageTool')
     parser.add_argument('--java_path',default=os.path.join(os.environ["JAVA_HOME"],"bin"),help='directory path to java executable')
@@ -479,7 +477,7 @@ if __name__ == "__main__":
     if args.l==True:
         sobot.start_listener(args.m,args.mosquitto_ip,args.vosk_model_path,args.language,args.keyword,args.sound_device)
     if args.c==True:
-        sobot.start_chatbot(args.m,args.mosquitto_ip,args.llm_model,args.llm_temperature,args.llm_max_length)
+        sobot.start_chatbot(args.m,args.mosquitto_ip,args.llm_name,args.llm_options)
     if args.f==True:
         sobot.start_emotion_detection(args.m,args.mosquitto_ip,args.robot_name,args.robot_ip,args.cam_device,args.frame_rate,args.show_video)
     if args.g==True:
