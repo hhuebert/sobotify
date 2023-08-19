@@ -16,6 +16,7 @@ from sobotify.commons.external.utils import draw_landmarks
 import sobotify.commons.speak 
 import ast
 import platform
+import threading
 
 class LandmarkItem:
     def __init__(self,x,y,z,visibility):
@@ -44,6 +45,8 @@ class motion():
         self.width  = 960
         self.height = 540
         self.name= "Virtual Robot (" + str(os.getpid()) + ")"
+        thread_show = threading.Thread(target=self.showStickman)
+        thread_show.start()
             
     def getFileExtension(self):
         return self.fileExtension
@@ -56,15 +59,24 @@ class motion():
             landmarks.landmark.add(x=landmark_element[0],y=landmark_element[1],z=landmark_element[2],visibility=landmark_element[3])
         return landmarks 
 
+    def showStickman(self):
+        self.stickman_image = np.zeros((self.height,self.width,3),dtype='uint8')
+        #self.stickman_image = self.stickman_image[0:self.height, int(self.width*0.2):int(self.width*0.8)]
+        self.window= cv.namedWindow(self.name,flags=cv.WINDOW_NORMAL) 
+        cv.moveWindow(self.name,0,0)
+        cv.resizeWindow(self.name,self.width,self.height)
+        while True:
+            cv.imshow(self.name, self.stickman_image)
+            #cv.setWindowProperty(self.name, cv.WND_PROP_TOPMOST,1)
+            if cv.waitKey(40) == ord('q'):
+                exit()
+
+
     def move(self,pose_landmarks_list):
         pose_landmarks = self.convert_landmarks(pose_landmarks_list)
-        stickman_image = np.zeros((self.height,self.width,3),dtype='uint8')
-        stickman_image = draw_landmarks(stickman_image, pose_landmarks)
-        stickman_image = stickman_image[0:self.height, int(self.width*0.2):int(self.width*0.8)]
-        cv.imshow(self.name, stickman_image)
-        cv.setWindowProperty(self.name, cv.WND_PROP_TOPMOST,1)
-        if cv.waitKey(1) == ord('q'):
-            exit()
+        self.stickman_image = np.zeros((self.height,self.width,3),dtype='uint8')
+        self.stickman_image = draw_landmarks(self.stickman_image, pose_landmarks)
+        #self.stickman_image = self.stickman_image[0:self.height, int(self.width*0.2):int(self.width*0.8)]
 
     def follow_head(self,data):
         head_data=ast.literal_eval(data)
@@ -81,7 +93,8 @@ class motion():
         print ("search head")
 
     def terminate(self):
-       cv.destroyAllWindows()
+        pass
+       #cv.destroyAllWindows()
 
 class speech():
 
