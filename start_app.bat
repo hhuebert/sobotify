@@ -1,4 +1,5 @@
 @ECHO OFF
+TITLE sobotify app. DO NOT CLOSE THIS WINDOW!
 REM ======================================================================================
 REM find and set CONDA executable path
 if EXIST "%USERPROFILE%\miniconda3\condabin\conda.bat" (
