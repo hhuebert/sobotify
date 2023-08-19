@@ -205,7 +205,10 @@ class sobotify (object) :
         arguments.extend(('-c',os.path.join(sobotify_path,'tools','mosquitto.conf')))
         if self.debug==True:
             print (*arguments)
-        self.mosquitto_proc=subprocess.Popen(arguments,stdout=subprocess.PIPE, creationflags=subprocess.CREATE_NEW_CONSOLE)
+            creationflags=subprocess.CREATE_NEW_CONSOLE
+        else:
+            creationflags=subprocess.CREATE_NO_WINDOW
+        self.mosquitto_proc=subprocess.Popen(arguments,stdout=subprocess.PIPE, creationflags=creationflags)
         time.sleep(3)
         print ('started mosquitto, pid=',self.mosquitto_proc.pid)
 
@@ -230,7 +233,10 @@ class sobotify (object) :
         arguments.extend(('--mosquitto_ip',mosquitto_ip))
         if self.debug==True:
             print (*arguments)
-        self.logging_server_proc=subprocess.Popen(arguments,creationflags=subprocess.CREATE_NEW_CONSOLE)
+            creationflags=subprocess.CREATE_NEW_CONSOLE
+        else:
+            creationflags=subprocess.CREATE_NO_WINDOW
+        self.logging_server_proc=subprocess.Popen(arguments,creationflags=creationflags)
         print ('started logging server, pid=',self.logging_server_proc.pid)
         if mqtt== True: 
             self.wait_for_init_logging_server_done()
@@ -278,7 +284,10 @@ class sobotify (object) :
         arguments.extend(('--cam_device',cam_device))
         if self.debug==True:
             print (*arguments)
-        self.rocontrol_proc=subprocess.Popen(arguments,creationflags=subprocess.CREATE_NEW_CONSOLE)
+            creationflags=subprocess.CREATE_NEW_CONSOLE
+        else:
+            creationflags=subprocess.CREATE_NO_WINDOW
+        self.rocontrol_proc=subprocess.Popen(arguments,creationflags=creationflags)
         #rocontrol_proc=subprocess.Popen(arguments)
         print ('started robot controller, pid=',self.rocontrol_proc.pid)
         if mqtt== True: 
@@ -310,7 +319,10 @@ class sobotify (object) :
         arguments.extend(('--sound_device',str(sound_device))) 
         if self.debug==True:
             print (*arguments)
-        self.speech_recognition_proc=subprocess.Popen(arguments,creationflags=subprocess.CREATE_NEW_CONSOLE)
+            creationflags=subprocess.CREATE_NEW_CONSOLE
+        else:
+            creationflags=subprocess.CREATE_NO_WINDOW
+        self.speech_recognition_proc=subprocess.Popen(arguments,creationflags=creationflags)
         print ('started speech recognition, pid=',self.speech_recognition_proc.pid)
         if mqtt== True: 
             self.wait_for_init_speech_recognition_done()
@@ -340,7 +352,10 @@ class sobotify (object) :
 
         if self.debug==True:
             print (*arguments)
-        self.llm_proc=subprocess.Popen(arguments,creationflags=subprocess.CREATE_NEW_CONSOLE)
+            creationflags=subprocess.CREATE_NEW_CONSOLE
+        else:
+            creationflags=subprocess.CREATE_NO_WINDOW
+        self.llm_proc=subprocess.Popen(arguments,creationflags=creationflags)
         print ('started chatbot, pid=',self.llm_proc.pid)
         if mqtt== True: 
             self.wait_for_init_chatbot_done()
@@ -371,7 +386,10 @@ class sobotify (object) :
         arguments.extend(('--show_video',show_video))
         if self.debug==True:
             print (*arguments)
-        self.emotion_detection_proc=subprocess.Popen(arguments,creationflags=subprocess.CREATE_NEW_CONSOLE)
+            creationflags=subprocess.CREATE_NEW_CONSOLE
+        else:
+            creationflags=subprocess.CREATE_NO_WINDOW
+        self.emotion_detection_proc=subprocess.Popen(arguments,creationflags=creationflags)
         print ('started emotion detection, pid=',self.emotion_detection_proc.pid)
         if mqtt== True: 
             self.wait_for_init_emotion_detection_done()
@@ -402,7 +420,10 @@ class sobotify (object) :
         arguments.extend(('--text',text))
         if self.debug==True:
             print (*arguments)
-        self.grammar_checking_proc=subprocess.Popen(arguments,creationflags=subprocess.CREATE_NEW_CONSOLE)
+            creationflags=subprocess.CREATE_NEW_CONSOLE
+        else:
+            creationflags=subprocess.CREATE_NO_WINDOW
+        self.grammar_checking_proc=subprocess.Popen(arguments,creationflags=creationflags)
         print ('started grammar checking, pid=',self.grammar_checking_proc.pid)
         if mqtt== True: 
             self.wait_for_init_grammar_checking_done()
