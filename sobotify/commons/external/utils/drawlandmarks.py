@@ -36,6 +36,15 @@ def draw_landmarks(
     visibility_th=0.5,
 ):
     image_width, image_height = image.shape[1], image.shape[0]
+    head_width= int(image_width*50/960)
+    head_height= int(head_width*1.2)
+    hair_length=int(head_width*0.4)
+    hair_distance_top=int(head_width*0.2)
+    hair_distance_bottom=int(head_width*0.16)
+    ear_distance= int(head_width*1.2)
+    ear_width= int(head_width*0.14)
+    ear_height=int(head_width*0.3)
+
 
     landmark_point = []
 
@@ -51,12 +60,12 @@ def draw_landmarks(
         if index == 0:  # 鼻
             #cv.circle(image, (landmark_x, landmark_y), 5, (0, 255, 0), 2)
             cv.ellipse(image, (landmark_x, landmark_y-5), (5,10), 0,0,360, (0, 255, 0), 2)
-            cv.ellipse(image, (landmark_x, landmark_y), (50,60), 0,0,360, (0, 255, 0), 2)
-            cv.ellipse(image, (landmark_x-60, landmark_y), (7,15), 0,0,360, (0, 255, 0), 2)
-            cv.ellipse(image, (landmark_x+60, landmark_y), (7,15), 0,0,360, (0, 255, 0), 2)
-            cv.line(image, (landmark_x, landmark_y-60), (landmark_x, landmark_y-80),(0, 255, 0), 2)
-            cv.line(image, (landmark_x-8, landmark_y-60), (landmark_x-10, landmark_y-80),(0, 255, 0), 2)
-            cv.line(image, (landmark_x+8, landmark_y-60), (landmark_x+10, landmark_y-80),(0, 255, 0), 2)
+            cv.ellipse(image, (landmark_x, landmark_y), (head_width,head_height), 0,0,360, (0, 255, 0), 2)
+            cv.ellipse(image, (landmark_x-ear_distance, landmark_y), (ear_width,ear_height), 0,0,360, (0, 255, 0), 2)
+            cv.ellipse(image, (landmark_x+ear_distance, landmark_y), (ear_width,ear_height), 0,0,360, (0, 255, 0), 2)
+            cv.line(image, (landmark_x, landmark_y-head_height), (landmark_x, landmark_y-head_height-hair_length),(0, 255, 0), 2)
+            cv.line(image, (landmark_x-hair_distance_bottom, landmark_y-head_height), (landmark_x-hair_distance_top, landmark_y-head_height-hair_length),(0, 255, 0), 2)
+            cv.line(image, (landmark_x+hair_distance_bottom, landmark_y-head_height), (landmark_x+hair_distance_top, landmark_y-head_height-hair_length),(0, 255, 0), 2)
         #if index == 1:  # 右目：目頭
             #cv.circle(image, (landmark_x, landmark_y), 5, (0, 255, 0), 2)
         if index == 2:  # 右目：瞳
@@ -165,8 +174,8 @@ def draw_landmarks(
                     (0, 255, 0), 2)
             neck_left_low=(int((landmark_point[11][1][0]-landmark_point[12][1][0])/4)+landmark_point[12][1][0],landmark_point[11][1][1])
             neck_right_low=(int((landmark_point[11][1][0]-landmark_point[12][1][0])/4)*3+landmark_point[12][1][0],landmark_point[11][1][1])
-            neck_left_high=(int((landmark_point[11][1][0]-landmark_point[12][1][0])/3)+landmark_point[12][1][0],landmark_point[0][1][1]+50)
-            neck_right_high=(int((landmark_point[11][1][0]-landmark_point[12][1][0])/3)*2+landmark_point[12][1][0],landmark_point[0][1][1]+50)
+            neck_left_high=(int((landmark_point[11][1][0]-landmark_point[12][1][0])/3)+landmark_point[12][1][0],landmark_point[0][1][1]+head_width)
+            neck_right_high=(int((landmark_point[11][1][0]-landmark_point[12][1][0])/3)*2+landmark_point[12][1][0],landmark_point[0][1][1]+head_width)
             cv.line(image, neck_left_low, neck_left_high,(0, 255, 0), 2)
             cv.line(image, neck_right_low, neck_right_high,(0, 255, 0), 2)
 
