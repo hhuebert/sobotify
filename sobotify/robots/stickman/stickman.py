@@ -47,6 +47,7 @@ class motion():
         self.name= "Virtual Robot (" + str(os.getpid()) + ")"
         thread_show = threading.Thread(target=self.showStickman)
         thread_show.start()
+        self.stop_motion=False
             
     def getFileExtension(self):
         return self.fileExtension
@@ -65,12 +66,14 @@ class motion():
         self.window= cv.namedWindow(self.name,flags=cv.WINDOW_NORMAL) 
         cv.moveWindow(self.name,0,0)
         cv.resizeWindow(self.name,self.width,self.height)
-        while True:
+        while True and self.stop_motion==False:
             cv.imshow(self.name, self.stickman_image)
             #cv.setWindowProperty(self.name, cv.WND_PROP_TOPMOST,1)
             if cv.waitKey(40) == ord('q'):
                 exit()
 
+    def stop(self):
+        self.stop_motion=True
 
     def move(self,pose_landmarks_list):
         pose_landmarks = self.convert_landmarks(pose_landmarks_list)

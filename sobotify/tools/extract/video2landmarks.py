@@ -16,6 +16,7 @@ import argparse
 import sys
 import os
 from datetime import datetime
+import time
 
 import sobotify.robots.stickman.stickman as stickman
 
@@ -101,6 +102,8 @@ def video2landmarks(video_file,data_path,show_video):
             break
     cap.release()
     if (show_video=="on"):
+        motion_visualizer.stop()
+        time.sleep(0.2)
         cv.destroyAllWindows()
     
 if __name__ == '__main__':
