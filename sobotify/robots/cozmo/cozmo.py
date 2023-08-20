@@ -94,9 +94,9 @@ class cozmo:
             self.tts_engine.setProperty('voice', "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech\Voices\Tokens\TTS_MS_DE-DE_HEDDA_11.0")      
 
     def setSpeed(self, speed):
-        pass
-        #self.speed=speed
-        #self.speech.setParameter("speed", self.speed)
+        speed=2*speed
+        self.tts_engine.setProperty('rate',speed);      
+        print ("set speed to:",speed)
         
     def set_head_angle(self, angle):
         self.cli.set_head_angle(angle=angle)
