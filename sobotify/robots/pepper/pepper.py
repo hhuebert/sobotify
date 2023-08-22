@@ -202,8 +202,8 @@ class motion():
             print ("head movement")
             last_found_head_angles_yaw=self.last_found_head_angles[0]
             last_found_head_angles_pitch=self.last_found_head_angles[1]
-            angle_random_offset_Yaw   = random.uniform(-0.05,0.05)
-            angle_random_offset_Pitch = random.uniform(-0.05,0.05)
+            angle_random_offset_Yaw   = random.uniform(-0.02,0.02)
+            angle_random_offset_Pitch = random.uniform(-0.02,0.02)
             angle_Yaw=last_found_head_angles_yaw+angle_random_offset_Yaw
             angle_Pitch=last_found_head_angles_pitch+angle_random_offset_Pitch
             if head_angles_in_range(angle_Yaw,angle_Pitch):
