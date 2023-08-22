@@ -216,8 +216,8 @@ class motion():
                 print ("angle out of range")
 
     def move(self,line):
-        if len(line)>=9 and line[8].strip() :
-            animation=line[8].strip()
+        if len(line)>=10 and line[9].strip() :
+            animation=line[9].strip()
             self.play_animation(animation)
         else :
             self.extended_movement()
