@@ -92,7 +92,11 @@ class motion():
         try: 
             self.motion  = ALProxy("ALMotion", robot_ip, 9559)
             self.posture = ALProxy("ALRobotPosture", robot_ip, 9559)
-            self.animation = ALProxy("ALAnimationPlayer", robot_ip, 9559)
+            self.naoqi_version=self.get_naoqi_version(robot_ip)
+            if self.naoqi_version>=2.3:
+                self.animation = ALProxy("ALAnimationPlayer", robot_ip, 9559)
+            else :
+                self.animation = None
         except Exception : 
             print ("Cannot connect to Pepper robot at IP address: "+str(robot_ip))
             exit()  
@@ -117,6 +121,15 @@ class motion():
         self.motion.setStiffnesses("HipPitch", stiffness)
         self.motion.setStiffnesses("LWristYaw", stiffness)
         self.motion.setStiffnesses("RWristYaw", stiffness)
+
+    def get_naoqi_version(self,robot_ip):
+        system = ALProxy("ALSystem", robot_ip, 9559)
+        version=system.systemVersion()
+        print("robot's naoqi version = "+version)
+        major_version= version.split(".")[0]
+        minor_version=str("".join(version.split(".")[1:]))
+        version_float=float(major_version+"."+minor_version)
+        return version_float
 
     def getFileExtension(self):
         return self.fileExtension
@@ -167,25 +180,28 @@ class motion():
 
     def play_animation(self, animation_tag):
         # Play an animation.
-        animation_list=Pepper_animation_tags.get(animation_tag,"")
-        if animation_list:
-            animation=random.choice(animation_list)
-            animation_path=Pepper_animations.get(animation,"")
-            # Send robot to Stand
-            self.posture.goToPosture("Stand", 0.2)
-            #time.sleep(1.0)
-            print(animation_path)
-            try:
-                print ("tag: " + animation_tag+", animation "+animation+",path:"+animation_path+",started")
-                self.animation.run(animation_path)        
-            except:
-                print ("tag: " + animation_tag+", animation "+animation+",path:"+animation_path+",not working")
-            #time.sleep(1.0)
-            # Send robot to Stand
-            self.posture.goToPosture("Stand", 0.2)
-            print ("play animation done")
-        else :
-            print ("WARNING: unknown animation tag "+animation_tag) 
+        if self.animation==None:
+            print("animations not supported (robot's naoqi version = " + str(self.naoqi_version)+")")
+        else:        
+            animation_list=Pepper_animation_tags.get(animation_tag,"")
+            if animation_list:
+                animation=random.choice(animation_list)
+                animation_path=Pepper_animations.get(animation,"")
+                # Send robot to Stand
+                self.posture.goToPosture("Stand", 0.2)
+                #time.sleep(1.0)
+                print(animation_path)
+                try:
+                    print ("tag: " + animation_tag+", animation "+animation+",path:"+animation_path+",started")
+                    self.animation.run(animation_path)        
+                except:
+                    print ("tag: " + animation_tag+", animation "+animation+",path:"+animation_path+",not working")
+                #time.sleep(1.0)
+                # Send robot to Stand
+                self.posture.goToPosture("Stand", 0.2)
+                print ("play animation done")
+            else :
+                print ("WARNING: unknown animation tag "+animation_tag) 
 
     def extended_movement(self):
         curr_time=datetime.now()
