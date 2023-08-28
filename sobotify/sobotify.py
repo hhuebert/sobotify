@@ -6,6 +6,8 @@ import time
 import platform
 import signal
 import inspect
+from datetime import datetime
+import psutil
 
 mosquitto_ip_default     = '127.0.0.1'      # ip address of the mosquitto server'
 mosquitto_path_default   = ''               # path to directory of the mosquitto executable')
@@ -68,6 +70,9 @@ class sobotify (object) :
         self.init_grammar_checking_done_flag =True
         self.init_logging_server_done_flag=False
         self.log_enabled=log
+        self.language=language_default
+        self.sound_device=sound_device_default
+        self.partial_text_pending=False
 
         if start_mqtt_server==True:
             self.start_mosquitto(mosquitto_path)
@@ -78,6 +83,33 @@ class sobotify (object) :
             self.start_logging_server()
             from sobotify.commons.logger import LoggerClient
             self.logger=LoggerClient(self.mqtt_client)
+
+    def stop_service(self,service):
+        if not service==None: 
+            try:
+                project_process=psutil.Process(service.pid)
+                project_children=project_process.children(recursive=True)
+                print(project_children)
+                for child in project_children:
+                    try:
+                        #print(f"kill process {child.name} with pid: {child.pid}")
+                        child.kill()
+                    except:
+                        #print(f"process {child.name} with pid: {child.pid} already finished")					
+                        pass
+                try:
+                    #print(f"kill process with pid: {self.project_proc.pid}")
+                    service.kill()
+                except:
+                    #print(f"process with pid: {self.project_proc.pid} already finished")					
+                    pass
+            except:
+                #print(f"process with pid: {self.project_proc.pid} does not exist (anymore)")					
+                pass
+        else:
+            #print("no process to kill")
+            pass
+        service=None
 
     def log(self,message,topic=""):
         if self.log_enabled==True :
@@ -94,6 +126,11 @@ class sobotify (object) :
         print("got statement from human: "+ self.statement)
         self.statement_pending=True
 
+    def store_partial_text(self,partial_text) :
+        self.partial_text = partial_text
+        #print("got statement from human: "+ self.statement)
+        self.partial_text_pending=True
+
     def robot_done(self,message) :
         print("got info robot is done: "+ message)
         self.robot_done_flag=True
@@ -106,6 +143,29 @@ class sobotify (object) :
         self.robot_done_flag=False
         print(" ... done")             
 
+
+    def reply_from_listener(self):
+            self.mqtt_client.subscribe("speech-recognition/partial-text",self.store_partial_text)
+            timestamp=datetime.now()
+            while not self.statement_pending:
+                time.sleep(1)
+                if self.partial_text_pending==True:
+                    timestamp=datetime.now()
+                    self.partial_text_pending=False
+                waiting_time=(datetime.now()-timestamp).total_seconds()
+                print ("waiting time=",waiting_time)
+                if waiting_time > 12:  ## service not responding ==> restart
+                    self.stop_service(self.speech_recognition_proc)
+                    self.start_listener(language=self.language,sound_device=self.sound_device)
+                    time.sleep(0.5)
+                    if self.language=="english":
+                        self.speak("Sorry, I couldn't listen to you. Could you please say that again?")
+                    if self.language=="german":
+                        self.speak("Entschuldige, leider konnte ich dir nicht zuhören. Kannst du das bitte wiederholen?")
+                    self.mqtt_client.publish("speech-recognition/control/record/start","")
+                    return False
+            return True
+
     def listen(self,listen_to_keyword=False,keyword=keyword_default,detect_emotion=False):
         if (listen_to_keyword==True) :
             self.mqtt_client.publish("speech-recognition/control/record/listen_to_keyword",keyword)
@@ -114,8 +174,8 @@ class sobotify (object) :
                 self.detect(command="start")
             self.mqtt_client.subscribe("speech-recognition/statement",self.store_statement)
             self.mqtt_client.publish("speech-recognition/control/record/start","")
-            while not self.statement_pending:
-                time.sleep(1)    
+            while not self.reply_from_listener():
+                time.sleep(0.2)
             self.statement_pending=False
             if detect_emotion:
                 emotion=self.detect(command="stop")
@@ -307,6 +367,8 @@ class sobotify (object) :
 
     def start_listener(self,mqtt=True,mosquitto_ip=mosquitto_ip_default,vosk_model_path=vosk_model_path_default,language=language_default,
                                  keyword=keyword_default,sound_device=sound_device_default):
+        self.language=language
+        self.sound_device=sound_device
         sobotify_path=os.path.dirname(os.path.abspath(__file__))
         script_path=os.path.join(sobotify_path,'tools','speech_recognition.py')
         arguments=[sys.executable,script_path]
