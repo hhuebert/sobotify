@@ -11,6 +11,8 @@ import numpy as np
 from deepface import DeepFace
 from datetime import datetime
 
+face_database=os.path.join(os.path.expanduser("~"),".sobotify","face_db")
+
 ## open-cv related part based on example code in: 
 # https://docs.opencv.org/3.4/dd/d43/tutorial_py_video_display.html
 
@@ -113,13 +115,14 @@ class EmotionDetection:
         head_data["img_height"]=img_height
         self.mqtt_client.publish("robot_control/command/follow_head",str(head_data))
 
-    def draw_bounding_box(self,img,face,text="",text_size=1,text_width=1) :
+    def draw_bounding_box(self,img,face,text_top="",text_bottom="",text_size=1,text_width=1) :
         x=face["x"]
         y=face["y"]
         w=face["w"]
         h=face["h"]
         cv.rectangle(img,(x,y),(x+w,y+h),(255,0,0),3)
-        cv.putText(img,text,(int(x+w/8),int(y+h/4)),cv.FONT_HERSHEY_DUPLEX,text_size,(0,255,0),text_width)
+        cv.putText(img,text_top,(int(x+w/8),int(y+h/4)),cv.FONT_HERSHEY_DUPLEX,text_size,(0,255,0),text_width)
+        cv.putText(img,text_bottom,(int(x+w/8),int(y+3*h/4)),cv.FONT_HERSHEY_DUPLEX,text_size,(0,255,0),text_width)
 
     def face_detect(self,img) :
         faces=DeepFace.extract_faces(img)
@@ -141,6 +144,22 @@ class EmotionDetection:
             self.mqtt_client.publish("emotion_detection/emotions",str(emotions[0]["emotion"]))
             return face,dominant_emotion
 
+    def face_recognition(self,img) :
+        face_string=""
+        name=""
+        faces = DeepFace.find(img, db_path = face_database)
+        print (faces[0])
+        for index,face in faces[0].iterrows():
+            if index==0:
+                name=os.path.splitext(os.path.basename(face["identity"]))[0]
+                difference=round(face["VGG-Face_cosine"],2)
+                face_string=name+":"+str(difference)
+            #print (face)
+            print(os.path.splitext(os.path.basename(face["identity"]))[0],":",round(face["VGG-Face_cosine"],2))
+        self.mqtt_client.publish("emotion_detection/name",str(name))
+        return face_string
+
+
     def detect(self,show_video,fps,detect_emo=False) :
         detect_emotion=detect_emo
         while True :
@@ -153,6 +172,12 @@ class EmotionDetection:
             img=self.get_image()
             img_height=img.shape[0]
             img_width=img.shape[1]
+            try:
+                face_string=self.face_recognition(img)
+            except:
+                print ("face not found in database")
+                if self.mqtt=="on" :
+                    self.mqtt_client.publish("emotion_detection/name","")
             if img_width>600:
                 text_size=1
                 text_width=2
@@ -162,10 +187,10 @@ class EmotionDetection:
             try:
                 if detect_emotion==True:
                     face,dominant_emotion=self.emotion_detect(img)
-                    self.draw_bounding_box(img,face,dominant_emotion,text_size,text_width)
+                    self.draw_bounding_box(img,face,dominant_emotion,face_string,text_size,text_width)
                 else :
                     face=self.face_detect(img)
-                    self.draw_bounding_box(img,face,"",text_size,text_width)
+                    self.draw_bounding_box(img,face,"",face_string,text_size,text_width)
                 self.send_head_data(face,img_width,img_height)
             except:
                 cv.putText(img,"no face detected",(int(img_width/8),int(img_height/8)),cv.FONT_HERSHEY_DUPLEX,text_size,(0,0,255),text_width)

@@ -115,6 +115,12 @@ class sobotify (object) :
         if self.log_enabled==True :
             self.logger.message(message,topic,level=2)
 
+    def subscribe_face_detection(self,callback):
+        self.mqtt_client.subscribe("robot_control/command/follow_head",callback)
+
+    def subscribe_face_name(self,callback):
+        self.mqtt_client.subscribe("emotion_detection/name",callback)
+
     def subscribe_chatbot(self,callback):
          self.mqtt_client.subscribe("llm/reply",callback)
 
