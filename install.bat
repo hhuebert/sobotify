@@ -32,6 +32,15 @@ REM ============================================================================
 
 
 REM ======================================================================================
+REM Download language tool
+set LANGUAGE_TOOL=LanguageTool-6.3
+set LANGUAGE_TOOL_URL=https://languagetool.org/download/
+SET LANGUAGE_TOOL_PATH=%USERPROFILE%\.sobotify\
+CALL :download %LANGUAGE_TOOL_URL% %LANGUAGE_TOOL% "%LANGUAGE_TOOL_PATH%" languagetool
+REM ======================================================================================
+
+
+REM ======================================================================================
 REM Download FFMPEG
 set FFMPEG=ffmpeg-master-latest-win64-lgpl-shared
 set FFMPEG_URL=https://github.com/BtbN/FFmpeg-Builds/releases/download/latest
