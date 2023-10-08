@@ -25,6 +25,7 @@ class voskListener:
         self.timeout=timeout
         self.timeout_silence=timeout_silence
         self.start_recording_after_keyword_flag=False
+        self.detected_text=False
         if self.mqtt=="on" :
             self.mqtt_client = mqttClient(mosquitto_ip,"speech-recognition")
             self.mqtt_client.subscribe("speech-recognition/control/record/listen_to_keyword",self.start_recording_after_keyword)
@@ -73,6 +74,7 @@ class voskListener:
         self.audioqueue.put(bytes(indata))
 
     def record(self):
+        self.detected_text=False
         start_recording=datetime.now()  
         start_quiet=datetime.now()  
         query_text=""
@@ -83,7 +85,7 @@ class voskListener:
             while True:
                 recording_time   = (datetime.now()-start_recording).total_seconds()
                 delta_time_quiet = (datetime.now()-start_quiet).total_seconds()
-                if recording_time > self.timeout or delta_time_quiet > self.timeout_silence :
+                if recording_time > self.timeout or (self.detected_text and delta_time_quiet > self.timeout_silence):
                     return query_text+" "+partial_result
 
                 data = self.audioqueue.get()
@@ -101,6 +103,7 @@ class voskListener:
                     partial_result=json.loads(rec.PartialResult())["partial"].lower()
                     if not partial_result=="" :
                         start_quiet=datetime.now()  
+                        self.detected_text=True
                     print("partial text : "+ partial_result)
                     if len(partial_result)>0:
                         self.mqtt_client.publish("speech-recognition/partial-text",partial_result)
@@ -180,6 +183,6 @@ if __name__ == "__main__":
     parser.add_argument('--keyword',default='apple tree',help='key word to activate vosk listener')
     parser.add_argument('--sound_device',default=0,type=int,help='number of sound device, can be found with: import sounddevice;sounddevice.query_devices()')
     parser.add_argument('--timeout',default=20.0,type=int,help='timeout in seconds, after which the recording stops')
-    parser.add_argument('--timeout_silence',default=3.0,type=int,help='time of silence in seconds, after which the recording stops')
+    parser.add_argument('--timeout_silence',default=2.0,type=int,help='time of silence in seconds, after which the recording stops')
     args=parser.parse_args()
     speechrecognition(args.mqtt,args.mosquitto_ip,args.keyword,args.vosk_model_path,args.language,args.sound_device,args.timeout,args.timeout_silence)
