@@ -77,7 +77,7 @@ REM ============================================================================
 REM Create python environment for naoqi
 set CONDA_ENV_NAOQI=sobotify_naoqi
 CALL %CONDA% create -y -n %CONDA_ENV_NAOQI% python=2.7 
-CALL %CONDA% run --no-capture-output -n %CONDA_ENV% pip install -r "%~dp0\requirements.txt"
+CALL %CONDA% run --no-capture-output -n %CONDA_ENV_NAOQI% pip install -r "%~dp0\requirements.txt"
 CALL %CONDA% run --no-capture-output -n %CONDA_ENV_NAOQI% pip install -e "%~dp0."
 CALL %CONDA% run --no-capture-output -n %CONDA_ENV_NAOQI% conda env config vars set PYTHONPATH="%NAOQI_PATH%\pynaoqi\lib"
 REM ======================================================================================
