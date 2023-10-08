@@ -184,16 +184,16 @@ class motion():
             img_height=head_data.get("img_height",480)
 
             angle_diff_x,angle_diff_y=get_angles(offset_x,offset_y)
-            print (angle_diff_x)
-            print (angle_diff_y)
+            #print (angle_diff_x)
+            #print (angle_diff_y)
             current_angles=self.motion.getAngles("Head",True)
             current_angles_yaw=current_angles[0]
             current_angles_pitch=current_angles[1]
-            print (current_angles)
+            #print (current_angles)
             angle_Yaw=current_angles_yaw-angle_diff_x
             angle_Pitch=current_angles_pitch+angle_diff_y
             if head_angles_in_range(angle_Yaw,angle_Pitch):
-                print ("angle ok")
+                #print ("angle ok")
                 fractionMaxSpeed  = 0.1
                 names  = ["HeadYaw", "HeadPitch"]
                 angles = [angle_Yaw,angle_Pitch]
@@ -207,10 +207,10 @@ class motion():
         current_angles=self.motion.getAngles("Head",True)
         current_angles_yaw=current_angles[0]
         current_angles_pitch=current_angles[1]
-        print (current_angles)
+        #print (current_angles)
         angle_Yaw=current_angles_yaw-self.search_angle_diff_x
         if head_angles_in_range(angle_Yaw,current_angles_pitch):
-            print ("angle ok")
+            #print ("angle ok")
             fractionMaxSpeed  = 0.1
             names  = ["HeadYaw", "HeadPitch"]
             angles = [angle_Yaw,current_angles_pitch]
