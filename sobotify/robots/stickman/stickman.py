@@ -93,7 +93,8 @@ class motion():
         print ("offsety="+str(offset_y))
 
     def search_head(self):
-        print ("search head")
+        pass
+        #print ("search head")
 
     def terminate(self):
         pass
