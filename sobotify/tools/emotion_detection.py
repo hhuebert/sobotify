@@ -113,6 +113,8 @@ class EmotionDetection:
         head_data["offset_y"]=offset_y
         head_data["img_width"]=img_width
         head_data["img_height"]=img_height
+        head_data["face_width"]=face["w"]
+        head_data["face_height"]=face["h"]
         self.mqtt_client.publish("robot_control/command/follow_head",str(head_data))
 
     def draw_bounding_box(self,img,face,text_top="",text_bottom="",text_size=1,text_width=1) :
