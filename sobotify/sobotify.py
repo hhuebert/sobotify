@@ -27,6 +27,7 @@ sound_device_default     = 0               # number of sound device, can be foun
 llm_name_default         = 'dummy'         # name of the llm api
 llm_options_default      = ''              # llm options
 show_video_default       = "on"            # show video during emotion detection
+show_stickman_default    = "on"            # show stickman during emotion detection
 frame_rate_default       = 1               # frame rate for emotion detection
 cam_device_default       = "0"             # camera device for emotion detection
 text_default             = ""              # text to checked for grammar
@@ -70,6 +71,7 @@ class sobotify (object) :
         self.init_grammar_checking_done_flag =True
         self.init_logging_server_done_flag=False
         self.log_enabled=log
+        self.init_teleoperator_done_flag =False
         self.language=language_default
         self.sound_device=sound_device_default
         self.partial_text_pending=False
@@ -226,6 +228,15 @@ class sobotify (object) :
                 self.dominant_emotion_available=False
                 return self.dominant_emotion
 
+    def teleoperate(self,timeout=10,blocking=True):
+        self.mqtt_client.publish("teleoperator/command/start")
+        if blocking==True:
+            time.sleep(timeout)
+            self.mqtt_client.publish("teleoperator/command/stop")
+
+    def stop_teleoperation(self):
+        self.mqtt_client.publish("teleoperator/command/stop")
+
     def store_grammar_check_result(self,result) :
         self.grammar_checking_result = result
         print("got grammar check result: "+ self.grammar_checking_result)
@@ -277,6 +288,40 @@ class sobotify (object) :
         self.mosquitto_proc=subprocess.Popen(arguments,stdout=subprocess.PIPE, creationflags=creationflags)
         time.sleep(3)
         print ('started mosquitto, pid=',self.mosquitto_proc.pid)
+
+   ########################################################################################################
+    def init_teleoperator_done(self,message) :
+        print("got init done: "+ message)
+        self.init_teleoperator_done_flag =True
+
+    def wait_for_init_teleoperator_done(self):
+        self.mqtt_client.subscribe("teleoperator/status/init-done",self.init_teleoperator_done)
+        print("waiting for logging server to finish initalization ...")             
+        while not self.init_teleoperator_done_flag==True:
+            time.sleep(0.5)   
+        print(" ... done")  
+
+    def start_teleoperator(self,mqtt=True,mosquitto_ip=mosquitto_ip_default,robot_name=robot_name_default,cam_device=cam_device_default,frame_rate=frame_rate_default,show_video=show_video_default,show_stickman=show_stickman_default):
+        sobotify_path=os.path.dirname(os.path.abspath(__file__))
+        script_path=os.path.join(sobotify_path,'tools','teleoperator.py')
+        arguments=[sys.executable,script_path]
+        if mqtt== True: 
+            arguments.extend(('--mqtt',"on"))
+        arguments.extend(('--mosquitto_ip',mosquitto_ip))
+        arguments.extend(('--robot_name',robot_name))
+        arguments.extend(('--cam_device',cam_device))
+        arguments.extend(('--frame_rate',str(frame_rate)))
+        arguments.extend(('--show_video',show_video))
+        arguments.extend(('--show_stickman',show_stickman))
+        if self.debug==True:
+            print (*arguments)
+            creationflags=subprocess.CREATE_NEW_CONSOLE
+        else:
+            creationflags=subprocess.CREATE_NO_WINDOW
+        self.teleoperator_proc=subprocess.Popen(arguments,creationflags=creationflags)
+        print ('started teleoperator, pid=',self.teleoperator_proc.pid)
+        if mqtt== True: 
+            self.wait_for_init_teleoperator_done()
 
     ########################################################################################################
     def init_logging_server_done(self,message) :

@@ -7,6 +7,7 @@ import srt
 from datetime import datetime
 from time import sleep
 import cv2 as cv
+import ast
 
 from sobotify.commons.mqttclient import mqttClient
 import sobotify.robotcontrol.data
@@ -161,6 +162,7 @@ class RobotControl():
         self.received_message=False    
         self.get_image_flag=False
         self.head_update_flag=False
+        self.got_move=False  
         self.speech,self.motion,self.vision = getRobot(robot_name,robot_ip,robot_options,cam_device)
         self.thread_vision = threading.Thread(target=self.send_image)
         self.thread_vision.start()
@@ -169,6 +171,8 @@ class RobotControl():
         self.head_following_enabled=True
         self.thread_head_following = threading.Thread(target=self.head_following)
         self.thread_head_following.start()
+        self.thread_live_movement = threading.Thread(target=self.live_movement)
+        self.thread_live_movement.start()
         if mqtt=="on" :
             self.mqtt_client = mqttClient(mosquitto_ip,"robot")
             self.mqtt_client.subscribe("robot/speak-and-gesture",self.receive_message)
@@ -177,6 +181,7 @@ class RobotControl():
             self.mqtt_client.subscribe("robot/control/set-min-speed",self.set_min_speed)
             self.mqtt_client.subscribe("robot_control/command/get_image",self.get_image)
             self.mqtt_client.subscribe("robot_control/command/follow_head",self.head_update)
+            self.mqtt_client.subscribe("robot_control/command/move",self.get_moves)
         self.speech.setLanguage(language)
         self.text_tool = TextTool()
         self.running = False
@@ -288,6 +293,22 @@ class RobotControl():
             self.speech.say(speech_text)
         print ("\nspeech done at     : " + self.deltatime(datetime.now()))                        
         self.talking=False;
+
+    def get_moves(self,message):
+        self.landm=ast.literal_eval(message)
+        print ("got move")
+        print (self.landm)
+        self.got_move=True
+
+    def live_movement(self):           
+        while True:
+            if self.stop_robotcontrol==True:
+                break
+            if self.got_move==True:
+                print ("do move")
+                self.motion.move(self.landm)
+                self.got_move=False                
+            sleep(0.05)
 
     def movement(self,reader):           
         last_motion=0.;
@@ -413,6 +434,7 @@ class RobotControl():
         self.speech.terminate()
         self.stop_robotcontrol=True
         self.thread_head_following.join()
+        self.thread_live_movement.join()
         self.thread_vision.join()
 
 def robotcontroller(mqtt,mosquitto_ip,data_path,language,min_speech_speed,max_speech_speed,robot_name,robot_ip,robot_options,message,gesture,cam_device) :
