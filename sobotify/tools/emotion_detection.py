@@ -141,7 +141,8 @@ class EmotionDetection:
             self.emotions_accum['amount']+=1
             #print(emotions_accum)
             face=emotions[0]["region"]
-            self.mqtt_client.publish("emotion_detection/emotions",str(emotions[0]["emotion"]))
+            if self.mqtt=="on" :
+                self.mqtt_client.publish("emotion_detection/emotions",str(emotions[0]["emotion"]))
             return face,dominant_emotion
 
     def face_recognition(self,img) :
@@ -195,7 +196,8 @@ class EmotionDetection:
             except:
                 cv.putText(img,"no face detected",(int(img_width/8),int(img_height/8)),cv.FONT_HERSHEY_DUPLEX,text_size,(0,0,255),text_width)
 
-            self.log.image(img,"fer")
+            if self.mqtt=="on" :
+                self.log.image(img,"fer")
 
             if show_video=="on":
                 cv.imshow("Image",img)
