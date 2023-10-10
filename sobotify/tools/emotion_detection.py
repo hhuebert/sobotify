@@ -115,7 +115,8 @@ class EmotionDetection:
         head_data["img_height"]=img_height
         head_data["face_width"]=face["w"]
         head_data["face_height"]=face["h"]
-        self.mqtt_client.publish("robot_control/command/follow_head",str(head_data))
+        if self.mqtt=="on" :
+            self.mqtt_client.publish("robot_control/command/follow_head",str(head_data))
 
     def draw_bounding_box(self,img,face,text_top="",text_bottom="",text_size=1,text_width=1) :
         x=face["x"]
@@ -159,7 +160,8 @@ class EmotionDetection:
                 face_string=name+":"+str(difference)
             #print (face)
             print(os.path.splitext(os.path.basename(face["identity"]))[0],":",round(face["VGG-Face_cosine"],2))
-        self.mqtt_client.publish("emotion_detection/name",str(name))
+        if self.mqtt=="on" :
+            self.mqtt_client.publish("emotion_detection/name",str(name))
         return face_string
 
 
@@ -178,6 +180,7 @@ class EmotionDetection:
             try:
                 face_string=self.face_recognition(img)
             except:
+                face_string=""
                 print ("face not found in database")
                 if self.mqtt=="on" :
                     self.mqtt_client.publish("emotion_detection/name","")
@@ -211,7 +214,8 @@ class EmotionDetection:
                     dominant_emotion_accum="none"
                 else:
                     dominant_emotion_accum=max(self.emotions_accum,key=self.emotions_accum.get)
-                self.mqtt_client.publish("emotion_detection/dominant_emotion",dominant_emotion_accum)
+                if self.mqtt=="on" :
+                    self.mqtt_client.publish("emotion_detection/dominant_emotion",dominant_emotion_accum)
                 self.stop_detection_flag=False
                 detect_emotion=False
         cv.destroyAllWindows()
