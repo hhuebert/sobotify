@@ -5,7 +5,7 @@ from sys import exit
 import time
 import argparse
 from sobotify.commons.mqttclient import mqttClient
-from sobotify.commons.logger import LoggerClient
+from sobotify.tools.logger import LoggerClient
 import sobotify.robots.robots as robots
 import cv2 as cv
 import numpy as np

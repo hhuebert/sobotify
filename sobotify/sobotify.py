@@ -83,7 +83,7 @@ class sobotify (object) :
             self.mqtt_client = mqttClient(mosquitto_ip,app_name)
         if self.log_enabled==True :
             self.start_logging_server()
-            from sobotify.commons.logger import LoggerClient
+            from sobotify.tools.logger import LoggerClient
             self.logger=LoggerClient(self.mqtt_client)
 
     def stop_service(self,service):
@@ -337,7 +337,7 @@ class sobotify (object) :
 
     def start_logging_server(self,mqtt=True,mosquitto_ip=mosquitto_ip_default):
         sobotify_path=os.path.dirname(os.path.abspath(__file__))
-        script_path=os.path.join(sobotify_path,'commons','logger.py')
+        script_path=os.path.join(sobotify_path,'tools','logger.py')
         arguments=[sys.executable,script_path]
         if mqtt== True: 
             arguments.extend(('--mqtt',"on"))
