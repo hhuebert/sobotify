@@ -159,7 +159,7 @@ class SobotifyGestureGui(object):
 
 	def start_gesture(self):
 		sobotify_path=os.path.dirname(os.path.abspath(__file__))
-		script_path=os.path.join(sobotify_path,'robotcontrol','robotcontrol.py')
+		script_path=os.path.join(sobotify_path,'tools','robotcontrol','robotcontrol.py')
 		if self.selected_robot.get().lower() == "pepper" or self.selected_robot.get().lower() == "nao" :
 			conda_env = "sobotify_naoqi"
 		else : 

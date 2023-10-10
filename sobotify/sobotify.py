@@ -368,7 +368,7 @@ class sobotify (object) :
                            robot_options=robot_options_default,cam_device=cam_device_default,robot_conda_env=robot_conda_env_default,data_path=data_path_default,language=language_default,
                            min_speech_speed=min_speech_speed_default,max_speech_speed=max_speech_speed_default,message=message_default) :
         sobotify_path=os.path.dirname(os.path.abspath(__file__))
-        script_path=os.path.join(sobotify_path,'robotcontrol','robotcontrol.py')
+        script_path=os.path.join(sobotify_path,'tools','robotcontrol','robotcontrol.py')
         if robot_conda_env == "" :
             if robot_name.lower() == "pepper" or robot_name.lower() == "nao" :
                 robot_conda_env = "sobotify_naoqi"

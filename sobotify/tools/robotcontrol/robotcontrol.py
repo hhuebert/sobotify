@@ -10,7 +10,7 @@ import cv2 as cv
 import ast
 
 from sobotify.commons.mqttclient import mqttClient
-import sobotify.robotcontrol.data
+import sobotify.tools.robotcontrol.data
 import sobotify.robots.robots as robots
 
 DEBUG_CALLS=False
@@ -152,7 +152,7 @@ class RobotControl():
         self.srtText = None
         self.start_time = None
         self.data_path=data_path
-        self.data_path_random=os.path.dirname(sobotify.robotcontrol.data.__file__)
+        self.data_path_random=os.path.dirname(sobotify.tools.robotcontrol.data.__file__)
         self.current_datapath= self.data_path
         self.min_speech_speed=int(min_speech_speed)
         self.max_speech_speed=int(max_speech_speed)
