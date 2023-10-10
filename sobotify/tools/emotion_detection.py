@@ -6,6 +6,7 @@ import time
 import argparse
 from sobotify.commons.mqttclient import mqttClient
 from sobotify.commons.logger import LoggerClient
+import sobotify.robots.robots as robots
 import cv2 as cv
 import numpy as np
 from deepface import DeepFace
@@ -17,17 +18,7 @@ face_database=os.path.join(os.path.expanduser("~"),".sobotify","face_db")
 # https://docs.opencv.org/3.4/dd/d43/tutorial_py_video_display.html
 
 
-def getRobot(name,robot_ip,cam_device) :
-        if name=='stickman' or name=='pepper' or name=='pepper_sim' or name=='nao' or name=='nao_sim' or  name=='mykeepon':
-            import sobotify.robots.stickman.stickman as stickman
-            return stickman.vision(cam_device)
-        elif name=='cozmo' :
-            import sobotify.robots.cozmo.cozmo as cozmo
-            my_cozmo=cozmo.cozmo()
-            return my_cozmo
-        else :
-            print("unknow robot :" + str(name))
-            exit()
+
 
 def offsets(face,img_width,img_height):
     #center_img_x=int(img_width/2)
@@ -60,7 +51,7 @@ class EmotionDetection:
             self.mqtt_client.subscribe("emotion_detection/start",self.start_detection)
             self.mqtt_client.subscribe("emotion_detection/stop",self.stop_detection)
         else :
-            self.robot=getRobot(robot_name,robot_ip,cam_device) 
+            self.robot=robots.get_vision(robot_name,robot_ip,cam_device) 
         print ("init emotion detection ...", flush=True)
         self.image_available=False
         self.start_detection_flag=False

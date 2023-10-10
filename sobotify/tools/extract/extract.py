@@ -3,28 +3,7 @@ import os
 import sobotify.tools.extract.video2landmarks as video2landmarks
 import sobotify.tools.extract.audio2srt as audio2srt
 import sobotify.tools.extract.video2timestamps as video2timestamps
-
-LIST_OF_ROBOTS=("stickman","pepper","nao","cozmo","mykeepon")
-
-def getRobot(name) :
-    if name=='stickman' :
-        return None
-    elif name=='pepper' :
-        import sobotify.robots.pepper.landmarks2angles as landmarks2angles
-        return landmarks2angles.landmarks2angles
-    elif name=='nao' :
-        import sobotify.robots.nao.landmarks2angles as landmarks2angles
-        return landmarks2angles.landmarks2angles
-    elif name=='cozmo' :
-        import sobotify.robots.cozmo.landmarks2angles as landmarks2angles
-        return landmarks2angles.landmarks2angles
-    elif name=='mykeepon' :
-        import sobotify.robots.mykeepon.landmarks2angles as landmarks2angles
-        return landmarks2angles.landmarks2angles
-    else :
-        print("unknow robot :" + str(name))
-        return None
-
+import sobotify.robots.robots as robots
 
 def extract(video_file,data_path,robot_name,ffmpeg_path,vosk_model_path,language,show_video):
     #REM for recording on Android Phone with Bluetooth Headset/microphone use : https://play.google.com/store/apps/details?id=com.bedoig.BTmono&hl=de&gl=US
@@ -35,11 +14,11 @@ def extract(video_file,data_path,robot_name,ffmpeg_path,vosk_model_path,language
     audio2srt.audio2srt(video_file,data_path,ffmpeg_path,vosk_model_path,language)
     print("extract landmarks")
     video2landmarks.video2landmarks(video_file,data_path,show_video)
-    robots=[]
-    if robot_name=="all": robots=LIST_OF_ROBOTS
-    else : robots.append(robot_name)
-    for robot in robots :
-        landmarks2angles_converter=getRobot(robot)
+    robot_names=[]
+    if robot_name=="all": robot_names=robots.get_names()
+    else : robot_names.append(robot_name)
+    for robot in robot_names :
+        landmarks2angles_converter=robots.get_gesture_conversion(robot)
         if not landmarks2angles_converter is None :
             fileName, ext = os.path.splitext(os.path.basename(video_file))
             world_landmarks_filename= os.path.join(data_path,fileName+"_wlmarks.csv")
