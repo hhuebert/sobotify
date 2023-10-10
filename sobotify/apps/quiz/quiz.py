@@ -21,7 +21,7 @@ class quiz:
         self.sobot.start_robotcontroller(robot_name=robot_name,robot_ip=robot_ip, language=self.language,cam_device="0")
         self.sobot.start_listener(language=self.language,sound_device=sound_device)
         if emotion_detection==True :
-            self.sobot.start_emotion_detection(robot_name=robot_name,robot_ip=robot_ip)
+            self.sobot.start_facial_processing(robot_name=robot_name,robot_ip=robot_ip)
         if check_grammar==True :
             self.sobot.start_grammar_checking(language=self.language)
         self.general_info=get_general_info(project_file)

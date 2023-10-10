@@ -46,19 +46,19 @@ class EmotionDetection:
         self.emotions_accum={}
         self.reset_emotion_values()
         if self.mqtt=="on" :
-            self.mqtt_client = mqttClient(mosquitto_ip,"emotion_detection")
+            self.mqtt_client = mqttClient(mosquitto_ip,"facial_processing")
             self.mqtt_client.subscribe("robot_control/image",self.store_image,raw_data=True)
-            self.mqtt_client.subscribe("emotion_detection/start",self.start_detection)
-            self.mqtt_client.subscribe("emotion_detection/stop",self.stop_detection)
+            self.mqtt_client.subscribe("facial_processing/start",self.start_detection)
+            self.mqtt_client.subscribe("facial_processing/stop",self.stop_detection)
         else :
             self.robot=robots.get_vision(robot_name,robot_ip,cam_device) 
-        print ("init emotion detection ...", flush=True)
+        print ("init facial processing ...", flush=True)
         self.image_available=False
         self.start_detection_flag=False
         self.stop_detection_flag=False
         self.query=''
         if self.mqtt=="on" :
-            self.mqtt_client.publish("emotion_detection/status/init-done")
+            self.mqtt_client.publish("facial_processing/status/init-done")
             self.log=LoggerClient(self.mqtt_client)
         print (" finished")
 
@@ -136,7 +136,7 @@ class EmotionDetection:
             #print(emotions_accum)
             face=emotions[0]["region"]
             if self.mqtt=="on" :
-                self.mqtt_client.publish("emotion_detection/emotions",str(emotions[0]["emotion"]))
+                self.mqtt_client.publish("facial_processing/emotions",str(emotions[0]["emotion"]))
             return face,dominant_emotion
 
     def face_recognition(self,img) :
@@ -152,7 +152,7 @@ class EmotionDetection:
             #print (face)
             print(os.path.splitext(os.path.basename(face["identity"]))[0],":",round(face["VGG-Face_cosine"],2))
         if self.mqtt=="on" :
-            self.mqtt_client.publish("emotion_detection/name",str(name))
+            self.mqtt_client.publish("facial_processing/name",str(name))
         return face_string
 
 
@@ -174,7 +174,7 @@ class EmotionDetection:
                 face_string=""
                 print ("face not found in database")
                 if self.mqtt=="on" :
-                    self.mqtt_client.publish("emotion_detection/name","")
+                    self.mqtt_client.publish("facial_processing/name","")
             if img_width>600:
                 text_size=1
                 text_width=2
@@ -206,7 +206,7 @@ class EmotionDetection:
                 else:
                     dominant_emotion_accum=max(self.emotions_accum,key=self.emotions_accum.get)
                 if self.mqtt=="on" :
-                    self.mqtt_client.publish("emotion_detection/dominant_emotion",dominant_emotion_accum)
+                    self.mqtt_client.publish("facial_processing/dominant_emotion",dominant_emotion_accum)
                 self.stop_detection_flag=False
                 detect_emotion=False
         cv.destroyAllWindows()
@@ -224,7 +224,7 @@ class EmotionDetection:
         self.stop_detection_flag=True
 
 
-def emotion_detection(mqtt,mosquitto_ip,robot_name,robot_ip,cam_device,frame_rate,show_video) :
+def facial_processing(mqtt,mosquitto_ip,robot_name,robot_ip,cam_device,frame_rate,show_video) :
     em_detect = EmotionDetection(mqtt,mosquitto_ip,robot_name,robot_ip,cam_device)
     if mqtt=="on" :
         em_detect.detect(show_video,frame_rate)
@@ -249,4 +249,4 @@ if __name__ == "__main__":
     parser.add_argument('--frame_rate',default=1,type=float,help='frame rate')
     args=parser.parse_args()
 
-    emotion_detection(args.mqtt,args.mosquitto_ip,args.robot_name,args.robot_ip,args.cam_device,args.frame_rate,args.show_video)
+    facial_processing(args.mqtt,args.mosquitto_ip,args.robot_name,args.robot_ip,args.cam_device,args.frame_rate,args.show_video)

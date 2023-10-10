@@ -67,7 +67,7 @@ class sobotify (object) :
         self.init_speech_recognition_done_flag = False
         self.init_chatbot_done_flag = False
         self.init_robot_done_flag = False
-        self.init_emotion_detection_done_flag = False 
+        self.init_facial_processing_done_flag = False 
         self.init_grammar_checking_done_flag =True
         self.init_logging_server_done_flag=False
         self.log_enabled=log
@@ -121,7 +121,7 @@ class sobotify (object) :
         self.mqtt_client.subscribe("robot_control/command/follow_head",callback)
 
     def subscribe_face_name(self,callback):
-        self.mqtt_client.subscribe("emotion_detection/name",callback)
+        self.mqtt_client.subscribe("facial_processing/name",callback)
 
     def subscribe_chatbot(self,callback):
          self.mqtt_client.subscribe("llm/reply",callback)
@@ -218,11 +218,11 @@ class sobotify (object) :
     def detect(self,command,type="emotion"):
         if command=="start":
             if type=="emotion":
-                self.mqtt_client.publish("emotion_detection/start")
+                self.mqtt_client.publish("facial_processing/start")
         elif command=="stop":
             if type=="emotion":
-                self.mqtt_client.publish("emotion_detection/stop")
-                self.mqtt_client.subscribe("emotion_detection/dominant_emotion",self.store_dominant_emotion)
+                self.mqtt_client.publish("facial_processing/stop")
+                self.mqtt_client.subscribe("facial_processing/dominant_emotion",self.store_dominant_emotion)
                 while not self.dominant_emotion_available:
                     time.sleep(1)    
                 self.dominant_emotion_available=False
@@ -474,20 +474,20 @@ class sobotify (object) :
             self.wait_for_init_chatbot_done()
 
     ########################################################################################################
-    def init_emotion_detection_done(self,message) :
+    def init_facial_processing_done(self,message) :
         print("got init done: "+ message)
-        self.init_emotion_detection_done_flag =True
+        self.init_facial_processing_done_flag =True
 
-    def wait_for_init_emotion_detection_done(self):
-        self.mqtt_client.subscribe("emotion_detection/status/init-done",self.init_emotion_detection_done)
-        print("waiting for emotion_detection to finish initalization ...")             
-        while not self.init_emotion_detection_done_flag==True:
+    def wait_for_init_facial_processing_done(self):
+        self.mqtt_client.subscribe("facial_processing/status/init-done",self.init_facial_processing_done)
+        print("waiting for facial_processing to finish initalization ...")             
+        while not self.init_facial_processing_done_flag==True:
             time.sleep(1)   
         print(" ... done")  
     
-    def start_emotion_detection(self,mqtt=True,mosquitto_ip=mosquitto_ip_default,robot_name=robot_name_default,robot_ip=robot_ip_default,cam_device=cam_device_default,frame_rate=frame_rate_default,show_video=show_video_default):
+    def start_facial_processing(self,mqtt=True,mosquitto_ip=mosquitto_ip_default,robot_name=robot_name_default,robot_ip=robot_ip_default,cam_device=cam_device_default,frame_rate=frame_rate_default,show_video=show_video_default):
         sobotify_path=os.path.dirname(os.path.abspath(__file__))
-        script_path=os.path.join(sobotify_path,'tools','emotion_detection.py')
+        script_path=os.path.join(sobotify_path,'tools','facial_processing.py')
         arguments=[sys.executable,script_path]
         if mqtt== True: 
             arguments.extend(('--mqtt',"on"))
@@ -502,10 +502,10 @@ class sobotify (object) :
             creationflags=subprocess.CREATE_NEW_CONSOLE
         else:
             creationflags=subprocess.CREATE_NO_WINDOW
-        self.emotion_detection_proc=subprocess.Popen(arguments,creationflags=creationflags)
-        print ('started emotion detection, pid=',self.emotion_detection_proc.pid)
+        self.facial_processing_proc=subprocess.Popen(arguments,creationflags=creationflags)
+        print ('started facial processing, pid=',self.facial_processing_proc.pid)
         if mqtt== True: 
-            self.wait_for_init_emotion_detection_done()
+            self.wait_for_init_facial_processing_done()
 
     ########################################################################################################
     def init_grammar_checking_done(self,message) :
@@ -572,7 +572,7 @@ if __name__ == "__main__":
     parser.add_argument('-r',default="false",action="store_true",help='start robot controller')
     parser.add_argument('-l',default="false",action="store_true",help='start listener (speech recognition)')
     parser.add_argument('-c',default="false",action="store_true",help='start chatbot')
-    parser.add_argument('-f',default="false",action="store_true",help='start emotion detection')
+    parser.add_argument('-f',default="false",action="store_true",help='start facial processing')
     parser.add_argument('-g',default="false",action="store_true",help='start grammar checker')
     parser.add_argument('--mosquitto_ip',default='127.0.0.1',help='ip address of the mosquitto server')
     parser.add_argument('--mosquitto_path',default='',help='path to directory of the mosquitto executable')
@@ -613,7 +613,7 @@ if __name__ == "__main__":
     if args.c==True:
         sobot.start_chatbot(args.m,args.mosquitto_ip,args.llm_name,args.llm_options)
     if args.f==True:
-        sobot.start_emotion_detection(args.m,args.mosquitto_ip,args.robot_name,args.robot_ip,args.cam_device,args.frame_rate,args.show_video)
+        sobot.start_facial_processing(args.m,args.mosquitto_ip,args.robot_name,args.robot_ip,args.cam_device,args.frame_rate,args.show_video)
     if args.g==True:
         sobot.start_grammar_checking(args.m,args.mosquitto_ip,args.languagetool_path,args.java_path,args.language,args.languagetool_url,args.text)
 
