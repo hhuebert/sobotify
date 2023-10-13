@@ -18,6 +18,7 @@ project_path_default     = os.path.join(os.path.expanduser("~"),".sobotify","pro
 
 DEFAULT_ROBOT_IP="192.168.0.141"
 DEFAULT_ROBOT_NAMES=("stickman","pepper","nao","cozmo","mykeepon")
+DEFAULT_PROJECT="quiz_english"
 DEFAULT_NEW_PROJECT_NAME=("MyProject")
 
 if os.path.isfile(os.path.join(os.path.expanduser("~"),"miniconda3","condabin","conda.bat")):
@@ -103,6 +104,9 @@ class SobotifyAppGui(object):
 		if len(self.projects)==0:
 			self.selected_curr_project.set("")
 			self.selected_base_project.set("")
+		if DEFAULT_PROJECT in self.projects :
+			self.selected_curr_project.set(DEFAULT_PROJECT)
+			self.selected_base_project.set(DEFAULT_PROJECT)
 		else:
 			self.selected_curr_project.set(self.projects[0])
 			self.selected_base_project.set(self.projects[0])
