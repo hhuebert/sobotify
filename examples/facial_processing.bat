@@ -1,5 +1,5 @@
-set ROBOT_NAME=stickman
 @ECHO OFF
+set ROBOT_NAME=stickman
 REM ======================================================================================
 REM find and set CONDA executable path
 if EXIST "%USERPROFILE%\miniconda3\condabin\conda.bat" (
@@ -12,6 +12,8 @@ if EXIST "%USERPROFILE%\miniconda3\condabin\conda.bat" (
     exit
 )
 REM ======================================================================================
-@ECHO ON
+ECHO IMPORTANT: To exit this demo
+ECHO            1. press Q on your keyboard in the activated camera window
+ECHO            2. then close this window
 CALL %CONDA% run -n sobotify --no-capture-output python "%~dp0\..\sobotify\sobotify.py" -f --robot_name=%ROBOT_NAME%
 PAUSE

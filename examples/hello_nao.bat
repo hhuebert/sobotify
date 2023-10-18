@@ -1,9 +1,7 @@
-set LANGUAGE=german
-set SOUND_DEVICE=0
-set KEYWORD="banane"
-set ROBOT_NAME=stickman
-set ROBOT_IP=127.0.0.1
-set MOSQUITTO_IP=127.0.0.1
+set ROBOT_IP=192.168.0.141
+set ROBOT_NAME=nao
+set LANGUAGE=english
+set MESSAGE="Hello, I am NAO, your robot"
 @ECHO OFF
 REM ======================================================================================
 REM find and set CONDA executable path
@@ -18,5 +16,5 @@ if EXIST "%USERPROFILE%\miniconda3\condabin\conda.bat" (
 )
 REM ======================================================================================
 @ECHO ON
-CALL %CONDA% run -n sobotify --no-capture-output python "%~dp0\..\examples\grammar_check.py" --mosquitto_ip %MOSQUITTO_IP% --robot_name=%ROBOT_NAME% --robot_ip=%ROBOT_IP% --sound_device %SOUND_DEVICE% --language %LANGUAGE% --keyword %KEYWORD%  
+CALL %CONDA% run -n sobotify_naoqi --no-capture-output python "%~dp0\..\sobotify\tools\robotcontrol\robotcontrol.py" --robot_name %ROBOT_NAME% --robot_ip %ROBOT_IP% --language %LANGUAGE% --message %MESSAGE%
 PAUSE

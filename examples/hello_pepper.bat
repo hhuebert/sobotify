@@ -1,5 +1,7 @@
+set ROBOT_IP=192.168.0.141
+set ROBOT_NAME=pepper
 set LANGUAGE=english
-set MESSAGE="%~n1|Hello"
+set MESSAGE="Hello, I am Pepper, your robot"
 @ECHO OFF
 REM ======================================================================================
 REM find and set CONDA executable path
@@ -14,5 +16,5 @@ if EXIST "%USERPROFILE%\miniconda3\condabin\conda.bat" (
 )
 REM ======================================================================================
 @ECHO ON
-CALL %CONDA% run -n sobotify --no-capture-output python "%~dp0\..\sobotify\robotcontrol\robotcontrol.py" --robot_name stickman --language %LANGUAGE% --message %MESSAGE%
+CALL %CONDA% run -n sobotify_naoqi --no-capture-output python "%~dp0\..\sobotify\tools\robotcontrol\robotcontrol.py" --robot_name %ROBOT_NAME% --robot_ip %ROBOT_IP% --language %LANGUAGE% --message %MESSAGE%
 PAUSE
