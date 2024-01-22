@@ -22,8 +22,8 @@ class dialogTraining:
         self.general_info,self.task_groups=get_project_info(project_file)
         self.sobot=sobotify.sobotify(app_name="dialog-training",debug=False,log=True)
         self.sobot.start_facial_processing(robot_name=robot_name,robot_ip=robot_ip)
-        self.sobot.start_robotcontroller(robot_name=robot_name,robot_ip=robot_ip, language=language,cam_device="0")
-        self.sobot.start_listener(language=language,sound_device=sound_device)
+        self.sobot.start_robotcontroller(robot_name=robot_name,robot_ip=robot_ip, language=language,cam_device="0",sound_device=sound_device)
+        self.sobot.start_listener(language=language)
         print (" ... done")
 
     def emotion_feedback(self,emotion):

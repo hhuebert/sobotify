@@ -117,14 +117,15 @@ class TextTool :
 
 class RobotControl(): 
 
-    def __init__(self,mqtt,mosquitto_ip,data_path, language, min_speech_speed, max_speech_speed,robot_name,robot_ip,robot_options,cam_device):
+    def __init__(self,mqtt,mosquitto_ip,data_path, language, min_speech_speed, max_speech_speed,robot_name,robot_ip,robot_options,cam_device,sound_device):
         self.mqtt=mqtt
         self.stop_robotcontrol=False
         self.received_message=False    
         self.get_image_flag=False
+        self.get_audio_flag=False
         self.head_update_flag=False
         self.got_move=False  
-        self.speech,self.motion,self.vision = robots.get_all_interfaces(robot_name,robot_ip,robot_options,cam_device)
+        self.speech,self.motion,self.vision,self.sound = robots.get_all_interfaces(robot_name,robot_ip,robot_options,cam_device,sound_device)
         self.thread_vision = threading.Thread(target=self.send_image)
         self.thread_vision.start()
         self.thread_action = threading.Thread(target=self.action)
@@ -134,6 +135,9 @@ class RobotControl():
         self.thread_head_following.start()
         self.thread_live_movement = threading.Thread(target=self.live_movement)
         self.thread_live_movement.start()
+        self.thread_audio = threading.Thread(target=self.send_audio)
+        self.thread_audio.start()
+        
         if mqtt=="on" :
             self.mqtt_client = mqttClient(mosquitto_ip,"robot")
             self.mqtt_client.subscribe("robot/speak-and-gesture",self.receive_message)
@@ -143,6 +147,9 @@ class RobotControl():
             self.mqtt_client.subscribe("robot_control/command/get_image",self.get_image)
             self.mqtt_client.subscribe("robot_control/command/follow_head",self.head_update)
             self.mqtt_client.subscribe("robot_control/command/move",self.get_moves)
+            self.mqtt_client.subscribe("robot_control/command/streaming/start",self.start_streaming)
+            self.mqtt_client.subscribe("robot_control/command/streaming/stop",self.stop_streaming)
+            self.mqtt_client.subscribe("robot_control/command/get_audio_data",self.get_audio)
         self.speech.setLanguage(language)
         self.text_tool = TextTool()
         self.running = False
@@ -195,6 +202,32 @@ class RobotControl():
                         img_byte=bytearray(img)
                         self.mqtt_client.publish("robot_control/image",img_byte)
             sleep(0.2)
+
+    def get_audio(self,message) :
+        self.get_audio_flag=True
+
+    def start_streaming(self,message="") :
+        self.samplerate=self.sound.start_streaming()
+        if self.mqtt=="on" :
+            self.mqtt_client.publish("robot_control/status/samplerate",self.samplerate)
+        else:
+            return self.samplerate
+
+    def stop_streaming(self,message="") :
+        self.sound.stop_streaming()
+
+    def send_audio(self) : 
+        while True:
+            if self.stop_robotcontrol==True:
+                break
+            if self.get_audio_flag:
+                self.get_audio_flag=False
+                ret,audio=self.sound.get_audio_data()
+                if ret==True:
+                    #img_byte=bytearray(img)
+                    self.mqtt_client.publish("robot_control/audio",audio)
+            sleep(0.02)
+
 
     def set_speed(self,message):
         self.set_min_speed(message)
@@ -397,10 +430,11 @@ class RobotControl():
         self.thread_head_following.join()
         self.thread_live_movement.join()
         self.thread_vision.join()
+        self.thread_audio.join()
 
-def robotcontroller(mqtt,mosquitto_ip,data_path,language,min_speech_speed,max_speech_speed,robot_name,robot_ip,robot_options,message,gesture,cam_device) :
+def robotcontroller(mqtt,mosquitto_ip,data_path,language,min_speech_speed,max_speech_speed,robot_name,robot_ip,robot_options,message,gesture,cam_device,sound_device) :
     print ("starting robot controller ...")
-    robot = RobotControl(mqtt,mosquitto_ip,data_path,language,min_speech_speed,max_speech_speed,robot_name,robot_ip,robot_options,cam_device)
+    robot = RobotControl(mqtt,mosquitto_ip,data_path,language,min_speech_speed,max_speech_speed,robot_name,robot_ip,robot_options,cam_device,sound_device)
     if mqtt=="on" :
         while True:
             sleep(1000)
@@ -430,7 +464,8 @@ if __name__ == "__main__":
     parser.add_argument('--min_speech_speed',default=70,help='minimum speech speed of robot')
     parser.add_argument('--max_speech_speed',default=110,help='maximum speech speed of robot')
     parser.add_argument('--cam_device',default='0',help='camera device name or number')
+    parser.add_argument('--sound_device',default=0,type=int,help='number of sound device, can be found with: import sounddevice;sounddevice.query_devices()')
     args=parser.parse_args()   
-    robotcontroller(args.mqtt,args.mosquitto_ip,args.data_path,args.language,args.min_speech_speed,args.max_speech_speed,args.robot_name,args.robot_ip,args.robot_options,args.message,args.gesture,args.cam_device)
+    robotcontroller(args.mqtt,args.mosquitto_ip,args.data_path,args.language,args.min_speech_speed,args.max_speech_speed,args.robot_name,args.robot_ip,args.robot_options,args.message,args.gesture,args.cam_device,args.sound_device)
 
  

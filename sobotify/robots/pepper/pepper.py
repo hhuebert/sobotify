@@ -10,6 +10,8 @@ https://github.com/elggem/naoqi-pose-retargeting/blob/main/teleop.py
 from naoqi import ALProxy
 #from ALProxy_dummy import ALProxy
 import cv2 as cv
+import sounddevice as sd
+import Queue as queue
 import vision_definitions
 import numpy as np
 from datetime import datetime
@@ -326,3 +328,53 @@ class vision():
     def terminate(self):
         self.video_service.unsubscribe(self.nameId)
         pass   
+
+"""
+Attribution: The following code is based on 
+https://github.com/alphacep/vosk-api/blob/master/python/example/test_microphone.py
+(Apache 2.0 Licensed)
+"""    
+## currently using computer/external microphone
+class sound :
+
+    def __init__(self,device=0) :
+        self.device=int(device)
+        try:
+            device_info = sd.query_devices(self.device, "input")
+        except ValueError:
+            print(sd.query_devices())
+            print("==========================================================")
+            print ("Error: Could not open the selected input sound device : " +  str(self.device))
+            print ("Choose a different device from the list above (must have inputs)")
+        # get samplerate from audiodevice
+        self.samplerate = int(device_info["default_samplerate"])
+        #create queue for storing audio samples
+        self.audioqueue = queue.Queue()
+        self.streamer=None
+
+    def start_streaming(self) :
+        self.streamer=sd.RawInputStream(samplerate=self.samplerate, blocksize = 8000, device=self.device,
+                dtype="int16", channels=1, callback=self.audio_callback)
+        self.streamer.__enter__()
+        return self.samplerate
+
+    def stop_streaming(self) :
+        if self.streamer is not None:
+            self.streamer.__exit__()
+
+    # this function is called from the sound device handler to store the audio block in the queue
+    def audio_callback(self,indata, frames, time, status):
+        """This is called (from a separate thread) for each audio block."""
+        if status:
+            #print(status, file=sys.stderr)
+            print(status)
+        self.audioqueue.put(bytes(indata))
+
+    def get_audio_data(self) :
+        try:
+            return True,self.audioqueue.get()
+        except:
+            return False,None
+
+    def get_samplerate(self) :
+        return self.samplerate    

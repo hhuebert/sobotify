@@ -15,8 +15,8 @@ class chat_partner:
         print (self.general_info)
 
         self.sobot=sobotify.sobotify(app_name="chat-partner",mosquitto_ip=mosquitto_ip,debug=True)
-        self.sobot.start_listener(mosquitto_ip=mosquitto_ip,language=language,keyword=self.general_info["key_word"],sound_device=sound_device)
-        self.sobot.start_robotcontroller(robot_name=robot_name,mosquitto_ip=mosquitto_ip,robot_ip=robot_ip, language=language)
+        self.sobot.start_listener(mosquitto_ip=mosquitto_ip,language=language,keyword=self.general_info["key_word"])
+        self.sobot.start_robotcontroller(robot_name=robot_name,mosquitto_ip=mosquitto_ip,robot_ip=robot_ip, language=language,sound_device=sound_device)
         self.sobot.start_chatbot(llm_name= self.general_info["llm_name"],llm_options= self.general_info["llm_options"])
         self.sobot.subscribe_listener(self.store_statement)
         self.sobot.subscribe_chatbot(self.store_reply)

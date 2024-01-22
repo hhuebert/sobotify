@@ -18,8 +18,8 @@ class quiz:
         self.language=language
         self.sobot=sobotify.sobotify(app_name="quiz-training",debug=False,log=False)
         #self.sobot.start_robotcontroller(robot_name=robot_name,robot_ip=robot_ip,robot_options="--nao posture=crouch",language=self.language)
-        self.sobot.start_robotcontroller(robot_name=robot_name,robot_ip=robot_ip, language=self.language,cam_device="0")
-        self.sobot.start_listener(language=self.language,sound_device=sound_device)
+        self.sobot.start_robotcontroller(robot_name=robot_name,robot_ip=robot_ip, language=self.language,cam_device="0",sound_device=sound_device)
+        self.sobot.start_listener(language=self.language)
         if emotion_detection==True :
             self.sobot.start_facial_processing(robot_name=robot_name,robot_ip=robot_ip)
         if check_grammar==True :
