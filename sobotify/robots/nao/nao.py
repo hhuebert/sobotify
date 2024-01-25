@@ -365,13 +365,17 @@ class vision():
 
     def get_image(self) : 
         image=self.video_service.getImageRemote(self.nameId)
-        image_width=image[0]
-        image_height=image[1]
-        image_data=image[6]
-        image_byte_array=bytearray(image_data);
-        image_np_array_1d=np.asarray(image_byte_array,dtype=np.uint8)
-        image_np_array_3d=image_np_array_1d.reshape(image_height,image_width,3)
-        return True,image_np_array_3d
+        if image:
+            image_width=image[0]
+            image_height=image[1]
+            image_data=image[6]
+            image_byte_array=bytearray(image_data);
+            image_np_array_1d=np.asarray(image_byte_array,dtype=np.uint8)
+            image_np_array_3d=image_np_array_1d.reshape(image_height,image_width,3)
+            return True,image_np_array_3d
+        else:
+            print ("error: didn't get image from NAO")
+            return False,None
     
     def terminate(self):
         self.video_service.unsubscribe(self.nameId)
