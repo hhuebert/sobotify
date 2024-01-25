@@ -125,7 +125,7 @@ class RobotControl():
         self.get_audio_flag=False
         self.head_update_flag=False
         self.got_move=False  
-        self.speech,self.motion,self.vision,self.sound = robots.get_all_interfaces(robot_name,robot_ip,robot_options,cam_device,sound_device)
+        self.robot=robots.get_all_interfaces(robot_name,robot_ip,robot_options,cam_device,sound_device)
         self.thread_vision = threading.Thread(target=self.send_image)
         self.thread_vision.start()
         self.thread_action = threading.Thread(target=self.action)
@@ -150,7 +150,7 @@ class RobotControl():
             self.mqtt_client.subscribe("robot_control/command/streaming/start",self.start_streaming)
             self.mqtt_client.subscribe("robot_control/command/streaming/stop",self.stop_streaming)
             self.mqtt_client.subscribe("robot_control/command/get_audio_data",self.get_audio)
-        self.speech.setLanguage(language)
+        self.robot.speech.setLanguage(language)
         self.text_tool = TextTool()
         self.running = False
         self.talking = False
@@ -179,11 +179,11 @@ class RobotControl():
                 if self.head_update_flag:
                     self.head_update_flag=False
                     last_head_update = datetime.now()
-                    self.motion.follow_head(self.head_data)
+                    self.robot.motion.follow_head(self.head_data)
                 else :
                     delta_time=(datetime.now()-last_head_update).total_seconds()
                     if (delta_time>3):
-                        self.motion.search_head()
+                        self.robot.motion.search_head()
             sleep(0.1)
 
     def get_image(self,message) : 
@@ -195,7 +195,7 @@ class RobotControl():
                 break
             if self.get_image_flag:
                 self.get_image_flag=False
-                ret,image=self.vision.get_image()
+                ret,image=self.robot.vision.get_image()
                 if ret==True:
                     ret, img=cv.imencode(".ppm",image)
                     if ret==True:
@@ -207,14 +207,14 @@ class RobotControl():
         self.get_audio_flag=True
 
     def start_streaming(self,message="") :
-        self.samplerate=self.sound.start_streaming()
+        self.samplerate=self.robot.sound.start_streaming()
         if self.mqtt=="on" :
             self.mqtt_client.publish("robot_control/status/samplerate",self.samplerate)
         else:
             return self.samplerate
 
     def stop_streaming(self,message="") :
-        self.sound.stop_streaming()
+        self.robot.sound.stop_streaming()
 
     def send_audio(self) : 
         while True:
@@ -222,7 +222,7 @@ class RobotControl():
                 break
             if self.get_audio_flag:
                 self.get_audio_flag=False
-                ret,audio=self.sound.get_audio_data()
+                ret,audio=self.robot.sound.get_audio_data()
                 if ret==True:
                     #img_byte=bytearray(img)
                     self.mqtt_client.publish("robot_control/audio",audio)
@@ -283,8 +283,8 @@ class RobotControl():
             end_time     = lines.end.total_seconds()*speed_factor
             speech_speed = self.speechSpeedCalc(time_stamp,end_time,speech_text)
             self.sync(start,time_stamp,True)
-            self.speech.setSpeed(speech_speed)
-            self.speech.say(speech_text)
+            self.robot.speech.setSpeed(speech_speed)
+            self.robot.speech.say(speech_text)
         print ("\nspeech done at     : " + self.deltatime(datetime.now()))                        
         self.talking=False;
 
@@ -300,7 +300,7 @@ class RobotControl():
                 break
             if self.got_move==True:
                 print ("do move")
-                self.motion.move(self.landm)
+                self.robot.motion.move(self.landm)
                 self.got_move=False                
             sleep(0.05)
 
@@ -327,7 +327,7 @@ class RobotControl():
             if (diff_since_last_motion>0.05) :
                 if DEBUG_SYNC==True: 
                     sys.stdout.write(".") 
-                self.motion.move(landm)                
+                self.robot.motion.move(landm)                
                 last_motion= delta_time
             else :
                 if DEBUG_SYNC2==True: 
@@ -358,22 +358,22 @@ class RobotControl():
         return pre_gesture,post_gesture
 
     def move(self):
-        motion_file,motion_reader = readCSVFile(self.tag + self.motion.getFileExtension() + ".csv",self.current_datapath)  
+        motion_file,motion_reader = readCSVFile(self.tag + self.robot.motion.getFileExtension() + ".csv",self.current_datapath)  
         pre_gesture,post_gesture = self.get_extra_gestures(motion_file,motion_reader) 
         if pre_gesture:
-            self.motion.move(pre_gesture)
+            self.robot.motion.move(pre_gesture)
         self.ready_to_move=True        
         self.movement(motion_reader)
         if motion_file != None :
             motion_file.close()
         while (self.talking==True):
-            random_motion_file,random_motion_reader = readCSVFile("random"+ self.motion.getFileExtension() + ".csv", self.data_path_random)  
+            random_motion_file,random_motion_reader = readCSVFile("random"+ self.robot.motion.getFileExtension() + ".csv", self.data_path_random)  
             self.movement(random_motion_reader)
             if random_motion_file != None :
                 random_motion_file.close()
         self.ready_to_move=False
         if post_gesture:
-            self.motion.move(post_gesture)
+            self.robot.motion.move(post_gesture)
 
 
     def receive_message(self,message): 
@@ -409,7 +409,7 @@ class RobotControl():
                 thread_motion.start()
                 thread_speech.join()
                 thread_motion.join()
-                self.motion.terminate()
+                self.robot.motion.terminate()
                 if self.mqtt=="on" :
                     self.mqtt_client.publish("robot/done","")
                 print ("action done at     : " + str(datetime.now()))
@@ -425,7 +425,7 @@ class RobotControl():
         print ("terminate")
         if self.running:
             self.running = False
-        self.speech.terminate()
+        self.robot.terminate()
         self.stop_robotcontrol=True
         self.thread_head_following.join()
         self.thread_live_movement.join()

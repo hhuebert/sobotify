@@ -20,6 +20,20 @@ import ast
 import platform
 import threading
 
+class stickman(): 
+
+    def __init__(self,cam_device,sound_device):
+        self.motion=motion()
+        self.speech=speech()
+        self.vision=vision(cam_device)
+        self.sound=sound(sound_device)
+
+    def terminate(self):
+        self.motion.terminate()
+        self.speech.terminate()
+        self.vision.terminate()
+        self.sound.terminate()
+
 class LandmarkItem:
     def __init__(self,x,y,z,visibility):
         self.x=x
@@ -100,7 +114,7 @@ class motion():
 
     def terminate(self):
         pass
-       #cv.destroyAllWindows()
+        #cv.destroyAllWindows()
 
 class speech():
 
@@ -198,3 +212,6 @@ class sound :
 
     def get_samplerate(self) :
         return self.samplerate
+
+    def terminate(self):
+        self.stop_streaming()

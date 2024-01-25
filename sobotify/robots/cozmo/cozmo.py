@@ -31,15 +31,48 @@ min_offset_y=0.2
 def timestamp_filesystem():
         return datetime.now().strftime("%y%m%d_%H%M%S_%f")
 
-class cozmo:
+def init_cozmo():
+    # Initialize Cozmo with pycozmo
+    cli = pycozmo.Client()
+    cli.start()
+    cli.connect()
+    cli.wait_for_robot()
+    return cli
+
+def terminate_cozmo(cli):
+    cli.set_lift_height(pycozmo.MIN_LIFT_HEIGHT.mm)
+    time.sleep(2)
+    cli.disconnect()
+    cli.stop()
+
+class cozmo():
 
     def __init__(self,sound_device=0):
+        self.cli=init_cozmo()
+        self.motion=motion(self.cli)
+        self.speech=speech(self.cli)
+        self.vision=vision(self.cli)
+        self.sound=sound(sound_device)
+
+    def terminate(self):
+        self.motion.terminate()
+        self.speech.terminate()
+        self.vision.terminate()
+        self.sound.terminate()
+        terminate_cozmo(self.cli)
+
+
+
+class motion(): 
+
+    def __init__(self,cli=None):
+        if cli==None:
+            self.cli=init_cozmo()
+            self.local_init=True
+        else:
+            self.cli=cli
+            self.local_init=False
         self.fileExtension = "_cozmo" 
-        # Initialize Cozmo with pycozmo
-        self.tts_engine = pyttsx3.init()
-        self.setLanguage("english")
-        self.sound_init(sound_device)
-        self.image_available=False
         self.update_robot_state=False
         self.lift_height=pycozmo.MIN_LIFT_HEIGHT.mm
         self.head_angle=pycozmo.MIN_HEAD_ANGLE.radians
@@ -48,20 +81,11 @@ class cozmo:
         self.step = 1
         self.stop_movement=threading.Event()
         self.stop_movement.clear()
-        self.cli = pycozmo.Client()
-        self.cli.start()
-        self.cli.connect()
-        self.cli.wait_for_robot()
         self.cli.load_anims()
         self.cli.set_head_angle(angle=0.6)
-        # Enable camera
-        self.cli.enable_camera(enable=True, color=False)
-        # Set volume
-        self.cli.set_volume(65535)
         #self.drive(duration=3)
         self.driveout=pycozmo.util.Pose(200.0, 0.0, 0.0,angle_z=pycozmo.util.Angle(degrees=0.0))
         self.cli.go_to_pose(self.driveout, relative_to_robot=False)
-        self.img=None
         print (f"battery voltage = {self.get_battery_state()}")
 
     def on_robot_state(self,cli, pkt: pycozmo.protocol_encoder.RobotState):
@@ -89,18 +113,6 @@ class cozmo:
     def getFileExtension(self):
         return self.fileExtension
 
-    def setLanguage(self, language):
-        pass
-        if language.lower()=="english":
-            self.tts_engine.setProperty('voice', "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech\Voices\Tokens\TTS_MS_EN-US_ZIRA_11.0")
-        if language.lower()=="german":
-            self.tts_engine.setProperty('voice', "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech\Voices\Tokens\TTS_MS_DE-DE_HEDDA_11.0")      
-
-    def setSpeed(self, speed):
-        speed=2*speed
-        self.tts_engine.setProperty('rate',speed);      
-        print ("set speed to:",speed)
-        
     def set_head_angle(self, angle):
         self.cli.set_head_angle(angle=angle)
 
@@ -193,30 +205,6 @@ class cozmo:
             #thread_move_wheels.join()
             thread_show_expression.join()
 
-    def say(self,Text):
-        temp_audio_file=os.path.join(os.path.expanduser("~"),".sobotify","temp_audio_file_"+timestamp_filesystem()+".wav")
-        self.tts_engine.save_to_file(Text, temp_audio_file)
-        self.tts_engine.runAndWait()
-        self.cli.play_audio(temp_audio_file)
-        self.cli.wait_for(pycozmo.event.EvtAudioCompleted)
-        if os.path.exists(temp_audio_file):
-            os.remove(temp_audio_file)
-        else:
-            print("The file does not exist")
-
-    def on_camera_image(self,cli, image):
-        npa=np.array(image)
-        self.img=cv.cvtColor(npa,cv.COLOR_RGB2BGR)
-        self.image_available=True
-
-    def get_image(self):
-        self.image_available=False
-        self.cli.add_handler(pycozmo.event.EvtNewRawCameraImage, self.on_camera_image, one_shot=True)
-        while not self.image_available:
-            time.sleep(0.1)
-            print("waiting for image")
-        return True,self.img
-
     def show_expression(self):
         if not self.next_face:
             return
@@ -278,22 +266,95 @@ class cozmo:
         self.last_face=self.next_face
 
     def terminate(self):
+        if self.local_init==True:
+            terminate_cozmo(self.cli)
         self.cli.set_lift_height(pycozmo.MIN_LIFT_HEIGHT.mm)
 
-    def terminate2(self):
-        self.cli.set_lift_height(pycozmo.MIN_LIFT_HEIGHT.mm)
-        time.sleep(2)
-        self.cli.disconnect()
-        self.cli.stop()
+
+class speech():
+
+    def __init__(self,cli=None):
+        if cli==None:
+            self.cli=init_cozmo()
+            self.local_init=True
+        else:
+            self.cli=cli
+            self.local_init=False
+        self.tts_engine = pyttsx3.init()
+        self.setLanguage("english")
+        # Set volume
+        self.cli.set_volume(65535)
+
+    def setLanguage(self, language):
+        pass
+        if language.lower()=="english":
+            self.tts_engine.setProperty('voice', "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech\Voices\Tokens\TTS_MS_EN-US_ZIRA_11.0")
+        if language.lower()=="german":
+            self.tts_engine.setProperty('voice', "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech\Voices\Tokens\TTS_MS_DE-DE_HEDDA_11.0")      
+
+    def setSpeed(self, speed):
+        speed=2*speed
+        self.tts_engine.setProperty('rate',speed);      
+        print ("set speed to:",speed)
+
+    def say(self,Text):
+        temp_audio_file=os.path.join(os.path.expanduser("~"),".sobotify","temp_audio_file_"+timestamp_filesystem()+".wav")
+        self.tts_engine.save_to_file(Text, temp_audio_file)
+        self.tts_engine.runAndWait()
+        self.cli.play_audio(temp_audio_file)
+        self.cli.wait_for(pycozmo.event.EvtAudioCompleted)
+        if os.path.exists(temp_audio_file):
+            os.remove(temp_audio_file)
+        else:
+            print("The file does not exist")
+
+    def terminate(self):
+        if self.local_init==True:
+            terminate_cozmo(self.cli)
+        pass
+
+class vision():
+
+    def __init__(self,cli=None):
+        if cli==None:
+            self.cli=init_cozmo()
+            self.local_init=True
+        else:
+            self.cli=cli
+            self.local_init=False
+        # Enable camera
+        self.cli.enable_camera(enable=True, color=False)
+        self.image_available=False
+        self.img=None
+
+    def on_camera_image(self,cli, image):
+        npa=np.array(image)
+        self.img=cv.cvtColor(npa,cv.COLOR_RGB2BGR)
+        self.image_available=True
+
+    def get_image(self):
+        self.image_available=False
+        self.cli.add_handler(pycozmo.event.EvtNewRawCameraImage, self.on_camera_image, one_shot=True)
+        while not self.image_available:
+            time.sleep(0.1)
+            print("waiting for image")
+        return True,self.img
+
+    def terminate(self):
+        if self.local_init==True:
+            terminate_cozmo(self.cli)
+        pass
 
 
-    """
-    Attribution: The following code is based on 
-    https://github.com/alphacep/vosk-api/blob/master/python/example/test_microphone.py
-    (Apache 2.0 Licensed)
-    """    
-    ## currently using computer/external microphone
-    def sound_init(self,device=0) :
+"""
+Attribution: The following code is based on 
+https://github.com/alphacep/vosk-api/blob/master/python/example/test_microphone.py
+(Apache 2.0 Licensed)
+"""    
+## currently using computer/external microphone
+class sound :
+
+    def __init__(self,device=0) :
         self.device=int(device)
         try:
             device_info = sd.query_devices(self.device, "input")
@@ -333,3 +394,6 @@ class cozmo:
 
     def get_samplerate(self) :
         return self.samplerate    
+    
+    def terminate(self):
+        self.stop_streaming()

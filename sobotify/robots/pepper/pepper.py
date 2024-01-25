@@ -21,6 +21,20 @@ import math
 import time
 from animations import Pepper_animations,Pepper_animation_tags
 
+class Pepper(): 
+
+    def __init__(self,robot_ip,cam_device,sound_device):
+        self.motion=motion(robot_ip)
+        self.speech=speech(robot_ip)
+        self.vision=vision(robot_ip,cam_device)
+        self.sound=sound(sound_device)
+
+    def terminate(self):
+        self.motion.terminate()
+        self.speech.terminate()
+        self.vision.terminate()
+        self.sound.terminate()
+
 limitsLShoulderPitch = [-2.0857, 2.0857]
 limitsLShoulderRoll  = [ 0.0087, 1.5620]
 limitsLElbowYaw      = [-2.0857, 2.0857]
@@ -331,7 +345,6 @@ class vision():
     
     def terminate(self):
         self.video_service.unsubscribe(self.nameId)
-        pass   
 
 """
 Attribution: The following code is based on 
@@ -382,3 +395,6 @@ class sound :
 
     def get_samplerate(self) :
         return self.samplerate    
+    
+    def terminate(self):
+        self.stop_streaming()

@@ -16,6 +16,20 @@ import ast
 import math
 import platform
 
+class MyKeepon(): 
+
+    def __init__(self,PORT,cam_device,sound_device):
+        self.motion=motion(PORT)
+        self.speech=speech()
+        self.vision=vision(cam_device)
+        self.sound=sound(sound_device)
+
+    def terminate(self):
+        self.motion.terminate()
+        self.speech.terminate()
+        self.vision.terminate()
+        self.sound.terminate()
+
 min_angle_Yaw=-2.0857
 max_angle_Yaw=2.0857
 
@@ -221,8 +235,7 @@ class vision():
         return ret,img
     
     def terminate(self):
-        self.cam.release()
-        pass    
+        self.cam.release() 
 
 """
 Attribution: The following code is based on 
@@ -272,3 +285,6 @@ class sound :
 
     def get_samplerate(self) :
         return self.samplerate    
+    
+    def terminate(self):
+        self.stop_streaming()       

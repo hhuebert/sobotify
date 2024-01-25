@@ -20,6 +20,20 @@ import sounddevice as sd
 import queue
 import platform
 
+class PepperSim(): 
+
+    def __init__(self,robot_ip,cam_device,sound_device):
+        self.motion=motion()
+        self.speech=speech()
+        self.vision=vision(cam_device)
+        self.sound=sound(sound_device)
+
+    def terminate(self):
+        self.motion.terminate()
+        self.speech.terminate()
+        self.vision.terminate()
+        self.sound.terminate()
+
 limitsLShoulderPitch = [-2.0857, 2.0857]
 limitsLShoulderRoll  = [ 0.0087, 1.5620]
 limitsLElbowYaw      = [-2.0857, 2.0857]
@@ -252,3 +266,6 @@ class sound :
 
     def get_samplerate(self) :
         return self.samplerate    
+    
+    def terminate(self):
+        self.stop_streaming()

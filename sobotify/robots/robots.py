@@ -14,8 +14,7 @@ def get_vision(name,robot_ip,cam_device) :
             return stickman.vision(cam_device)
         elif name=='cozmo' :
             import sobotify.robots.cozmo.cozmo as cozmo
-            my_cozmo=cozmo.cozmo()
-            return my_cozmo
+            return cozmo.vision()
         else :
             print("unknow robot :" + str(name))
             exit()
@@ -79,13 +78,14 @@ def get_all_interfaces(name,robot_ip,robot_options,cam_device,sound_device) :
 
         if name=='stickman' :
             import sobotify.robots.stickman.stickman as stickman
-            return stickman.speech(),stickman.motion(),stickman.vision(cam_device),stickman.sound(sound_device)
+            my_stickman=stickman.stickman(cam_device,sound_device)
+            return my_stickman
         elif name=='pepper' :
             if not (sys.version_info[0]==2 and sys.version_info[1]==7) :
                 print("Pepper robot can only be used with Python version 2.7.x (your version is " + str(sys.version_info[0])+"."+str(sys.version_info[1])+")")
                 exit()
-            import sobotify.robots.pepper.pepper as pepper
-            return pepper.speech(robot_ip),pepper.motion(robot_ip),pepper.vision(robot_ip,cam_device),pepper.sound(sound_device)
+            my_pepper=pepper.Pepper(robot_ip,cam_device,sound_device)
+            return my_pepper
         elif name=='pepper_sim' :
             import sobotify.robots.pepper.pepper_sim as pepper_sim
             return pepper_sim.speech(),pepper_sim.motion(),pepper_sim.vision(cam_device),pepper_sim.sound(sound_device)
@@ -94,17 +94,20 @@ def get_all_interfaces(name,robot_ip,robot_options,cam_device,sound_device) :
                 print("Nao robot can only be used with Python version 2.7.x (your version is " + str(sys.version_info[0])+"."+str(sys.version_info[1])+")")
                 exit()
             import sobotify.robots.nao.nao as nao
-            return nao.speech(robot_ip),nao.motion(robot_ip,robot_options_args.nao),nao.vision(robot_ip,cam_device),nao.sound(sound_device)
+            my_nao=nao.NAO(robot_ip,robot_options_args.nao,cam_device,sound_device)
+            return my_nao
         elif name=='nao_sim' :
             import sobotify.robots.nao.nao_sim as nao_sim
             return nao_sim.speech(),nao_sim.motion(),nao_sim.vision(cam_device),nao_sim.sound(sound_device)
         elif name=='cozmo' :
             import sobotify.robots.cozmo.cozmo as cozmo
             my_cozmo=cozmo.cozmo(sound_device)
-            return my_cozmo,my_cozmo,my_cozmo,my_cozmo
+            return my_cozmo
         elif name=='mykeepon' :
+            PORT=robot_ip
             import sobotify.robots.mykeepon.mykeepon as mykeepon
-            return mykeepon.speech(),mykeepon.motion(robot_ip),mykeepon.vision(cam_device),mykeepon.sound(sound_device)
+            my_mykeepon=mykeepon.MyKeepon(PORT,cam_device,sound_device)
+            return my_mykeepon
         else :
             print("unknow robot :" + str(name))
             exit()    
