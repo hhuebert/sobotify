@@ -164,7 +164,7 @@ class sobotify (object) :
                 print ("waiting time=",waiting_time)
                 if waiting_time > 12:  ## service not responding ==> restart
                     self.stop_service(self.speech_recognition_proc)
-                    self.start_listener(language=self.language,sound_device=self.sound_device)
+                    self.start_listener(language=self.language)
                     time.sleep(0.5)
                     if self.language=="english":
                         self.speak("Sorry, I couldn't listen to you. Could you please say that again?")
