@@ -6,6 +6,13 @@ import argparse
 import csv
 import numpy as np
 
+# currently only using random list of values,
+# should be replaced with real mapping of human gestures to robot movements
+angle_list=[
+[45.0,0.6,0,"neutral"],
+[35.0,0.6,0,"neutral"]
+]    
+
 prev_angle_time=-1
 curr_angle_high=True
 
@@ -22,9 +29,9 @@ def store_angles(world_landmarks_array, time_stamp,angles_filename):
         prev_angle_time=time_stamp
         curr_angle_high = not curr_angle_high
         if curr_angle_high==True:
-            angles = [30,0.5,"neutral"]
+            angles = angle_list[0]
         else:
-            angles = [90,0.5,"neutral"]
+            angles = angle_list[1]
         return True, angles
     else:
         return False, angles
