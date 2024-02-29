@@ -149,7 +149,7 @@ class sobotify (object) :
         self.mqtt_client.subscribe("robot_control/status/done",self.robot_done)
         print("waiting for robot to finish ...")             
         while not self.robot_done_flag==True:
-            time.sleep(1)   
+            time.sleep(0.1)   
         self.robot_done_flag=False
         print(" ... done")             
 
