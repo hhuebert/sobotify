@@ -6,7 +6,26 @@ import argparse
 import csv
 import numpy as np
 
-angle_list=["e","d","r","s","e","f"]
+# currently only using random list of values,
+# should be replaced with real mapping of human gestures to robot movements
+angle_list=[
+[None,None,"RIGHT",None],
+[None, +10,None,None],
+[None,None,"CENTERFROMRIGHT"," "],
+[None, -10,None,None],
+[None, -20,None,None],
+[None,None,"LEFT",None],
+[None,   0,None,None],
+[None,None,"CENTERFROMLEFT",None],
+[None,  30,None,None],
+[None,   5,None,None],
+[None,  -5,None,None],
+[None,None,"RIGHT",None],
+[None,None,"CENTERFROMRIGHT",None],
+[None, -10,None,None],
+[None,  10,None,None],
+[None,   5,None,None]
+]
 
 prev_angle_time=-1.0
 angle_it=0
@@ -15,9 +34,9 @@ def store_angles(world_landmarks_array, time_stamp,angles_filename):
     global prev_angle_time
     global angles
     global angle_it
-    if (time_stamp-prev_angle_time)>0.2:
+    if (time_stamp-prev_angle_time)>0.5:
         prev_angle_time=time_stamp
-        if angle_it>5 : angle_it=2
+        if angle_it>len(angle_list)-1 : angle_it=0
         angles = angle_list[angle_it]
         angle_it+=1
         return True, angles
@@ -52,7 +71,7 @@ def landmarks2angles(world_landmarks_filename,data_path):
         world_landmarks_array = np.reshape(world_landmarks_array,(-1,4))
         result,angles = store_angles(world_landmarks_array,time_stamp,angles_filename)
         if result == True:
-            row = [time_stamp,angles]
+            row = np.insert(angles,0,time_stamp)
             angles_writer.writerow(row)
 
 if __name__ == '__main__':
