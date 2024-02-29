@@ -84,6 +84,7 @@ def get_all_interfaces(name,robot_ip,robot_options,cam_device,sound_device) :
             if not (sys.version_info[0]==2 and sys.version_info[1]==7) :
                 print("Pepper robot can only be used with Python version 2.7.x (your version is " + str(sys.version_info[0])+"."+str(sys.version_info[1])+")")
                 exit()
+            import sobotify.robots.pepper.pepper as pepper
             my_pepper=pepper.Pepper(robot_ip,cam_device,sound_device)
             return my_pepper
         elif name=='pepper_sim' :
