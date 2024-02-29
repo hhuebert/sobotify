@@ -1,6 +1,7 @@
 import sys
 import pyttsx3
 import argparse
+import os,signal
 
 class VirtBotSpeech():
 
@@ -24,6 +25,8 @@ class VirtBotSpeech():
     def say(self, Text):
         self.engine.say(Text)
         self.engine.runAndWait()
+        # add kill, due to issue with delayed process termination when using German language on Windows 11
+        os.kill(os.getpid(),signal.SIGTERM) 
 
 if __name__ == "__main__":
     VB=VirtBotSpeech();
