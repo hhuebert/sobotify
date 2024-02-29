@@ -343,7 +343,7 @@ class speech():
         
     def setLanguage(self, language):
         self.language=language.capitalize()
-        self.speech.setLanguage(self.language)
+        self.speech.setLanguage(str(self.language))
 
     def setSpeed(self, speed):
         self.speed=speed
