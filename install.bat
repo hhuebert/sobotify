@@ -66,8 +66,7 @@ REM ============================================================================
 REM Create python environment for sobotify
 set CONDA_ENV=sobotify
 CALL %CONDA% create -y -n %CONDA_ENV% python=3.8 
-CALL %CONDA% config --add channels conda-forge
-CALL %CONDA% run --no-capture-output -n %CONDA_ENV% conda install --yes pybullet
+CALL %CONDA% run --no-capture-output -n %CONDA_ENV% conda install -c conda-forge --yes pybullet
 CALL %CONDA% run --no-capture-output -n %CONDA_ENV% pip install -r "%~dp0\requirements.txt"
 CALL %CONDA% run --no-capture-output -n %CONDA_ENV% pip install -e "%~dp0."
 REM ======================================================================================
