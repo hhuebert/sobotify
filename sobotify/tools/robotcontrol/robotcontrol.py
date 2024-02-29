@@ -6,7 +6,6 @@ import csv
 import srt
 from datetime import datetime
 from time import sleep
-import cv2 as cv
 import ast
 
 from sobotify.commons.mqttclient import mqttClient
@@ -113,6 +112,92 @@ class TextTool :
                 continue
         return finalText
 
+# class for accessing the robot interface
+class robot_if():
+
+    def __init__(self,mqtt,mqtt_client,robot_name,robot_ip,robot_options,cam_device,sound_device):
+        self.mqtt=mqtt
+        self.mqtt_client=mqtt_client
+        self.speech_done_flag=False
+        self.file_extension_available=False
+        
+        if mqtt=="on" :
+            self.mqtt_client.subscribe("robot/status/file_extension",self.store_file_extension)
+        else:
+            self.robot=robots.get_all_interfaces(robot_name,robot_ip,robot_options,cam_device,sound_device)
+
+    def follow_head(self,head_data) :
+        if self.mqtt=="on" :
+            self.mqtt_client.publish("robot/command/follow_head",head_data)
+        else: 
+            self.robot.motion.follow_head(self.head_data)
+
+    def search_head(self) :
+        if self.mqtt=="on" :
+            self.mqtt_client.publish("robot/command/search_head")
+        else: 
+            self.robot.motion.search_head()
+
+    def set_speed(self,speed) :
+        if self.mqtt=="on" :
+            self.mqtt_client.publish("robot/command/set_speed",speed)
+        else: 
+            self.robot.speech.setSpeed(speed)
+
+    def set_language(self,language) :
+        if self.mqtt=="on" :
+            self.mqtt_client.publish("robot/command/set_language",language)
+        else: 
+            self.robot.speech.setLanguage(language)
+
+    def say(self,text) :
+        if self.mqtt=="on" :
+            self.mqtt_client.publish("robot/command/say",text)
+            self.wait_for_speech_done()
+        else: 
+            self.robot.speech.say(text)
+
+    def speech_done(self,message) :
+        print("got speech done: "+ message)
+        self.speech_done_flag=True
+
+    def wait_for_speech_done(self):
+        self.mqtt_client.subscribe("robot/status/speech_done",self.speech_done)
+        print("waiting for robot to finish speech ...")             
+        while not self.speech_done_flag==True:
+            sleep(0.02)   
+        self.speech_done_flag=False
+        print(" ... done")  
+
+    def move(self,data) :
+        if self.mqtt=="on" :
+            self.mqtt_client.publish("robot/command/move",str(data))
+        else: 
+            self.robot.motion.move(data)
+
+    def store_file_extension(self,message) :
+        self.file_extension=message
+        self.file_extension_available=True
+
+    def get_file_extension(self) :
+        if self.mqtt=="on" :
+            self.mqtt_client.publish("robot/command/get_file_extension")
+            while not self.file_extension_available:
+                sleep(0.01)    
+            self.file_extension_available=False
+            return self.file_extension
+        else: 
+            self.file_extension=self.robot.motion.getFileExtension()
+            return self.file_extension
+
+    def motion_terminate(self) :
+        if self.mqtt=="on" :
+            self.mqtt_client.publish("robot/command/motion_terminate")
+        else: 
+            self.robot.motion.terminate()
+
+    def terminate(self) :
+        self.robot.terminate()
 
 
 class RobotControl(): 
@@ -121,13 +206,8 @@ class RobotControl():
         self.mqtt=mqtt
         self.stop_robotcontrol=False
         self.received_message=False    
-        self.get_image_flag=False
-        self.get_audio_flag=False
         self.head_update_flag=False
         self.got_move=False  
-        self.robot=robots.get_all_interfaces(robot_name,robot_ip,robot_options,cam_device,sound_device)
-        self.thread_vision = threading.Thread(target=self.send_image)
-        self.thread_vision.start()
         self.thread_action = threading.Thread(target=self.action)
         self.thread_action.start()
         self.head_following_enabled=True
@@ -135,22 +215,21 @@ class RobotControl():
         self.thread_head_following.start()
         self.thread_live_movement = threading.Thread(target=self.live_movement)
         self.thread_live_movement.start()
-        self.thread_audio = threading.Thread(target=self.send_audio)
-        self.thread_audio.start()
         
         if mqtt=="on" :
             self.mqtt_client = mqttClient(mosquitto_ip,"robot")
-            self.mqtt_client.subscribe("robot/speak-and-gesture",self.receive_message)
-            self.mqtt_client.subscribe("robot/control/set-speed",self.set_speed)
-            self.mqtt_client.subscribe("robot/control/set-max-speed",self.set_max_speed)
-            self.mqtt_client.subscribe("robot/control/set-min-speed",self.set_min_speed)
-            self.mqtt_client.subscribe("robot_control/command/get_image",self.get_image)
+            self.mqtt_client.subscribe("robot_control/command/speak-and-gesture",self.receive_message)
+            self.mqtt_client.subscribe("robot_control/command/set-speed",self.set_speed)
+            self.mqtt_client.subscribe("robot_control/command/set-max-speed",self.set_max_speed)
+            self.mqtt_client.subscribe("robot_control/command/set-min-speed",self.set_min_speed)
             self.mqtt_client.subscribe("robot_control/command/follow_head",self.head_update)
             self.mqtt_client.subscribe("robot_control/command/move",self.get_moves)
-            self.mqtt_client.subscribe("robot_control/command/streaming/start",self.start_streaming)
-            self.mqtt_client.subscribe("robot_control/command/streaming/stop",self.stop_streaming)
-            self.mqtt_client.subscribe("robot_control/command/get_audio_data",self.get_audio)
-        self.robot.speech.setLanguage(language)
+        else :
+            self.mqtt_client=None
+
+        self.robot=robot_if(self.mqtt,self.mqtt_client,robot_name,robot_ip,robot_options,cam_device,sound_device)
+
+        self.robot.set_language(language)
         self.text_tool = TextTool()
         self.running = False
         self.talking = False
@@ -164,7 +243,7 @@ class RobotControl():
         self.min_speech_speed=int(min_speech_speed)
         self.max_speech_speed=int(max_speech_speed)
         if mqtt=="on" :
-            self.mqtt_client.publish("robot/status/init-done")
+            self.mqtt_client.publish("robot_control/status/init-done")
 
     def head_update(self,message) : 
         self.head_data=message
@@ -179,55 +258,12 @@ class RobotControl():
                 if self.head_update_flag:
                     self.head_update_flag=False
                     last_head_update = datetime.now()
-                    self.robot.motion.follow_head(self.head_data)
+                    self.robot.follow_head(self.head_data)
                 else :
                     delta_time=(datetime.now()-last_head_update).total_seconds()
                     if (delta_time>3):
-                        self.robot.motion.search_head()
+                        self.robot.search_head()
             sleep(0.1)
-
-    def get_image(self,message) : 
-        self.get_image_flag=True
-
-    def send_image(self) : 
-        while True:
-            if self.stop_robotcontrol==True:
-                break
-            if self.get_image_flag:
-                self.get_image_flag=False
-                ret,image=self.robot.vision.get_image()
-                if ret==True:
-                    ret, img=cv.imencode(".ppm",image)
-                    if ret==True:
-                        img_byte=bytearray(img)
-                        self.mqtt_client.publish("robot_control/image",img_byte)
-            sleep(0.2)
-
-    def get_audio(self,message) :
-        self.get_audio_flag=True
-
-    def start_streaming(self,message="") :
-        self.samplerate=self.robot.sound.start_streaming()
-        if self.mqtt=="on" :
-            self.mqtt_client.publish("robot_control/status/samplerate",self.samplerate)
-        else:
-            return self.samplerate
-
-    def stop_streaming(self,message="") :
-        self.robot.sound.stop_streaming()
-
-    def send_audio(self) : 
-        while True:
-            if self.stop_robotcontrol==True:
-                break
-            if self.get_audio_flag:
-                self.get_audio_flag=False
-                ret,audio=self.robot.sound.get_audio_data()
-                if ret==True:
-                    #img_byte=bytearray(img)
-                    self.mqtt_client.publish("robot_control/audio",audio)
-            sleep(0.02)
-
 
     def set_speed(self,message):
         self.set_min_speed(message)
@@ -283,15 +319,13 @@ class RobotControl():
             end_time     = lines.end.total_seconds()*speed_factor
             speech_speed = self.speechSpeedCalc(time_stamp,end_time,speech_text)
             self.sync(start,time_stamp,True)
-            self.robot.speech.setSpeed(speech_speed)
-            self.robot.speech.say(speech_text)
+            self.robot.set_speed(speech_speed)
+            self.robot.say(speech_text)
         print ("\nspeech done at     : " + self.deltatime(datetime.now()))                        
         self.talking=False;
 
     def get_moves(self,message):
         self.landm=ast.literal_eval(message)
-        print ("got move")
-        print (self.landm)
         self.got_move=True
 
     def live_movement(self):           
@@ -299,8 +333,7 @@ class RobotControl():
             if self.stop_robotcontrol==True:
                 break
             if self.got_move==True:
-                print ("do move")
-                self.robot.motion.move(self.landm)
+                self.robot.move(self.landm)
                 self.got_move=False                
             sleep(0.05)
 
@@ -327,7 +360,7 @@ class RobotControl():
             if (diff_since_last_motion>0.05) :
                 if DEBUG_SYNC==True: 
                     sys.stdout.write(".") 
-                self.robot.motion.move(landm)                
+                self.robot.move(landm)                
                 last_motion= delta_time
             else :
                 if DEBUG_SYNC2==True: 
@@ -358,22 +391,22 @@ class RobotControl():
         return pre_gesture,post_gesture
 
     def move(self):
-        motion_file,motion_reader = readCSVFile(self.tag + self.robot.motion.getFileExtension() + ".csv",self.current_datapath)  
+        motion_file,motion_reader = readCSVFile(self.tag + self.robot.get_file_extension() + ".csv",self.current_datapath)  
         pre_gesture,post_gesture = self.get_extra_gestures(motion_file,motion_reader) 
         if pre_gesture:
-            self.robot.motion.move(pre_gesture)
+            self.robot.move(pre_gesture)
         self.ready_to_move=True        
         self.movement(motion_reader)
         if motion_file != None :
             motion_file.close()
         while (self.talking==True):
-            random_motion_file,random_motion_reader = readCSVFile("random"+ self.robot.motion.getFileExtension() + ".csv", self.data_path_random)  
+            random_motion_file,random_motion_reader = readCSVFile("random"+ self.robot.get_file_extension() + ".csv", self.data_path_random)  
             self.movement(random_motion_reader)
             if random_motion_file != None :
                 random_motion_file.close()
         self.ready_to_move=False
         if post_gesture:
-            self.robot.motion.move(post_gesture)
+            self.robot.move(post_gesture)
 
 
     def receive_message(self,message): 
@@ -409,9 +442,9 @@ class RobotControl():
                 thread_motion.start()
                 thread_speech.join()
                 thread_motion.join()
-                self.robot.motion.terminate()
+                self.robot.motion_terminate()
                 if self.mqtt=="on" :
-                    self.mqtt_client.publish("robot/done","")
+                    self.mqtt_client.publish("robot_control/status/done",self.message)
                 print ("action done at     : " + str(datetime.now()))
                 self.received_message=False
                 self.head_following_enabled=True
@@ -429,8 +462,6 @@ class RobotControl():
         self.stop_robotcontrol=True
         self.thread_head_following.join()
         self.thread_live_movement.join()
-        self.thread_vision.join()
-        self.thread_audio.join()
 
 def robotcontroller(mqtt,mosquitto_ip,data_path,language,min_speech_speed,max_speech_speed,robot_name,robot_ip,robot_options,message,gesture,cam_device,sound_device) :
     print ("starting robot controller ...")

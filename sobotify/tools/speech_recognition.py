@@ -33,7 +33,7 @@ class voskListener:
             self.mqtt_client.subscribe("speech-recognition/control/record/listen_to_keyword",self.start_recording_after_keyword)
             self.mqtt_client.subscribe("speech-recognition/control/record/start",self.start_recording)
             self.mqtt_client.publish("speech-recognition/status/init-done")
-            self.mqtt_client.subscribe("robot_control/audio",self.store_audio,raw_data=True)
+            self.mqtt_client.subscribe("robot/audio",self.store_audio,raw_data=True)
         
         # load vosk model
         full_model_path=os.path.join(model_path,language)
@@ -65,8 +65,8 @@ class voskListener:
 
     def start_streaming(self):
         if self.mqtt=="on" :
-            self.mqtt_client.subscribe("robot_control/status/samplerate",self.store_samplerate)
-            self.mqtt_client.publish("robot_control/command/streaming/start")
+            self.mqtt_client.subscribe("robot/status/samplerate",self.store_samplerate)
+            self.mqtt_client.publish("robot/command/streaming/start")
             while not self.samplerate_available:
                 time.sleep(0.2)
             self.samplerate_available=False
@@ -77,20 +77,20 @@ class voskListener:
 
     def stop_streaming(self):
         if self.mqtt=="on" :
-            self.mqtt_client.publish("robot_control/command/streaming/stop")
+            self.mqtt_client.publish("robot/command/streaming/stop")
         else:
             self.audio.stop_streaming()
 
     def store_audio(self,audio_data) :
         self.audio_data = audio_data
-        print("got audio_data : "+ str(sys.getsizeof(self.audio_data)))
+        #print("got audio_data : "+ str(sys.getsizeof(self.audio_data)))
         #img_byte=bytearray(image)
         #self.log.image(self.image,"raw")
         self.audio_available=True
 
     def get_audio_data(self):
         if self.mqtt=="on" :
-            self.mqtt_client.publish("robot_control/command/get_audio_data","")
+            self.mqtt_client.publish("robot/command/get_audio_data","")
             while not self.audio_available:
                 time.sleep(0.02)
             self.audio_available=False

@@ -54,6 +54,7 @@ class sobotify (object) :
         self.analyze_proc=0
         self.mosquitto_proc=0
         self.rocontrol_proc=0
+        self.rointerface_proc=0 
         self.speech_recognition_proc=0
         self.llm_proc=0
         self.robot_done_flag=False
@@ -67,6 +68,7 @@ class sobotify (object) :
         self.init_speech_recognition_done_flag = False
         self.init_chatbot_done_flag = False
         self.init_robot_done_flag = False
+        self.init_robot_interface_done_flag =False
         self.init_facial_processing_done_flag = False 
         self.init_grammar_checking_done_flag =True
         self.init_logging_server_done_flag=False
@@ -144,7 +146,7 @@ class sobotify (object) :
         self.robot_done_flag=True
 
     def wait_for_robot(self):
-        self.mqtt_client.subscribe("robot/done",self.robot_done)
+        self.mqtt_client.subscribe("robot_control/status/done",self.robot_done)
         print("waiting for robot to finish ...")             
         while not self.robot_done_flag==True:
             time.sleep(1)   
@@ -195,13 +197,13 @@ class sobotify (object) :
         if detect_emotion:
             self.detect(command="start")
         if  (speed==0) :
-            self.mqtt_client.publish("robot/control/set-min-speed",min_speech_speed_default)
-            self.mqtt_client.publish("robot/control/set-max-speed",max_speech_speed_default)
+            self.mqtt_client.publish("robot_control/command/set-min-speed",min_speech_speed_default)
+            self.mqtt_client.publish("robot_control/command/set-max-speed",max_speech_speed_default)
         else :
-            self.mqtt_client.publish("robot/control/set-speed",speed)
+            self.mqtt_client.publish("robot_control/command/set-speed",speed)
         if gesture:
             message=gesture+"|"+message
-        self.mqtt_client.publish("robot/speak-and-gesture",message)
+        self.mqtt_client.publish("robot_control/command/speak-and-gesture",message)
         self.wait_for_robot()
         if detect_emotion:
             emotion=self.detect(command="stop")
@@ -353,13 +355,64 @@ class sobotify (object) :
             self.wait_for_init_logging_server_done()
 
     ########################################################################################################
-    def init_robot_done(self,message) :
+    def init_robot_interface_done(self,message) :
+        print("got init done: "+ message)
+        self.init_robot_interface_done_flag =True
+
+    def wait_for_init_robot_interface_done(self):
+        self.mqtt_client.subscribe("robot/status/init-done",self.init_robot_interface_done)
+        print("waiting for robot interface to finish initialization ...")             
+        while not self.init_robot_interface_done_flag==True:
+            time.sleep(1)   
+        print(" ... done")  
+
+    def start_robotinterface(self,mqtt=True,mosquitto_ip=mosquitto_ip_default,robot_name=robot_name_default,robot_ip=robot_ip_default,
+                           robot_options=robot_options_default, language=language_default,min_speech_speed=min_speech_speed_default,cam_device=cam_device_default,sound_device=sound_device_default,robot_conda_env=robot_conda_env_default) :
+        sobotify_path=os.path.dirname(os.path.abspath(__file__))
+        script_path=os.path.join(sobotify_path,'robots','robots.py')
+        if robot_conda_env == "" :
+            if robot_name.lower() == "pepper" or robot_name.lower() == "nao" :
+                robot_conda_env = "sobotify_naoqi"
+        if not robot_conda_env == "" :
+            arguments=[conda_exe]
+            arguments.append("run")
+            arguments.extend(('-n',robot_conda_env))
+            arguments.append("--no-capture-output")
+            arguments.append("python")
+            arguments.append(script_path)
+        else :
+            arguments=[sys.executable,script_path]
+        if mqtt== True: 
+            arguments.extend(('--mqtt',"on"))
+        arguments.extend(('--mosquitto_ip',mosquitto_ip))
+        arguments.extend(('--robot_name',robot_name))
+        arguments.extend(('--robot_ip',robot_ip))
+        arguments.extend(('--robot_options','"'+robot_options+'"'))
+        arguments.extend(('--language',language))
+        arguments.extend(('--speed',str(min_speech_speed)))
+        arguments.extend(('--cam_device',cam_device))
+        arguments.extend(('--sound_device',str(sound_device)))         
+        if self.debug==True:
+            print (*arguments)
+            creationflags=subprocess.CREATE_NEW_CONSOLE
+        else:
+            creationflags=subprocess.CREATE_NO_WINDOW
+        self.rointerface_proc=subprocess.Popen(arguments,creationflags=creationflags)
+        #rointerface_proc=subprocess.Popen(arguments)
+        print ('started robot interface, pid=',self.rointerface_proc.pid)
+        if mqtt== True: 
+            self.wait_for_init_robot_interface_done()
+            print(" ... done")
+
+    ########################################################################################################
+
+    def init_robot_controller_done(self,message) :
         print("got init done: "+ message)
         self.init_robot_done_flag =True
 
-    def wait_for_init_robot_done(self):
-        self.mqtt_client.subscribe("robot/status/init-done",self.init_robot_done)
-        print("waiting for robot to finish initalization ...")             
+    def wait_for_init_robot_controller_done(self):
+        self.mqtt_client.subscribe("robot_control/status/init-done",self.init_robot_controller_done)
+        print("waiting for robot controller to finish initialization ...")             
         while not self.init_robot_done_flag==True:
             time.sleep(1)   
         print(" ... done")  
@@ -367,6 +420,7 @@ class sobotify (object) :
     def start_robotcontroller(self,mqtt=True,mosquitto_ip=mosquitto_ip_default,robot_name=robot_name_default,robot_ip=robot_ip_default,
                            robot_options=robot_options_default,cam_device=cam_device_default,sound_device=sound_device_default,robot_conda_env=robot_conda_env_default,data_path=data_path_default,language=language_default,
                            min_speech_speed=min_speech_speed_default,max_speech_speed=max_speech_speed_default,message=message_default) :
+        self.start_robotinterface(mqtt,mosquitto_ip,robot_name,robot_ip,robot_options,language,min_speech_speed,cam_device,sound_device,robot_conda_env)
         sobotify_path=os.path.dirname(os.path.abspath(__file__))
         script_path=os.path.join(sobotify_path,'tools','robotcontrol','robotcontrol.py')
         if robot_conda_env == "" :
@@ -403,7 +457,7 @@ class sobotify (object) :
         #rocontrol_proc=subprocess.Popen(arguments)
         print ('started robot controller, pid=',self.rocontrol_proc.pid)
         if mqtt== True: 
-            self.wait_for_init_robot_done()
+            self.wait_for_init_robot_controller_done()
 
     ########################################################################################################
     def init_speech_recognition_done(self,message) :
@@ -547,6 +601,7 @@ class sobotify (object) :
         if not self.speech_recognition_proc==0: self.speech_recognition_proc.kill()
         if not self.llm_proc==0: self.llm_proc.kill()
         if not self.rocontrol_proc==0: self.rocontrol_proc.kill()
+        if not self.rointerface_proc==0: self.rointerface_proc.kill()
 
 def handler(signal_received, frame):
     # Handle cleanup here

@@ -47,7 +47,7 @@ class EmotionDetection:
         self.reset_emotion_values()
         if self.mqtt=="on" :
             self.mqtt_client = mqttClient(mosquitto_ip,"facial_processing")
-            self.mqtt_client.subscribe("robot_control/image",self.store_image,raw_data=True)
+            self.mqtt_client.subscribe("robot/image",self.store_image,raw_data=True)
             self.mqtt_client.subscribe("facial_processing/start",self.start_detection)
             self.mqtt_client.subscribe("facial_processing/stop",self.stop_detection)
         else :
@@ -81,14 +81,14 @@ class EmotionDetection:
 
     def get_image(self) :
         if self.mqtt=="on" :
-            self.mqtt_client.publish("robot_control/command/get_image")
+            self.mqtt_client.publish("robot/command/get_image")
             last_request=datetime.now()
             while not self.image_available:
                 time.sleep(0.01)    
                 delta_time=(datetime.now()-last_request).total_seconds()
                 if delta_time>3:
                     last_request=datetime.now()
-                    self.mqtt_client.publish("robot_control/command/get_image")
+                    self.mqtt_client.publish("robot/command/get_image")
             self.image_available=False
             return self.image
         else: 
