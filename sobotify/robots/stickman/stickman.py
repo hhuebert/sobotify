@@ -119,7 +119,7 @@ class motion():
 class speech():
 
     def __init__(self):
-        self.language="German"
+        self.language="English"
         self.speed=100
         
     def setLanguage(self, language):
