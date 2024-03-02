@@ -56,6 +56,7 @@ class sobotify (object) :
         self.rocontrol_proc=0
         self.rointerface_proc=0 
         self.speech_recognition_proc=0
+        self.teleoperator_proc=0
         self.llm_proc=0
         self.robot_done_flag=False
         self.statement_pending=False
@@ -602,6 +603,7 @@ class sobotify (object) :
         if not self.llm_proc==0: self.llm_proc.kill()
         if not self.rocontrol_proc==0: self.rocontrol_proc.kill()
         if not self.rointerface_proc==0: self.rointerface_proc.kill()
+        if not self.teleoperator_proc==0: self.teleoperator_proc.kill()
 
 def handler(signal_received, frame):
     # Handle cleanup here

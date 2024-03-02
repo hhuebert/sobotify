@@ -52,6 +52,25 @@ def get_sound(name,robot_ip,sound_device) :
             exit()
 
 
+def get_angles(name) :
+    if name=='stickman' :
+        return None
+    elif name=='pepper' :
+        import sobotify.robots.pepper.landmarks2angles as landmarks2angles
+        return landmarks2angles.store_angles
+    elif name=='nao' :
+        import sobotify.robots.nao.landmarks2angles as landmarks2angles
+        return landmarks2angles.store_angles
+    elif name=='cozmo' :
+        import sobotify.robots.cozmo.landmarks2angles as landmarks2angles
+        return landmarks2angles.store_angles
+    elif name=='mykeepon' :
+        import sobotify.robots.mykeepon.landmarks2angles as landmarks2angles
+        return landmarks2angles.store_angles
+    else :
+        print("unknow robot :" + str(name))
+        return None            
+
 def get_gesture_conversion(name) :
     if name=='stickman' :
         return None
