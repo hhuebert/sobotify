@@ -14,10 +14,6 @@ from sobotify.commons.external.utils import KeypointsToAngles
 
 keypointsToAngles = KeypointsToAngles()
 
-def checkLim(val, limits):
-    return val < limits[0] or val > limits[1]
-
-
 """
 Attribution: The following function is taken from (and modified) pepper_approach_control_thread.py 
 from https://github.com/FraPorta/pepper_openpose_teleoperation/tree/main/pepper_teleoperation
@@ -29,16 +25,11 @@ def saturate_angles(LShoulderPitch, LShoulderRoll, LElbowYaw, LElbowRoll, RShoul
     # global LShoulderPitch, LShoulderRoll, LElbowYaw, LElbowRoll, RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll
     # limit percentage for some angles 
     limit = 0.9
-    
-    error = False
-    
+        
     ## LEFT ##
     # LShoulderPitch saturation
     if LShoulderPitch is None:
-        # LShoulderPitch = mProxy.getData("Device/SubDeviceList/LShoulderPitch/Position/Actuator/Value")
-        # self.LShoulderPitch = mProxy.getData("Device/SubDeviceList/LShoulderPitch/Position/Sensor/Value")
-        print ("Error : LShoulderPitch value missing");
-        error = True
+        print ("warning : LShoulderPitch value missing")
     elif LShoulderPitch < -2.0857:
         LShoulderPitch = -2.0857
     elif LShoulderPitch > 2.0857:
@@ -46,10 +37,7 @@ def saturate_angles(LShoulderPitch, LShoulderRoll, LElbowYaw, LElbowRoll, RShoul
     
     # LShoulderRoll saturation
     if LShoulderRoll is None:
-        # LShoulderRoll = mProxy.getData("Device/SubDeviceList/LShoulderRoll/Position/Actuator/Value")
-        # self.LShoulderRoll = mProxy.getData("Device/SubDeviceList/LShoulderRoll/Position/Sensor/Value")
-        print ("Error : LShoulderRoll value missing");
-        error = True
+        print ("warning : LShoulderRoll value missing")
 #    elif LShoulderRoll < -0.3142:
 #        LShoulderRoll = -0.3142
     elif LShoulderRoll < 0:
@@ -59,10 +47,7 @@ def saturate_angles(LShoulderPitch, LShoulderRoll, LElbowYaw, LElbowRoll, RShoul
         
     # LElbowYaw saturation
     if LElbowYaw is None:
-        # LElbowYaw = mProxy.getData("Device/SubDeviceList/LElbowYaw/Position/Actuator/Value")
-        # self.LElbowYaw = mProxy.getData("Device/SubDeviceList/LElbowYaw/Position/Sensor/Value")
-        print ("Error : LElbowYaw value missing");
-        error = True
+        print ("warning : LElbowYaw value missing")
     elif LElbowYaw < -2.0857*limit:
         LElbowYaw = -2.0857*limit
     elif LElbowYaw > 2.0857*limit:
@@ -70,23 +55,16 @@ def saturate_angles(LShoulderPitch, LShoulderRoll, LElbowYaw, LElbowRoll, RShoul
 
     # LElbowRoll saturation
     if LElbowRoll is None:
-        # LElbowRoll = mProxy.getData("Device/SubDeviceList/LElbowRoll/Position/Actuator/Value")
-        # self.LElbowRoll = mProxy.getData("Device/SubDeviceList/LElbowRoll/Position/Sensor/Value")
-        print ("Error : LElbowRoll value missing");
-        error = True
+        print ("warning : LElbowRoll value missing")
     elif LElbowRoll < -1.5446:
         LElbowRoll = -1.5446
     elif LElbowRoll > -0.0349:
         LElbowRoll = -0.0349
 
-
     ## RIGHT ##
     # RShoulderPitch saturation
     if RShoulderPitch is None:
-        # RShoulderPitch = mProxy.getData("Device/SubDeviceList/RShoulderPitch/Position/Actuator/Value")
-        # self.RShoulderPitch = mProxy.getData("Device/SubDeviceList/RShoulderPitch/Position/Sensor/Value")
-        print ("Error : RShoulderPitch value missing");
-        error = True
+        print ("warning : RShoulderPitch value missing")
     elif RShoulderPitch < -2.0857:
         RShoulderPitch = -2.0857
     elif RShoulderPitch > 2.0857:
@@ -94,10 +72,7 @@ def saturate_angles(LShoulderPitch, LShoulderRoll, LElbowYaw, LElbowRoll, RShoul
     
     # RShoulderRoll saturation
     if RShoulderRoll is None:
-        # RShoulderRoll = mProxy.getData("Device/SubDeviceList/RShoulderRoll/Position/Actuator/Value")
-        # self.RShoulderRoll = mProxy.getData("Device/SubDeviceList/RShoulderRoll/Position/Sensor/Value")
-        print ("Error : RShoulderPitch value missing");
-        error = True
+        print ("warning : RShoulderPitch value missing")
     elif RShoulderRoll < -1.3265 :
         RShoulderRoll = -1.3265
     #elif RShoulderRoll > 0.3142:
@@ -107,10 +82,7 @@ def saturate_angles(LShoulderPitch, LShoulderRoll, LElbowYaw, LElbowRoll, RShoul
         
     # RElbowYaw saturation
     if RElbowYaw is None:
-        # RElbowYaw = mProxy.getData("Device/SubDeviceList/RElbowYaw/Position/Actuator/Value")
-        # self.RElbowYaw = mProxy.getData("Device/SubDeviceList/RElbowYaw/Position/Sensor/Value")
-        print ("Error : RElbowYaw value missing");
-        error = True
+        print ("warning : RElbowYaw value missing")
     elif RElbowYaw < -2.0857*limit:
         RElbowYaw = -2.0857*limit
     elif RElbowYaw > 2.0857*limit:
@@ -118,19 +90,25 @@ def saturate_angles(LShoulderPitch, LShoulderRoll, LElbowYaw, LElbowRoll, RShoul
 
     # RElbowRoll saturation
     if RElbowRoll is None:
-        # RElbowRoll = mProxy.getData("Device/SubDeviceList/RElbowRoll/Position/Actuator/Value")
-        # self.RElbowRoll = mProxy.getData("Device/SubDeviceList/RElbowRoll/Position/Sensor/Value")
-        print ("Error : RElbowRoll value missing");
-        error = True
+        print ("warning : RElbowRoll value missing")
     elif RElbowRoll < 0.0349:
         RElbowRoll = 0.0349
     elif RElbowRoll > 1.5446:
         RElbowRoll = 1.5446
   
-    return error    
+    angles = [LShoulderPitch,LShoulderRoll, LElbowYaw, LElbowRoll, RShoulderPitch,RShoulderRoll, RElbowYaw, RElbowRoll]
+    return angles    
 
+
+"""
+Attribution: The following function is taken from (and modified) teleop.py 
+from https://github.com/elggem/naoqi-pose-retargeting
+(Apache 2.0 Licensed)
+"""
 
 def store_angles(world_landmarks_array, time_stamp,angles_filename):
+
+    visibility_threshold=0.5
 
     limitsLShoulderPitch = [-2.0857, 2.0857]
     #limitsLShoulderRoll  = [-0.3142, 1.3265]  
@@ -147,27 +125,42 @@ def store_angles(world_landmarks_array, time_stamp,angles_filename):
     pNeck =   (0.5 * (np.array(world_landmarks_array[11]) + np.array(world_landmarks_array[12]))).tolist()
     pMidHip = (0.5 * (np.array(world_landmarks_array[23]) + np.array(world_landmarks_array[24]))).tolist()
 
-    LShoulderPitch, LShoulderRoll = keypointsToAngles.obtain_LShoulderPitchRoll_angles(pNeck, world_landmarks_array[11], world_landmarks_array[13], pMidHip)
-    RShoulderPitch, RShoulderRoll = keypointsToAngles.obtain_RShoulderPitchRoll_angles(pNeck, world_landmarks_array[12], world_landmarks_array[14], pMidHip)
-    
-    LElbowYaw, LElbowRoll = keypointsToAngles.obtain_LElbowYawRoll_angle(pNeck, world_landmarks_array[11], world_landmarks_array[13], world_landmarks_array[15])
-    RElbowYaw, RElbowRoll = keypointsToAngles.obtain_RElbowYawRoll_angle(pNeck, world_landmarks_array[12], world_landmarks_array[14], world_landmarks_array[16])
-    
-    saturate_angles(LShoulderPitch, LShoulderRoll, LElbowYaw, LElbowRoll, RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll)
+    if ((world_landmarks_array[11][3]>visibility_threshold) and 
+        (world_landmarks_array[12][3]>visibility_threshold) and
+        (world_landmarks_array[13][3]>visibility_threshold)) :
+        LShoulderPitch, LShoulderRoll = keypointsToAngles.obtain_LShoulderPitchRoll_angles(pNeck, world_landmarks_array[11], world_landmarks_array[13], pMidHip)
+    else:
+        LShoulderPitch=None
+        LShoulderRoll=None
 
-    angles = [LShoulderPitch,LShoulderRoll, LElbowYaw, LElbowRoll, RShoulderPitch,RShoulderRoll, RElbowYaw, RElbowRoll]
+    if ((world_landmarks_array[11][3]>visibility_threshold) and 
+        (world_landmarks_array[12][3]>visibility_threshold) and
+        (world_landmarks_array[14][3]>visibility_threshold)) :
+        RShoulderPitch, RShoulderRoll = keypointsToAngles.obtain_RShoulderPitchRoll_angles(pNeck, world_landmarks_array[12], world_landmarks_array[14], pMidHip)
+    else:
+        RShoulderPitch=None
+        RShoulderRoll=None
+    
+    if ((world_landmarks_array[11][3]>visibility_threshold) and 
+        (world_landmarks_array[12][3]>visibility_threshold) and
+        (world_landmarks_array[13][3]>visibility_threshold) and
+        (world_landmarks_array[15][3]>visibility_threshold)) :
+        LElbowYaw, LElbowRoll = keypointsToAngles.obtain_LElbowYawRoll_angle(pNeck, world_landmarks_array[11], world_landmarks_array[13], world_landmarks_array[15])
+    else:
+        LElbowYaw=None
+        LElbowRoll=None
 
-    if (checkLim(LShoulderPitch, limitsLShoulderPitch) or 
-        checkLim(RShoulderPitch, limitsRShoulderPitch) or
-        checkLim(LShoulderRoll, limitsLShoulderRoll) or 
-        checkLim(RShoulderRoll, limitsRShoulderRoll) or
-        checkLim(LElbowYaw, limitsLElbowYaw) or 
-        checkLim(RElbowYaw, limitsRElbowYaw) or
-        checkLim(LElbowRoll, limitsLElbowRoll) or 
-        checkLim(RElbowRoll, limitsRElbowRoll)):
-        return False, angles
-    else:     
-        return True, angles
+    if ((world_landmarks_array[11][3]>visibility_threshold) and 
+        (world_landmarks_array[12][3]>visibility_threshold) and
+        (world_landmarks_array[14][3]>visibility_threshold) and
+        (world_landmarks_array[16][3]>visibility_threshold)) :
+        RElbowYaw, RElbowRoll = keypointsToAngles.obtain_RElbowYawRoll_angle(pNeck, world_landmarks_array[12], world_landmarks_array[14], world_landmarks_array[16])
+    else:
+        RElbowYaw=None
+        RElbowRoll=None
+    
+    angles=saturate_angles(LShoulderPitch, LShoulderRoll, LElbowYaw, LElbowRoll, RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll)
+    return True, angles
 
 def landmarks2angles(world_landmarks_filename,data_path):
 

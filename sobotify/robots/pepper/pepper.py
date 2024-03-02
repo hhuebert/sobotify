@@ -106,6 +106,7 @@ class motion():
         self.last_extended_motion=datetime.now()
         self.search_angle_diff_x=search_x
         try: 
+            self.memory  = ALProxy("ALMemory", robot_ip, 9559)
             self.motion  = ALProxy("ALMotion", robot_ip, 9559)
             self.posture = ALProxy("ALRobotPosture", robot_ip, 9559)
             self.naoqi_version=self.get_naoqi_version(robot_ip)
@@ -246,6 +247,36 @@ class motion():
                 self.motion.setAngles(names, angles, fractionMaxSpeed)
             else:    
                 print ("angle out of range")
+    """
+    Attribution: The idea for the following method is based on the method saturate_angles in pepper_approach_control_thread.py from here 
+    from https://github.com/FraPorta/pepper_openpose_teleoperation/tree/main/pepper_teleoperation/utils
+    (Apache 2.0 Licensed)
+    """
+    ## replace missing joint angles with the current joint angles
+    def fix_angles(self,line):
+        for pos in range(len(line)):
+            try:
+                line[pos]=float(line[pos])
+            except:
+                #if line[pos]==None:
+                if pos==0: 
+                    line[pos]=self.memory.getData("Device/SubDeviceList/LShoulderPitch/Position/Sensor/Value")
+                elif pos==1:    
+                    line[pos]=self.memory.getData("Device/SubDeviceList/LShoulderRoll/Position/Sensor/Value")
+                elif pos==2:    
+                    line[pos]=self.memory.getData("Device/SubDeviceList/LElbowYaw/Position/Sensor/Value")
+                elif pos==3:    
+                    line[pos]=self.memory.getData("Device/SubDeviceList/LElbowRoll/Position/Sensor/Value")
+                elif pos==4:    
+                    line[pos]=self.memory.getData("Device/SubDeviceList/RShoulderPitch/Position/Sensor/Value")
+                elif pos==5:    
+                    line[pos]=self.memory.getData("Device/SubDeviceList/RShoulderRoll/Position/Sensor/Value")
+                elif pos==6:    
+                    line[pos]=self.memory.getData("Device/SubDeviceList/RElbowYaw/Position/Sensor/Value")
+                elif pos==7:    
+                    line[pos]=self.memory.getData("Device/SubDeviceList/RElbowRoll/Position/Sensor/Value")
+        line[8]=float(0) # hip pitch           
+        return line     
 
     def move(self,line):
         if len(line)>=10 and line[9].strip() :
@@ -256,8 +287,7 @@ class motion():
             names = ["LShoulderPitch","LShoulderRoll", "LElbowYaw", "LElbowRoll", \
                     "RShoulderPitch","RShoulderRoll", "RElbowYaw", "RElbowRoll", \
                     "HipPitch"]
-            angles = [float(line[0]), float(line[1]), float(line[2]), float(line[3]), \
-                    float(line[4]), float(line[5]), float(line[6]), float(line[7]), float(0)]
+            angles=self.fix_angles(line)
             if angles_in_range(angles) :
                 self.motion.setAngles(names, angles, self.fractionMaxSpeed)
             
