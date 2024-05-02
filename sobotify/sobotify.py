@@ -59,7 +59,6 @@ class sobotify (object) :
         self.teleoperator_proc=0
         self.logging_server_proc=0
         self.llm_proc=0
-        self.robot_done_flag=False
         self.statement_pending=False
         self.statement = ""
         self.dominant_emotion_available=False
@@ -67,15 +66,7 @@ class sobotify (object) :
         self.grammar_checking_result_available=False
         self.grammar_checking_result = ""
         self.start_mqtt_client=start_mqtt_client
-        self.init_speech_recognition_done_flag = False
-        self.init_chatbot_done_flag = False
-        self.init_robot_done_flag = False
-        self.init_robot_interface_done_flag =False
-        self.init_facial_processing_done_flag = False 
-        self.init_grammar_checking_done_flag =True
-        self.init_logging_server_done_flag=False
         self.log_enabled=log
-        self.init_teleoperator_done_flag =False
         self.language=language_default
         self.sound_device=sound_device_default
         self.partial_text_pending=False
@@ -143,19 +134,6 @@ class sobotify (object) :
         #print("got statement from human: "+ self.statement)
         self.partial_text_pending=True
 
-    def robot_done(self,message) :
-        print("got info robot is done: "+ message)
-        self.robot_done_flag=True
-
-    def wait_for_robot(self):
-        self.mqtt_client.subscribe("robot_control/status/done",self.robot_done)
-        print("waiting for robot to finish ...")             
-        while not self.robot_done_flag==True:
-            time.sleep(0.1)   
-        self.robot_done_flag=False
-        print(" ... done")             
-
-
     def reply_from_listener(self):
             self.mqtt_client.subscribe("speech-recognition/partial-text",self.store_partial_text)
             timestamp=datetime.now()
@@ -206,7 +184,9 @@ class sobotify (object) :
         if gesture:
             message=gesture+"|"+message
         self.mqtt_client.publish("robot_control/command/speak-and-gesture",message)
-        self.wait_for_robot()
+        print("waiting for robot to finish ...")             
+        self.mqtt_client.wait_for("robot_control/status/done")
+        print(" ... done")             
         if detect_emotion:
             emotion=self.detect(command="stop")
             return emotion
@@ -294,17 +274,6 @@ class sobotify (object) :
         print ('started mosquitto, pid=',self.mosquitto_proc.pid)
 
    ########################################################################################################
-    def init_teleoperator_done(self,message) :
-        print("got init done: "+ message)
-        self.init_teleoperator_done_flag =True
-
-    def wait_for_init_teleoperator_done(self):
-        self.mqtt_client.subscribe("teleoperator/status/init-done",self.init_teleoperator_done)
-        print("waiting for logging server to finish initalization ...")             
-        while not self.init_teleoperator_done_flag==True:
-            time.sleep(0.5)   
-        print(" ... done")  
-
     def start_teleoperator(self,mqtt=True,mosquitto_ip=mosquitto_ip_default,robot_name=robot_name_default,cam_device=cam_device_default,frame_rate=frame_rate_default,show_video=show_video_default,show_stickman=show_stickman_default):
         sobotify_path=os.path.dirname(os.path.abspath(__file__))
         script_path=os.path.join(sobotify_path,'tools','teleoperator.py')
@@ -325,20 +294,11 @@ class sobotify (object) :
         self.teleoperator_proc=subprocess.Popen(arguments,creationflags=creationflags)
         print ('started teleoperator, pid=',self.teleoperator_proc.pid)
         if mqtt== True: 
-            self.wait_for_init_teleoperator_done()
+            print("waiting for teleoperator to finish initalization ...")  
+            self.mqtt_client.wait_for("teleoperator/status/init-done")
+            print(" ... done")      
 
     ########################################################################################################
-    def init_logging_server_done(self,message) :
-        print("got init done: "+ message)
-        self.init_logging_server_done_flag =True
-
-    def wait_for_init_logging_server_done(self):
-        self.mqtt_client.subscribe("logging_server/status/init-done",self.init_logging_server_done)
-        print("waiting for logging server to finish initalization ...")             
-        while not self.init_logging_server_done_flag==True:
-            time.sleep(0.5)   
-        print(" ... done")  
-
     def start_logging_server(self,mqtt=True,mosquitto_ip=mosquitto_ip_default):
         sobotify_path=os.path.dirname(os.path.abspath(__file__))
         script_path=os.path.join(sobotify_path,'tools','logger.py')
@@ -354,20 +314,11 @@ class sobotify (object) :
         self.logging_server_proc=subprocess.Popen(arguments,creationflags=creationflags)
         print ('started logging server, pid=',self.logging_server_proc.pid)
         if mqtt== True: 
-            self.wait_for_init_logging_server_done()
+            print("waiting for logging server to finish initalization ...")  
+            self.mqtt_client.wait_for("logging_server/status/init-done")
+            print(" ... done")   
 
     ########################################################################################################
-    def init_robot_interface_done(self,message) :
-        print("got init done: "+ message)
-        self.init_robot_interface_done_flag =True
-
-    def wait_for_init_robot_interface_done(self):
-        self.mqtt_client.subscribe("robot/status/init-done",self.init_robot_interface_done)
-        print("waiting for robot interface to finish initialization ...")             
-        while not self.init_robot_interface_done_flag==True:
-            time.sleep(1)   
-        print(" ... done")  
-
     def start_robotinterface(self,mqtt=True,mosquitto_ip=mosquitto_ip_default,robot_name=robot_name_default,robot_ip=robot_ip_default,
                            robot_options=robot_options_default, language=language_default,min_speech_speed=min_speech_speed_default,cam_device=cam_device_default,sound_device=sound_device_default,robot_conda_env=robot_conda_env_default) :
         sobotify_path=os.path.dirname(os.path.abspath(__file__))
@@ -403,22 +354,11 @@ class sobotify (object) :
         #rointerface_proc=subprocess.Popen(arguments)
         print ('started robot interface, pid=',self.rointerface_proc.pid)
         if mqtt== True: 
-            self.wait_for_init_robot_interface_done()
-            print(" ... done")
+            print("waiting for robot interface to finish initialization ...")  
+            self.mqtt_client.wait_for("robot/status/init-done")
+            print(" ... done")   
 
     ########################################################################################################
-
-    def init_robot_controller_done(self,message) :
-        print("got init done: "+ message)
-        self.init_robot_done_flag =True
-
-    def wait_for_init_robot_controller_done(self):
-        self.mqtt_client.subscribe("robot_control/status/init-done",self.init_robot_controller_done)
-        print("waiting for robot controller to finish initialization ...")             
-        while not self.init_robot_done_flag==True:
-            time.sleep(1)   
-        print(" ... done")  
-
     def start_robotcontroller(self,mqtt=True,mosquitto_ip=mosquitto_ip_default,robot_name=robot_name_default,robot_ip=robot_ip_default,
                            robot_options=robot_options_default,cam_device=cam_device_default,sound_device=sound_device_default,robot_conda_env=robot_conda_env_default,data_path=data_path_default,language=language_default,
                            min_speech_speed=min_speech_speed_default,max_speech_speed=max_speech_speed_default,message=message_default) :
@@ -459,20 +399,11 @@ class sobotify (object) :
         #rocontrol_proc=subprocess.Popen(arguments)
         print ('started robot controller, pid=',self.rocontrol_proc.pid)
         if mqtt== True: 
-            self.wait_for_init_robot_controller_done()
+            print("waiting for robot controller to finish initialization ...")  
+            self.mqtt_client.wait_for("robot_control/status/init-done")
+            print(" ... done")   
 
     ########################################################################################################
-    def init_speech_recognition_done(self,message) :
-        print("got init done: "+ message)
-        self.init_speech_recognition_done_flag =True
-
-    def wait_for_init_speech_recognition_done(self):
-        self.mqtt_client.subscribe("speech-recognition/status/init-done",self.init_speech_recognition_done)
-        print("waiting for speech recognition to finish initalization ...")             
-        while not self.init_speech_recognition_done_flag==True:
-            time.sleep(1)   
-        print(" ... done")           
-
     def start_listener(self,mqtt=True,mosquitto_ip=mosquitto_ip_default,vosk_model_path=vosk_model_path_default,language=language_default,
                                  keyword=keyword_default):
         self.language=language
@@ -493,20 +424,11 @@ class sobotify (object) :
         self.speech_recognition_proc=subprocess.Popen(arguments,creationflags=creationflags)
         print ('started speech recognition, pid=',self.speech_recognition_proc.pid)
         if mqtt== True: 
-            self.wait_for_init_speech_recognition_done()
+            print("waiting for speech recognition to finish initalization ...")  
+            self.mqtt_client.wait_for("speech-recognition/status/init-done")
+            print(" ... done")  
 
     ########################################################################################################
-    def init_chatbot_done(self,message) :
-        print("got init done: "+ message)
-        self.init_chatbot_done_flag =True
-
-    def wait_for_init_chatbot_done(self):
-        self.mqtt_client.subscribe("llm/status/init-done",self.init_chatbot_done)
-        print("waiting for chatbot to finish initalization ...")             
-        while not self.init_chatbot_done_flag==True:
-            time.sleep(1)   
-        print(" ... done")  
-    
     def start_chatbot(self,mqtt=True,mosquitto_ip=mosquitto_ip_default,llm_name=llm_name_default,
                       llm_options=llm_options_default):
         sobotify_path=os.path.dirname(os.path.abspath(__file__))
@@ -526,20 +448,11 @@ class sobotify (object) :
         self.llm_proc=subprocess.Popen(arguments,creationflags=creationflags)
         print ('started chatbot, pid=',self.llm_proc.pid)
         if mqtt== True: 
-            self.wait_for_init_chatbot_done()
+            print("waiting for chatbot to finish initalization ...")  
+            self.mqtt_client.wait_for("llm/status/init-done")
+            print(" ... done")  
 
-    ########################################################################################################
-    def init_facial_processing_done(self,message) :
-        print("got init done: "+ message)
-        self.init_facial_processing_done_flag =True
-
-    def wait_for_init_facial_processing_done(self):
-        self.mqtt_client.subscribe("facial_processing/status/init-done",self.init_facial_processing_done)
-        print("waiting for facial_processing to finish initalization ...")             
-        while not self.init_facial_processing_done_flag==True:
-            time.sleep(1)   
-        print(" ... done")  
-    
+    ######################################################################################################## 
     def start_facial_processing(self,mqtt=True,mosquitto_ip=mosquitto_ip_default,robot_name=robot_name_default,robot_ip=robot_ip_default,cam_device=cam_device_default,frame_rate=frame_rate_default,show_video=show_video_default):
         sobotify_path=os.path.dirname(os.path.abspath(__file__))
         script_path=os.path.join(sobotify_path,'tools','facial_processing.py')
@@ -560,20 +473,11 @@ class sobotify (object) :
         self.facial_processing_proc=subprocess.Popen(arguments,creationflags=creationflags)
         print ('started facial processing, pid=',self.facial_processing_proc.pid)
         if mqtt== True: 
-            self.wait_for_init_facial_processing_done()
+            print("waiting for facial_processing to finish initalization ...")  
+            self.mqtt_client.wait_for("facial_processing/status/init-done")
+            print(" ... done")  
 
-    ########################################################################################################
-    def init_grammar_checking_done(self,message) :
-        print("got init done: "+ message)
-        self.init_grammar_checking_done_flag =True
-
-    def wait_for_init_grammar_checking_done(self):
-        self.mqtt_client.subscribe("grammar_checking/status/init-done",self.init_grammar_checking_done)
-        print("waiting for grammar_checking to finish initalization ...")             
-        while not self.init_grammar_checking_done_flag==True:
-            time.sleep(1)   
-        print(" ... done")  
-    
+    ########################################################################################################   
     def start_grammar_checking(self,mqtt=True,mosquitto_ip=mosquitto_ip_default,languagetool_path=languagetool_path_default,java_path=java_path_default,language=language_default,URL=URL_default,text=text_default):
         sobotify_path=os.path.dirname(os.path.abspath(__file__))
         script_path=os.path.join(sobotify_path,'tools','grammar_checking.py')
@@ -594,9 +498,11 @@ class sobotify (object) :
         self.grammar_checking_proc=subprocess.Popen(arguments,creationflags=creationflags)
         print ('started grammar checking, pid=',self.grammar_checking_proc.pid)
         if mqtt== True: 
-            self.wait_for_init_grammar_checking_done()
-    ########################################################################################################
+            print("waiting for grammar_checking to finish initalization ...")  
+            self.mqtt_client.wait_for("grammar_checking/status/init-done")
+            print(" ... done")  
 
+    ########################################################################################################
     def terminate(self):
         if not self.analyze_proc==0: self.analyze_proc.kill()
         if not self.mosquitto_proc==0: self.mosquitto_proc.kill()

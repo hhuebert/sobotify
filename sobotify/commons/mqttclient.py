@@ -1,11 +1,15 @@
 import paho.mqtt.client as mqtt
-
+import time 
 
 class mqttClient(object):
 
     def __init__(self,mosquitto_ip,client_name,debug=False):
         self.callback={}
         self.debug=debug
+        self.message=""
+        self.message_available=False
+        self.get_message_topic=""
+        self.get_message_raw_data=False
         self.client = mqtt.Client(client_name, clean_session = False)
         self.broker = mosquitto_ip       
         self.client.on_connect = self.on_connect
@@ -43,6 +47,31 @@ class mqttClient(object):
                 callback(message,msg.topic)
             else :
                 callback(message)
+        if self.get_message_topic==topic:
+            if self.get_message_raw_data==False:
+                message = msg.payload.decode('utf-8')
+                if self.debug : print ("received on topic: " + topic + " ====> message: " + message )
+            else :
+                message = msg.payload
+            self.message=message
+            self.message_available=True
+
+    def get_message(self,topic,raw_data=False):
+        ########################
+        # warning: this method might not be thread safe => maybe use separate objects to fix
+        ########################
+        self.get_message_raw_data=raw_data
+        self.client.subscribe(topic)
+        self.get_message_topic=topic
+        while not self.message_available:
+            time.sleep(0.01)    
+        #print("get_message: "+ self.message)
+        self.message_available=False
+        self.get_message_topic=""
+        return self.message
+
+    def wait_for(self,topic):
+        self.get_message(topic)
 
     def on_connect(self, client, userdata, flags, rc):
         if self.debug : print ("Connected! - " + str(rc))
