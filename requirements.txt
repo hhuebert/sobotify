@@ -1,5 +1,5 @@
 matplotlib==3.5.1; python_version > '2.7'
-mediapipe==0.8.9.1; python_version > '2.7'
+mediapipe==0.10.11; python_version > '2.7'
 paho-mqtt==1.6.1; python_version > '2.7'
 pyttsx3==2.90; python_version > '2.7'
 scipy==1.10.1; python_version > '2.7'
