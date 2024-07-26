@@ -56,6 +56,28 @@ def get_angles(offset_x,offset_y):
     angle_y=round(math.asin(offset_y/r_ver),2)
     return angle_x,angle_y
 
+def get_float_number(value_in):
+    if value_in:  # check if not None
+        if isinstance(value_in, str) and value_in.strip(): # check if string and not empty
+            value_out=float(value_in.strip())
+        elif isinstance(value_in, int) or isinstance(value_in, float) : # check if a number
+            value_out=float(value_in)
+        else:
+            value_out=None
+    else:
+        value_out=None
+    return value_out
+
+def get_upper_string(value_in):
+    if value_in:  # check if not None
+        if isinstance(value_in, str) and value_in.strip(): # check if string and not empty
+            value_out=value_in.strip().upper()
+        else:
+            value_out=None
+    else:
+        value_out=None
+    return value_out
+
 class motion(default_robot.motion): 
 
     def __init__(self,PORT):
@@ -154,17 +176,21 @@ class motion(default_robot.motion):
         print(self.message)
 
     def move(self,line):
-        if line[0].strip():
-            self.pan(float(line[0]))
+        pan_value=get_float_number(line[0])
+        if pan_value:
+            self.pan(pan_value)
             time.sleep(0.3)
-        if line[1].strip():
-            self.tilt(float(line[1]))
+        tilt_value=get_float_number(line[1])
+        if tilt_value:
+            self.tilt(tilt_value)
             time.sleep(0.4)
-        if line[2].strip():
-            self.side(line[2].strip().upper())
+        side_value=get_upper_string(line[2])
+        if side_value:
+            self.side(side_value)
             time.sleep(0.3)
-        if line[3].strip():
-            self.pon(line[3].strip().upper())
+        pon_value=get_upper_string(line[3])
+        if pon_value:
+            self.pon(pon_value)
             time.sleep(0.3)
             
     def terminate(self):
