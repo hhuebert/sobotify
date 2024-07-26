@@ -111,7 +111,7 @@ def saturate_angles(LShoulderPitch, LShoulderRoll, LElbowYaw, LElbowRoll, RShoul
     return angles    
 
 
-def store_angles(world_landmarks_array, time_stamp,angles_filename):
+def convert(world_landmarks_array, time_stamp,angles_filename):
     visibility_threshold=0.5
     limitsLShoulderPitch = [-2.0857, 2.0857]
     limitsLShoulderRoll  = [ 0.0087, 1.5620]
@@ -169,42 +169,3 @@ def store_angles(world_landmarks_array, time_stamp,angles_filename):
     angles=saturate_angles(LShoulderPitch, LShoulderRoll, LElbowYaw, LElbowRoll, RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll,HipPitch)
     return True, angles
 
-def landmarks2angles(world_landmarks_filename,data_path):
-
-    fileName, ext = os.path.splitext(os.path.basename(world_landmarks_filename))
-    fileName=fileName[:-8]; # remove "_wlmarks" ending from file name
-    angles_filename= os.path.join(data_path,fileName+"_pepper.csv")
-
-    try:
-        world_landmarks_file   = open(world_landmarks_filename, "r", newline='')
-    except Exception : 
-        print ("Cannot open world landmarks file for reading: "+str(world_landmarks_filename))
-        exit()      
-    
-    try:
-        angles_file=open(angles_filename, "w", newline='')
-    except Exception : 
-        print ("Cannot open angles file for writing: "+str(world_landmarks_filename))
-        exit()      
-
-    world_landmarks_file_reader = csv.reader(world_landmarks_file)
-    angles_writer = csv.writer(angles_file)
-    
-    for i,row in enumerate(world_landmarks_file_reader) :
-        time_stamp= float(row[0])  # first column is time stamp
-        row.pop(0)  # strip time stamp off ==> remaining columns are the flattened array of landmarks
-        world_landmarks_array = np.array(row).astype(float)
-        world_landmarks_array = np.reshape(world_landmarks_array,(-1,4))
-        result,angles = store_angles(world_landmarks_array,time_stamp,angles_filename)
-        if result == True:
-            row = np.insert(angles,0,time_stamp)
-            angles_writer.writerow(row)
-
-if __name__ == '__main__':
-    parser=argparse.ArgumentParser(description='convert landmarks into robot joint angles and store them in csv text file')
-    parser.add_argument('--world_landmarks_file',default='video_wlmarks.csv',help='path to the video input file')
-    parser.add_argument('--data_path',default=os.path.expanduser("~")+"/.sobotify/data",help='path to movement/speech data')
-    args=parser.parse_args()
-    landmarks2angles(args.world_landmarks_file,args.data_path)    
-    print("Finished!")
-    

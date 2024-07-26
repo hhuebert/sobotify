@@ -52,43 +52,24 @@ def get_sound(name,robot_ip,sound_device) :
             exit()
 
 
-def get_angles(name) :
+def get_gesture_converter(name) :
     if name=='stickman' :
         return None
     elif name=='pepper' :
         import sobotify.robots.pepper.landmarks2angles as landmarks2angles
-        return landmarks2angles.store_angles
+        return landmarks2angles.convert
     elif name=='nao' :
         import sobotify.robots.nao.landmarks2angles as landmarks2angles
-        return landmarks2angles.store_angles
+        return landmarks2angles.convert
     elif name=='cozmo' :
         import sobotify.robots.cozmo.landmarks2angles as landmarks2angles
-        return landmarks2angles.store_angles
+        return landmarks2angles.convert
     elif name=='mykeepon' :
         import sobotify.robots.mykeepon.landmarks2angles as landmarks2angles
-        return landmarks2angles.store_angles
+        return landmarks2angles.convert
     else :
         print("unknow robot :" + str(name))
-        return None            
-
-def get_gesture_conversion(name) :
-    if name=='stickman' :
-        return None
-    elif name=='pepper' :
-        import sobotify.robots.pepper.landmarks2angles as landmarks2angles
-        return landmarks2angles.landmarks2angles
-    elif name=='nao' :
-        import sobotify.robots.nao.landmarks2angles as landmarks2angles
-        return landmarks2angles.landmarks2angles
-    elif name=='cozmo' :
-        import sobotify.robots.cozmo.landmarks2angles as landmarks2angles
-        return landmarks2angles.landmarks2angles
-    elif name=='mykeepon' :
-        import sobotify.robots.mykeepon.landmarks2angles as landmarks2angles
-        return landmarks2angles.landmarks2angles
-    else :
-        print("unknow robot :" + str(name))
-        return None            
+        return None                   
     
 def get_all_interfaces(name,robot_ip,robot_options,cam_device,sound_device) :
         parser=argparse.ArgumentParser(description='start an mqtt client for controlling a robot')

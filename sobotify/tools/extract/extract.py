@@ -3,6 +3,7 @@ import os
 import sobotify.tools.extract.video2landmarks as video2landmarks
 import sobotify.tools.extract.audio2srt as audio2srt
 import sobotify.tools.extract.video2timestamps as video2timestamps
+import sobotify.tools.extract.landmarks2angles as converter
 import sobotify.robots.robots as robots
 
 def extract(video_file,data_path,robot_name,ffmpeg_path,vosk_model_path,language,show_video):
@@ -18,12 +19,10 @@ def extract(video_file,data_path,robot_name,ffmpeg_path,vosk_model_path,language
     if robot_name=="all": robot_names=robots.get_names()
     else : robot_names.append(robot_name)
     for robot in robot_names :
-        landmarks2angles_converter=robots.get_gesture_conversion(robot)
-        if not landmarks2angles_converter is None :
-            fileName, ext = os.path.splitext(os.path.basename(video_file))
-            world_landmarks_filename= os.path.join(data_path,fileName+"_wlmarks.csv")
-            print("convert landmarks to robot movement data for " + robot)
-            landmarks2angles_converter(world_landmarks_filename,data_path)
+        fileName, ext = os.path.splitext(os.path.basename(video_file))
+        world_landmarks_filename= os.path.join(data_path,fileName+"_wlmarks.csv")
+        print("convert landmarks to robot movement data for " + robot)
+        converter.landmarks2angles(robot,world_landmarks_filename,data_path)
     print("... done extracting gesture and speech!")
 
 if __name__ == '__main__':

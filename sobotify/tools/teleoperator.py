@@ -69,11 +69,11 @@ class TeleOperator:
         landmarks_array = np.array(landmarks_array)
         return landmarks_array
 
-    def landmarks2angles(self,landmarks,robot_name) :
+    def landmarks2angles(self,landmarks,robot_name,time_stamp) :
         landmarks_array = self.get_landmarks(landmarks)
-        gesture_conversion=robots.get_angles(robot_name)
-        if not gesture_conversion is None :
-            result,angles = gesture_conversion(landmarks_array,"","")
+        gesture_converter=robots.get_gesture_converter(robot_name)
+        if not gesture_converter is None :
+            result,angles = gesture_converter(landmarks_array,time_stamp,"")
             return result,angles
         else:
             return False, ""
