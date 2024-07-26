@@ -79,6 +79,7 @@ class TeleOperator:
             return False, ""
 
     def video2landmarks(self):
+        start_time=datetime.now()
         while True:
             if self.activated==True:
                 ret, image=self.camera.get_image()
@@ -100,7 +101,8 @@ class TeleOperator:
                             if self.mqtt=="on" :
                                 self.mqtt_client.publish("robot_control/command/move",str(landmarks_array.tolist()))                            
                     if results.pose_world_landmarks is not None:
-                        result,angles = self.landmarks2angles(results.pose_world_landmarks.landmark,self.robot_name)
+                        time_stamp=(datetime.now()-start_time).total_seconds()
+                        result,angles = self.landmarks2angles(results.pose_world_landmarks.landmark,self.robot_name,time_stamp)
                         if result==True:
                             #print (str(datetime.now())+": send angles :"+str(angles))
                             if not self.robot_name=="stickman":
@@ -111,6 +113,8 @@ class TeleOperator:
                         #    print (str(datetime.now())+": angles error xxxxxxxxxxxxxxxxxxxxxxx")
                 else:
                     print ("no frame to be read")
+            else:
+                start_time=datetime.now()
 
             time.sleep(0.01)
         if (self.show_video=="on"):
