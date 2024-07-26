@@ -204,6 +204,7 @@ class RobotControl():
 
     def __init__(self,mqtt,mosquitto_ip,data_path, language, min_speech_speed, max_speech_speed,robot_name,robot_ip,robot_options,cam_device,sound_device):
         self.mqtt=mqtt
+        self.robot=None                # initialize to None due to potential race condition in threads
         self.stop_robotcontrol=False
         self.received_message=False    
         self.head_update_flag=False
@@ -258,11 +259,13 @@ class RobotControl():
                 if self.head_update_flag:
                     self.head_update_flag=False
                     last_head_update = datetime.now()
-                    self.robot.follow_head(self.head_data)
+                    if self.robot:
+                        self.robot.follow_head(self.head_data)
                 else :
                     delta_time=(datetime.now()-last_head_update).total_seconds()
                     if (delta_time>3):
-                        self.robot.search_head()
+                        if self.robot:
+                            self.robot.search_head()
             sleep(0.1)
 
     def set_speed(self,message):
@@ -319,8 +322,9 @@ class RobotControl():
             end_time     = lines.end.total_seconds()*speed_factor
             speech_speed = self.speechSpeedCalc(time_stamp,end_time,speech_text)
             self.sync(start,time_stamp,True)
-            self.robot.set_speed(speech_speed)
-            self.robot.say(speech_text)
+            if self.robot:
+                self.robot.set_speed(speech_speed)
+                self.robot.say(speech_text)
         print ("\nspeech done at     : " + self.deltatime(datetime.now()))                        
         self.talking=False;
 
@@ -333,7 +337,8 @@ class RobotControl():
             if self.stop_robotcontrol==True:
                 break
             if self.got_move==True:
-                self.robot.move(self.landm)
+                if self.robot:
+                    self.robot.move(self.landm)
                 self.got_move=False                
             sleep(0.05)
 
@@ -360,7 +365,8 @@ class RobotControl():
             if (diff_since_last_motion>0.05) :
                 if DEBUG_SYNC==True: 
                     sys.stdout.write(".") 
-                self.robot.move(landm)                
+                if self.robot:
+                    self.robot.move(landm)                
                 last_motion= delta_time
             else :
                 if DEBUG_SYNC2==True: 
@@ -391,23 +397,23 @@ class RobotControl():
         return pre_gesture,post_gesture
 
     def move(self):
-        motion_file,motion_reader = readCSVFile(self.tag + self.robot.get_file_extension() + ".csv",self.current_datapath)  
-        pre_gesture,post_gesture = self.get_extra_gestures(motion_file,motion_reader) 
-        if pre_gesture:
-            self.robot.move(pre_gesture)
-        self.ready_to_move=True        
-        self.movement(motion_reader)
-        if motion_file != None :
-            motion_file.close()
-        while (self.talking==True):
-            random_motion_file,random_motion_reader = readCSVFile("random"+ self.robot.get_file_extension() + ".csv", self.data_path_random)  
-            self.movement(random_motion_reader)
-            if random_motion_file != None :
-                random_motion_file.close()
-        self.ready_to_move=False
-        if post_gesture:
-            self.robot.move(post_gesture)
-
+        if self.robot:
+            motion_file,motion_reader = readCSVFile(self.tag + self.robot.get_file_extension() + ".csv",self.current_datapath)  
+            pre_gesture,post_gesture = self.get_extra_gestures(motion_file,motion_reader) 
+            if pre_gesture:
+                self.robot.move(pre_gesture)
+            self.ready_to_move=True        
+            self.movement(motion_reader)
+            if motion_file != None :
+                motion_file.close()
+            while (self.talking==True):
+                random_motion_file,random_motion_reader = readCSVFile("random"+ self.robot.get_file_extension() + ".csv", self.data_path_random)  
+                self.movement(random_motion_reader)
+                if random_motion_file != None :
+                    random_motion_file.close()
+            self.ready_to_move=False
+            if post_gesture:
+                self.robot.move(post_gesture)
 
     def receive_message(self,message): 
         self.message=message
