@@ -1,20 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
-import subprocess
 import serial
-import sys
-import os
-import numpy as np
-import cv2 as cv
-import sounddevice as sd
-import queue
-import sobotify.commons.speak 
+#import sobotify.robots.mykeepon.serial_dummy as serial
 import time
-import ast
 import math
-import platform
+import sobotify.robots.robot as default_robot
 
 class MyKeepon(): 
 
@@ -65,10 +56,10 @@ def get_angles(offset_x,offset_y):
     angle_y=round(math.asin(offset_y/r_ver),2)
     return angle_x,angle_y
 
-
-class motion(): 
+class motion(default_robot.motion): 
 
     def __init__(self,PORT):
+        super().__init__()
         self.fileExtension = "_mykeepon" 
         self.myKeepOn=serial.Serial(PORT,115200,timeout=1)
         self.pan_pos=0
@@ -118,13 +109,6 @@ class motion():
                 pass                
         """
 
-    def search_head(self):
-        print ("search head")
-
-
-    def getFileExtension(self):
-        return self.fileExtension
-
     def pan(self,val):
         command=("MOVE PAN "+str(val)+";").encode("ascii")
         if val>=min_pan and val<=max_pan:
@@ -168,7 +152,6 @@ class motion():
     def read_output(self):
         self.message=self.myKeepOn.readlines()
         print(self.message)
-        
 
     def move(self,line):
         if line[0].strip():
@@ -188,103 +171,11 @@ class motion():
         pass
         #self.myKeepOn.close()
 
-class speech():
+class speech(default_robot.speech):
+    pass
 
-    def __init__(self):
-        self.language="German"
-        self.speed=100
-        
-    def setLanguage(self, language):
-        self.language=language
+class vision(default_robot.vision):
+    pass
 
-    def setSpeed(self, speed):
-        self.speed=speed
-        
-    def say(self, Text):
-        
-        arguments=[sys.executable,sobotify.commons.speak.__file__]
-        arguments.extend(('--language',self.language))
-        arguments.extend(('--message',"\"" + Text +"\""))
-        arguments.extend(('--speed',str(self.speed)))
-        result=subprocess.call(arguments)    
-        
-    def terminate(self):
-        # maybe check if say command terminated (or kill the process)
-        pass
-
-class vision():
-
-    def __init__(self,device) : 
-        if device.isnumeric():
-            if platform.system()=="Windows":  
-                self.cam = cv.VideoCapture(int(device),cv.CAP_DSHOW)
-            else:
-                self.cam = cv.VideoCapture(int(device))
-        else:
-            #self.cam = cv.VideoCapture("http://192.168.0.100:8080/video/mjpeg")
-            self.cam = cv.VideoCapture(device)
-        if not self.cam.isOpened():
-            print ("Error opening Camera")
-
-    def get_image(self) : 
-        if self.cam.isOpened():
-            ret,img=self.cam.read()
-            if not ret:
-                print ("Couldn't get image")
-
-        return ret,img
-    
-    def terminate(self):
-        self.cam.release() 
-
-"""
-Attribution: The following code is based on 
-https://github.com/alphacep/vosk-api/blob/master/python/example/test_microphone.py
-(Apache 2.0 Licensed)
-"""    
-## currently using computer/external microphone
-class sound :
-
-    def __init__(self,device=0) :
-        self.device=int(device)
-        try:
-            device_info = sd.query_devices(self.device, "input")
-        except ValueError:
-            print(sd.query_devices())
-            print("==========================================================")
-            print ("Error: Could not open the selected input sound device : " +  str(self.device))
-            print ("Choose a different device from the list above (must have inputs)")
-        # get samplerate from audiodevice
-        self.samplerate = int(device_info["default_samplerate"])
-        #create queue for storing audio samples
-        self.audioqueue = queue.Queue()
-        self.streamer=None
-
-    def start_streaming(self) :
-        self.streamer=sd.RawInputStream(samplerate=self.samplerate, blocksize = 8000, device=self.device,
-                dtype="int16", channels=1, callback=self.audio_callback)
-        self.streamer.__enter__()
-        return self.samplerate
-
-    def stop_streaming(self) :
-        if self.streamer is not None:
-            self.streamer.__exit__()
-
-    # this function is called from the sound device handler to store the audio block in the queue
-    def audio_callback(self,indata, frames, time, status):
-        """This is called (from a separate thread) for each audio block."""
-        if status:
-            print(status, file=sys.stderr)
-        self.audioqueue.put(bytes(indata))
-
-    def get_audio_data(self) :
-        try:
-            return True,self.audioqueue.get()
-        except:
-            return False,None
-
-    def get_samplerate(self) :
-        return self.samplerate    
-    
-    def terminate(self):
-        self.stop_streaming()       
+class sound(default_robot.sound):
+    pass

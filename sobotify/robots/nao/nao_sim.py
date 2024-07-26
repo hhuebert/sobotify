@@ -6,19 +6,9 @@ Attribution: Part of this code is based on
 https://github.com/Kazuhito00/mediapipe-python-sample/blob/main/sample_pose.py
 (Apache 2.0 Licensed)
 """
-import sys
-import subprocess
 import pybullet as p
 from qibullet import SimulationManager
-from qibullet import PepperVirtual
-from signal import signal, SIGINT
-from time import time, sleep,localtime,strftime
-import pyttsx3
-import sobotify.commons.speak 
-import cv2 as cv
-import sounddevice as sd
-import queue
-import platform
+import sobotify.robots.robot as default_robot
 
 class NAOSim(): 
 
@@ -64,9 +54,10 @@ def angles_in_range(angles) :
     return angles_ok
 
 
-class motion(): 
+class motion(default_robot.motion): 
 
     def __init__(self):
+        super().__init__()
         self.fileExtension = "_nao" 
         # Auto stepping set to False, the user has to manually step the simulation
         self.simulation_manager = SimulationManager()
@@ -102,17 +93,7 @@ class motion():
         pass
 
 
-class speech():
-
-    def __init__(self):
-        self.language="English"
-        self.speed=100
-        
-    def setLanguage(self, language):
-        self.language=language
-
-    def setSpeed(self, speed):
-        self.speed=speed
+class speech(default_robot.vision):
         
     def say(self, Text):
         arg1 = self.language
@@ -137,12 +118,9 @@ class speech():
         id4 = p.addUserDebugText(text=DisplayText[300:400], textColorRGB=[1,0,0], textSize=1.4, lifeTime=30, textPosition=[0.2,-1.07+offset,0.24])
         id5 = p.addUserDebugText(text=DisplayText[400:500], textColorRGB=[1,0,0], textSize=1.4, lifeTime=30, textPosition=[0.2,-1.11+offset,0.16])
         id6 = p.addUserDebugText(text=DisplayText[500:600], textColorRGB=[1,0,0], textSize=1.4, lifeTime=30, textPosition=[0.2,-1.15+offset,0.08])
-        arguments=[sys.executable,sobotify.commons.speak.__file__]
-        arguments.extend(('--language',self.language))
-        arguments.extend(('--message',"\"" + Text +"\""))
-        arguments.extend(('--speed',str(self.speed)))
-        result=subprocess.call(arguments)    
-        #result=subprocess.call(["python","speak.py",arg1,arg2,arg3])    
+
+        super().say(Text) 
+
         p.removeUserDebugItem(id1)
         p.removeUserDebugItem(id2)
         p.removeUserDebugItem(id3)
@@ -152,82 +130,8 @@ class speech():
         #result=subprocess.call("start python.exe speak.py "+arg1+" "+arg2+" "+arg3, shell=True)
         print (DisplayText)
 
-    def terminate(self):
-        # maybe check if say command terminated (or kill the process)
-        pass
+class vision(default_robot.vision):
+    pass
 
-class vision():
-
-    def __init__(self,device) : 
-        if device.isnumeric():
-            if platform.system()=="Windows":  
-                self.cam = cv.VideoCapture(int(device),cv.CAP_DSHOW)
-            else:
-                self.cam = cv.VideoCapture(int(device))
-        else:
-            self.cam = cv.VideoCapture(device)
-        if not self.cam.isOpened():
-            print ("Error opening Camera")
-
-    def get_image(self) : 
-        if self.cam.isOpened():
-            ret,img=self.cam.read()
-            if not ret:
-                print ("Couldn't get image")
-
-        return ret,img
-    
-    def terminate(self):
-        self.cam.release()
-        pass    
-
-"""
-Attribution: The following code is based on 
-https://github.com/alphacep/vosk-api/blob/master/python/example/test_microphone.py
-(Apache 2.0 Licensed)
-"""    
-class sound :
-
-    def __init__(self,device=0) :
-        self.device=int(device)
-        try:
-            device_info = sd.query_devices(self.device, "input")
-        except ValueError:
-            print(sd.query_devices())
-            print("==========================================================")
-            print ("Error: Could not open the selected input sound device : " +  str(self.device))
-            print ("Choose a different device from the list above (must have inputs)")
-        # get samplerate from audiodevice
-        self.samplerate = int(device_info["default_samplerate"])
-        #create queue for storing audio samples
-        self.audioqueue = queue.Queue()
-        self.streamer=None
-
-    def start_streaming(self) :
-        self.streamer=sd.RawInputStream(samplerate=self.samplerate, blocksize = 8000, device=self.device,
-                dtype="int16", channels=1, callback=self.audio_callback)
-        self.streamer.__enter__()
-        return self.samplerate
-
-    def stop_streaming(self) :
-        if self.streamer is not None:
-            self.streamer.__exit__()
-
-    # this function is called from the sound device handler to store the audio block in the queue
-    def audio_callback(self,indata, frames, time, status):
-        """This is called (from a separate thread) for each audio block."""
-        if status:
-            print(status, file=sys.stderr)
-        self.audioqueue.put(bytes(indata))
-
-    def get_audio_data(self) :
-        try:
-            return True,self.audioqueue.get()
-        except:
-            return False,None
-
-    def get_samplerate(self) :
-        return self.samplerate
-         
-    def terminate(self):
-        self.stop_streaming()   
+class sound(default_robot.sound):
+    pass

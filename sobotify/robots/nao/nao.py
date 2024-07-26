@@ -9,18 +9,14 @@ https://github.com/elggem/naoqi-pose-retargeting/blob/main/teleop.py
 """
 from naoqi import ALProxy
 #from ALProxy_dummy import ALProxy
-import cv2 as cv
-import sounddevice as sd
-import Queue as queue
 import vision_definitions
 import numpy as np
 from datetime import datetime
 import random
 import ast
 import math
-import time
 from animations import NAO_animations,NAO_animation_tags
-
+import sobotify.robots.robot as default_robot
 
 class NAO(): 
 
@@ -112,9 +108,10 @@ def get_angles(offset_x,offset_y):
     angle_y=round(math.asin(offset_y/r_ver),2)
     return angle_x,angle_y
 
-class motion(): 
+class motion(default_robot.motion): 
 
     def __init__(self,robot_ip,robot_options):
+        super(motion,self).__init__()
         self.robot_options=robot_options
         print("robot options :"+str(self.robot_options)) 
         if "posture=crouch" in self.robot_options :
@@ -189,10 +186,7 @@ class motion():
         self.motion.setStiffnesses("RElbowRoll", stiffness)
         self.motion.setStiffnesses("LWristYaw", stiffness)
         self.motion.setStiffnesses("RWristYaw", stiffness)
-
-    def getFileExtension(self):
-        return self.fileExtension
-        
+   
     def follow_head(self,data):
         head_data=ast.literal_eval(data)
         offset_x=head_data.get("offset_x",0)
@@ -358,9 +352,10 @@ def convert_to_ascii(text):
     text= text.encode(encoding="ASCII",errors="ignore")
     return text
 
-class speech():
+class speech(default_robot.speech):
 
     def __init__(self,robot_ip):
+        super(speech,self).__init__()
         self.language="English"
         self.speed=100
         try: 
@@ -388,7 +383,7 @@ class speech():
         # maybe check if say command terminated (or kill the process)
         pass
 
-class vision():
+class vision(default_robot.vision):
 
     def __init__(self,robot_ip,device) : 
         if unicode(device).isnumeric():
@@ -425,55 +420,5 @@ class vision():
     def terminate(self):
         self.video_service.unsubscribe(self.nameId)
 
-"""
-Attribution: The following code is based on 
-https://github.com/alphacep/vosk-api/blob/master/python/example/test_microphone.py
-(Apache 2.0 Licensed)
-"""    
-## currently using computer/external microphone
-class sound :
-
-    def __init__(self,device=0) :
-        self.device=int(device)
-        try:
-            device_info = sd.query_devices(self.device, "input")
-        except ValueError:
-            print(sd.query_devices())
-            print("==========================================================")
-            print ("Error: Could not open the selected input sound device : " +  str(self.device))
-            print ("Choose a different device from the list above (must have inputs)")
-        # get samplerate from audiodevice
-        self.samplerate = int(device_info["default_samplerate"])
-        #create queue for storing audio samples
-        self.audioqueue = queue.Queue()
-        self.streamer=None
-
-    def start_streaming(self) :
-        self.streamer=sd.RawInputStream(samplerate=self.samplerate, blocksize = 8000, device=self.device,
-                dtype="int16", channels=1, callback=self.audio_callback)
-        self.streamer.__enter__()
-        return self.samplerate
-
-    def stop_streaming(self) :
-        if self.streamer is not None:
-            self.streamer.__exit__()
-
-    # this function is called from the sound device handler to store the audio block in the queue
-    def audio_callback(self,indata, frames, time, status):
-        """This is called (from a separate thread) for each audio block."""
-        if status:
-            #print(status, file=sys.stderr)
-            print(status)
-        self.audioqueue.put(bytes(indata))
-
-    def get_audio_data(self) :
-        try:
-            return True,self.audioqueue.get()
-        except:
-            return False,None
-
-    def get_samplerate(self) :
-        return self.samplerate    
-    
-    def terminate(self):
-        self.stop_streaming()  
+class sound(default_robot.sound):
+    pass

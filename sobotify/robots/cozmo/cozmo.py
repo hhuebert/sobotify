@@ -15,8 +15,6 @@ import threading
 import time
 from PIL import Image
 import cv2 as cv
-import sounddevice as sd
-import queue
 import numpy as np
 import pycozmo
 import pyttsx3
@@ -24,6 +22,7 @@ from signal import signal, SIGINT
 from datetime import datetime
 import threading
 import ast
+import sobotify.robots.robot as default_robot
 
 min_offset_x=0.2
 min_offset_y=0.2
@@ -63,9 +62,10 @@ class cozmo():
 
 
 
-class motion(): 
+class motion(default_robot.motion): 
 
     def __init__(self,cli=None):
+        super().__init__()
         if cli==None:
             self.cli=init_cozmo()
             self.local_init=True
@@ -109,9 +109,6 @@ class motion():
             time.sleep(0.1)
             print("waiting for batery voltage state update")
         return self.current_battery_voltage
-
-    def getFileExtension(self):
-        return self.fileExtension
 
     def set_head_angle(self, angle):
         self.cli.set_head_angle(angle=angle)
@@ -271,9 +268,10 @@ class motion():
         self.cli.set_lift_height(pycozmo.MIN_LIFT_HEIGHT.mm)
 
 
-class speech():
+class speech(default_robot.speech):
 
     def __init__(self,cli=None):
+        super().__init__()
         if cli==None:
             self.cli=init_cozmo()
             self.local_init=True
@@ -313,7 +311,7 @@ class speech():
             terminate_cozmo(self.cli)
         pass
 
-class vision():
+class vision(default_robot.vision):
 
     def __init__(self,cli=None):
         if cli==None:
@@ -346,54 +344,5 @@ class vision():
         pass
 
 
-"""
-Attribution: The following code is based on 
-https://github.com/alphacep/vosk-api/blob/master/python/example/test_microphone.py
-(Apache 2.0 Licensed)
-"""    
-## currently using computer/external microphone
-class sound :
-
-    def __init__(self,device=0) :
-        self.device=int(device)
-        try:
-            device_info = sd.query_devices(self.device, "input")
-        except ValueError:
-            print(sd.query_devices())
-            print("==========================================================")
-            print ("Error: Could not open the selected input sound device : " +  str(self.device))
-            print ("Choose a different device from the list above (must have inputs)")
-        # get samplerate from audiodevice
-        self.samplerate = int(device_info["default_samplerate"])
-        #create queue for storing audio samples
-        self.audioqueue = queue.Queue()
-        self.streamer=None
-
-    def start_streaming(self) :
-        self.streamer=sd.RawInputStream(samplerate=self.samplerate, blocksize = 8000, device=self.device,
-                dtype="int16", channels=1, callback=self.audio_callback)
-        self.streamer.__enter__()
-        return self.samplerate
-
-    def stop_streaming(self) :
-        if self.streamer is not None:
-            self.streamer.__exit__()
-
-    # this function is called from the sound device handler to store the audio block in the queue
-    def audio_callback(self,indata, frames, time, status):
-        """This is called (from a separate thread) for each audio block."""
-        if status:
-            print(status, file=sys.stderr)
-        self.audioqueue.put(bytes(indata))
-
-    def get_audio_data(self) :
-        try:
-            return True,self.audioqueue.get()
-        except:
-            return False,None
-
-    def get_samplerate(self) :
-        return self.samplerate    
-    
-    def terminate(self):
-        self.stop_streaming()
+class sound(default_robot.sound):
+    pass
