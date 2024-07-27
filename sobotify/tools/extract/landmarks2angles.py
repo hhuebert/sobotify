@@ -42,9 +42,10 @@ def landmarks2angles(robot_name,world_landmarks_filename,data_path):
 
 if __name__ == '__main__':
     parser=argparse.ArgumentParser(description='convert landmarks into robot joint angles and store them in csv text file')
+    parser.add_argument('--robot_name',default='all',help='name of the robot (all,stickman,pepper,nao,cozmo,mykeepon)')
     parser.add_argument('--world_landmarks_file',default='video_wlmarks.csv',help='path to the video input file')
     parser.add_argument('--data_path',default=os.path.expanduser("~")+"/.sobotify/data",help='path to movement/speech data')
     args=parser.parse_args()
-    landmarks2angles(args.world_landmarks_file,args.data_path)    
+    landmarks2angles(args.robot_name,args.world_landmarks_file,args.data_path)    
     print("Finished!")
     
