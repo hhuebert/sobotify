@@ -297,11 +297,63 @@ For downloading animations for Cozmo use:
       python
       "%USERPROFILE%\AppData\Local\miniconda3\envs\sobotify\Scripts\pycozmo_resources.py" download
 
-## License:
+# Extending Sobotify
+
+## Create your own Sobotify App
+
+The easiest way to crate an app is to copy an existing app and adjust it to your needs 
+* copy an existing app folder (e.g. the \\sobotify\\apps\\teleoperation) and rename it (e.g. into \\sobotify\\apps\\teleoperation\\myApp)
+* Rename the .py file, it **MUST** have the **same name** as the app-folder (e.g. "myApp.py")
+* Rename the .xlsx file, it might have the same or another meaningful name (e.g. "myApp.xlsx")
+* within the .xlsx file adjust the following fields (here based on the teleoperation example):
+  * field E2 **MUST** have the app name as value (e.g. "myApp")
+  * field E4 can be used to adjust the language (currently "english" or "german")
+  * fields E12 und E13 can be used to adjust the welcome and farewell messages.
+  ==> see the quiz app on how to add (quiz.xlsx) and read (read_project_data.py) more content
+* copy the .xlsx-file to the %USERPROFILE%\.sobotify\projects folder
+
+For testing **restart** the App-GUI, select the project with the name of the .xlsx file, z.B. "MyApp", and click the "start" button
+
+Then you can adjust the Python code (myApp.py) to change the fucntionality of the app, e.g. in method run() you might add more lines such as:
+
+* for starting a self-recorded gestures (e.g. "MyGesture", which needs to be located in %USERPROFILE%\.sobotify\data) :
+
+      self.sobot.speak("",gesture="MyGesture")
+* or for speaking further hard-coded text:
+
+      self.sobot.speak("Hello to my new App")
+
+The tools, which are used by your app, need to be started in the \_\_init\_\_ method, e.g. 
+* if the teleoperation tool is not required, it can be removed
+* if the speech recognition tool (listener) is required it can be added, see other apps such as the quiz app for more examples. 
+
+## Add your own robot
+
+The easiest way to integrate your own robot, is to a start from an existing robot. 
+* copy an existing robot folder (e.g. sobotify\\robots\\mykeepon) and rename it (e.g. into sobotify\\robots\\myrobot)
+* replace the code in the **landmarks2angles.py** file with code for converting mediapipe pose landmark into robot movements values/angles, that fit to the needs of your robot. For humanoid robots the landmarks2angles.py from the sobotify\\robots\\nao folder might be a good starting point.
+* Rename the .py-file, it **MUST** have the **same name** as the robot-folder (e.g. "myrobot.py")
+* adjust the content of the .py file according to the needs of your robotm e.g. for sending the movement values/angles as commands to your robot. If a feature (e.g. vision/camera or sound/microphone) is not supported by your robot, just inheriting these classes from the default robot base class, then it will use the default devices, e.g. camera and microphone of your laptop. 
+* in **sobotify\\robots\\robots.py** add your robot at the required places   
+* in **sobotify\\sobotify_app_gui.py** and **sobotify\\sobotify_gesture_gui.py** add the new robot in the lists on the top of the files
+* create a default movement file with a name corresponding to your robot (e.g. **sobotify\\tools\\robotcontrol\\data\\random_myrobot.csv**) by opening an Anaconda prompt and typing the following commands: 
+
+      conda activate sobotify
+      cd sobotify/tools/robotcontrol/data/
+      python ..\..\extract\landmarks2angles.py --robot_name myrobot --world_landmarks_file random_wlmarks.csv --data_path .
+
+For testing if the integration of your robot was successful:
+
+* **restart** the App-GUI, select "myrobot", and if needed an IP address or port (e.g. 192.168.1.141 (adjust IP address) or "COMx" (adjust x)) if needed fo your robot, and select "teleoperation" as project and click the "start" button
+* **restart** the Gesture GUI and follow the instructions here: 
+        [Sobotify Gesture GUI](#sobotify-gesture-gui)
+
+
+# License:
 Sobotify itself is licensed under MIT license. However, some part of the code are taken from other project which are under other licenses (e.g. Apache License Version 2.0). The license is then stated in the code. 
 Additionally, sobotify uses several packages (see [requirements.txt](requirements.txt)), please check their licenses and terms of use before using sobotify.
 
-## Credits: 
+# Credits: 
 Part of sobotify include and are based on others code, especially from Fraporta (https://github.com/FraPorta/pepper_openpose_teleoperation) and also elggem (https://github.com/elggem/naoqi-pose-retargeting), which also uses code from Kazuhito00 (https://github.com/Kazuhito00/mediapipe-python-sample). 
 
 Additionally several members of the Science Of Intelligence research project contributed to this project, whom I would like to thank. 
