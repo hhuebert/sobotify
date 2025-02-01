@@ -119,6 +119,7 @@ class EmotionDetection:
         cv.putText(img,text_bottom,(int(x+w/8),int(y+3*h/4)),cv.FONT_HERSHEY_DUPLEX,text_size,(0,255,0),text_width)
 
     def face_detect(self,img) :
+        pass
         #faces=DeepFace.extract_faces(img)
         #face=faces[0]['facial_area']
         #self.draw_bounding_box(img,face)
