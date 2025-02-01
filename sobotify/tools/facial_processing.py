@@ -9,7 +9,7 @@ from sobotify.tools.logger import LoggerClient
 import sobotify.robots.robots as robots
 import cv2 as cv
 import numpy as np
-from deepface import DeepFace
+#from deepface import DeepFace
 from datetime import datetime
 
 face_database=os.path.join(os.path.expanduser("~"),".sobotify","face_db")
@@ -119,13 +119,14 @@ class EmotionDetection:
         cv.putText(img,text_bottom,(int(x+w/8),int(y+3*h/4)),cv.FONT_HERSHEY_DUPLEX,text_size,(0,255,0),text_width)
 
     def face_detect(self,img) :
-        faces=DeepFace.extract_faces(img)
-        face=faces[0]['facial_area']
-        self.draw_bounding_box(img,face)
-        return face
+        #faces=DeepFace.extract_faces(img)
+        #face=faces[0]['facial_area']
+        #self.draw_bounding_box(img,face)
+        #return face
 
     def emotion_detect(self,img) :
-        emotions=DeepFace.analyze(img,actions=["emotion"])
+        #emotions=DeepFace.analyze(img,actions=["emotion"])
+        emotions=[]
         if len(emotions)>0:
             dominant_emotion=emotions[0]["dominant_emotion"]
             #print(emotions[0]["emotion"])
@@ -142,15 +143,15 @@ class EmotionDetection:
     def face_recognition(self,img) :
         face_string=""
         name=""
-        faces = DeepFace.find(img, db_path = face_database)
-        print (faces[0])
-        for index,face in faces[0].iterrows():
-            if index==0:
-                name=os.path.splitext(os.path.basename(face["identity"]))[0]
-                difference=round(face["VGG-Face_cosine"],2)
-                face_string=name+":"+str(difference)
-            #print (face)
-            print(os.path.splitext(os.path.basename(face["identity"]))[0],":",round(face["VGG-Face_cosine"],2))
+        #faces = DeepFace.find(img, db_path = face_database)
+        #print (faces[0])
+        #for index,face in faces[0].iterrows():
+        #    if index==0:
+        #        name=os.path.splitext(os.path.basename(face["identity"]))[0]
+        #        difference=round(face["VGG-Face_cosine"],2)
+        #        face_string=name+":"+str(difference)
+        #    #print (face)
+        #    print(os.path.splitext(os.path.basename(face["identity"]))[0],":",round(face["VGG-Face_cosine"],2))
         if self.mqtt=="on" :
             self.mqtt_client.publish("facial_processing/name",str(name))
         return face_string
@@ -186,8 +187,9 @@ class EmotionDetection:
                     face,dominant_emotion=self.emotion_detect(img)
                     self.draw_bounding_box(img,face,dominant_emotion,face_string,text_size,text_width)
                 else :
-                    face=self.face_detect(img)
-                    self.draw_bounding_box(img,face,"",face_string,text_size,text_width)
+                    pass
+                    #face=self.face_detect(img)
+                    #self.draw_bounding_box(img,face,"",face_string,text_size,text_width)
                 self.send_head_data(face,img_width,img_height)
             except:
                 cv.putText(img,"no face detected",(int(img_width/8),int(img_height/8)),cv.FONT_HERSHEY_DUPLEX,text_size,(0,0,255),text_width)
