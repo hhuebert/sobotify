@@ -6,10 +6,10 @@ REM ============================================================================
 
 REM ======================================================================================
 REM find and set CONDA executable path
-if EXIST "%USERPROFILE%\miniconda3\condabin\conda.bat" (
-    set CONDA_BASE=%USERPROFILE%\miniconda3
-) else if EXIST "%USERPROFILE%\AppData\Local\miniconda3\condabin\conda.bat" (
-    set CONDA_BASE=%USERPROFILE%\AppData\Local\miniconda3
+if EXIST "%USERPROFILE%\miniforge3\condabin\conda.bat" (
+    set CONDA_BASE=%USERPROFILE%\miniforge3
+) else if EXIST "%USERPROFILE%\AppData\Local\miniforge3\condabin\conda.bat" (
+    set CONDA_BASE=%USERPROFILE%\AppData\Local\miniforge3
 ) else (
     echo cannot find CONDA environment. Installation aborted!
     pause

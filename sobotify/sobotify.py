@@ -38,10 +38,10 @@ if java_path_default:
     java_path_default     = os.path.join(java_path_default,"bin")
 robot_options_default     = ""
 
-if os.path.isfile(os.path.join(os.path.expanduser("~"),"miniconda3","condabin","conda.bat")):
-	conda_exe=os.path.join(os.path.expanduser("~"),"miniconda3","condabin","conda.bat")
-elif os.path.isfile(os.path.join(os.path.expanduser("~"),"AppData","Local","miniconda3","condabin","conda.bat")):
-	conda_exe=os.path.join(os.path.expanduser("~"),"AppData","Local","miniconda3","condabin","conda.bat")
+if os.path.isfile(os.path.join(os.path.expanduser("~"),"miniforge3","condabin","conda.bat")):
+	conda_exe=os.path.join(os.path.expanduser("~"),"miniforge3","condabin","conda.bat")
+elif os.path.isfile(os.path.join(os.path.expanduser("~"),"AppData","Local","miniforge3","condabin","conda.bat")):
+	conda_exe=os.path.join(os.path.expanduser("~"),"AppData","Local","miniforge3","condabin","conda.bat")
 else :
 	print ("Cannot find Conda executable path. Abort")
 	exit()

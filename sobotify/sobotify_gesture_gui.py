@@ -19,10 +19,10 @@ DEFAULT_ROBOT_NAMES=("stickman","pepper","nao","cozmo","mykeepon")
 DEFAULT_NEW_PROJECT_NAME=("MyGesture")
 DEFAULT_LANGUAGES=("german","english")
 
-if os.path.isfile(os.path.join(os.path.expanduser("~"),"miniconda3","condabin","conda.bat")):
-	conda_exe=os.path.join(os.path.expanduser("~"),"miniconda3","condabin","conda.bat")
-elif os.path.isfile(os.path.join(os.path.expanduser("~"),"AppData","Local","miniconda3","condabin","conda.bat")):
-	conda_exe=os.path.join(os.path.expanduser("~"),"AppData","Local","miniconda3","condabin","conda.bat")
+if os.path.isfile(os.path.join(os.path.expanduser("~"),"miniforge3","condabin","conda.bat")):
+	conda_exe=os.path.join(os.path.expanduser("~"),"miniforge3","condabin","conda.bat")
+elif os.path.isfile(os.path.join(os.path.expanduser("~"),"AppData","Local","miniforge3","condabin","conda.bat")):
+	conda_exe=os.path.join(os.path.expanduser("~"),"AppData","Local","miniforge3","condabin","conda.bat")
 else :
 	print ("Cannot find Conda executable path. Abort")
 	exit()

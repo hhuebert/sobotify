@@ -3,10 +3,10 @@ set MESSAGE="Hello, I am stickman, a virtual robot. Press Q on your keyboard to 
 @ECHO OFF
 REM ======================================================================================
 REM find and set CONDA executable path
-if EXIST "%USERPROFILE%\miniconda3\condabin\conda.bat" (
-    set CONDA="%USERPROFILE%\miniconda3\condabin\conda.bat" 
-) else if EXIST "%USERPROFILE%\AppData\Local\miniconda3\condabin\conda.bat" (
-    set CONDA="%USERPROFILE%\AppData\Local\miniconda3\condabin\conda.bat" 
+if EXIST "%USERPROFILE%\miniforge3\condabin\conda.bat" (
+    set CONDA="%USERPROFILE%\miniforge3\condabin\conda.bat" 
+) else if EXIST "%USERPROFILE%\AppData\Local\miniforge3\condabin\conda.bat" (
+    set CONDA="%USERPROFILE%\AppData\Local\miniforge3\condabin\conda.bat" 
 ) else (
     echo cannot find CONDA environment. Installation aborted!
     pause

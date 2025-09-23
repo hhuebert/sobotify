@@ -4,14 +4,13 @@ REM Script for installing and setting up all required tools, models, SDKs and en
 REM ======================================================================================
 
 REM ======================================================================================
-REM download and install miniconda and mosquitto
-set MINICONDA=Miniconda3-latest-Windows-x86_64.exe
+REM download and install miniforge and mosquitto
+set MINIFORGE=Miniforge3-Windows-x86_64.exe
 set MOSQUITTO=mosquitto-2.0.15-install-windows-x64.exe 
-CALL curl -O https://repo.anaconda.com/miniconda/%MINICONDA%
+CALL curl -L https://github.com/conda-forge/miniforge/releases/latest/download/%MINIFORGE% > %MINIFORGE%
 CALL curl -O https://mosquitto.org/files/binary/win64/%MOSQUITTO%
-REM Instruction for silent installation of Miniconda https://docs.anaconda.com/free/anaconda/install/silent-mode/
-CALL .\%MINICONDA% 
-DEL  .\%MINICONDA% 
+CALL .\%MINIFORGE% 
+DEL  .\%MINIFORGE% 
 CALL .\%MOSQUITTO% 
 DEL  .\%MOSQUITTO%
 REM ======================================================================================
@@ -50,10 +49,10 @@ REM ============================================================================
 
 REM ======================================================================================
 REM find and set CONDA executable path
-if EXIST "%USERPROFILE%\miniconda3\condabin\conda.bat" (
-    set CONDA_BASE=%USERPROFILE%\miniconda3
-) else if EXIST "%USERPROFILE%\AppData\Local\miniconda3\condabin\conda.bat" (
-    set CONDA_BASE=%USERPROFILE%\AppData\Local\miniconda3
+if EXIST "%USERPROFILE%\miniforge3\condabin\conda.bat" (
+    set CONDA_BASE=%USERPROFILE%\miniforge3
+) else if EXIST "%USERPROFILE%\AppData\Local\miniforge3\condabin\conda.bat" (
+    set CONDA_BASE=%USERPROFILE%\AppData\Local\miniforge3
 ) else (
     echo cannot find CONDA environment. Installation aborted!
     pause
@@ -84,7 +83,7 @@ REM ============================================================================
 REM ======================================================================================
 REM Create python environment for naoqi
 set CONDA_ENV_NAOQI=sobotify_naoqi
-CALL %CONDA% create -y -n %CONDA_ENV_NAOQI% python=2.7 
+CALL %CONDA% create --channel "conda-forge/label/cf202003" -y -n %CONDA_ENV_NAOQI% python=2.7 
 CALL %CONDA% run --no-capture-output -n %CONDA_ENV_NAOQI% pip install -r "%~dp0\requirements.txt"
 CALL %CONDA% run --no-capture-output -n %CONDA_ENV_NAOQI% pip install -e "%~dp0."
 CALL %CONDA% run --no-capture-output -n %CONDA_ENV_NAOQI% conda env config vars set PYTHONPATH="%NAOQI_PATH%\pynaoqi\lib"

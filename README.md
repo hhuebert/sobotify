@@ -25,7 +25,7 @@ Additionaly the **sobotify API** acts as an simple interface between the tool an
 * Chatbot (LLM - Large Language Model) currently only provides a dummy and a JSON API
 * Issues with NAO and Pepper simulators (very slow execution)
 * extracting gestures for Cozmo and MyKeepon currently creates only predefined movements of the robots (not based on the actual human gesture)
-* currently Miniconda3 is required for creating python environments (usage is hard coded within sobotify)
+* currently Miniforge3 is required for creating python environments (usage is hard coded within sobotify)
 
 # Installation
 
@@ -39,9 +39,9 @@ Additionaly the **sobotify API** acts as an simple interface between the tool an
 
    to automatically download and install all required tools and packages. 
    
-   It downloads several other project and tools ([Miniconda](https://docs.conda.io/en/latest/miniconda.html), [Mosquitto](https://mosquitto.org/), [VOSK](https://alphacephei.com/vosk/), [FFMPEG](https://ffmpeg.org/), [LanguageTool](https://dev.languagetool.org/http-server), pybullet, qibullet, [Python SDK for Pepper/NAO (pynaoqi)](https://www.aldebaran.com/en/support), [PyCozmo animations via download script](https://github.com/zayfod/pycozmo/blob/master/tools/pycozmo_resources.py), ...).   
+   It downloads several other project and tools ([Miniforge](https://conda-forge.org/download/), [Mosquitto](https://mosquitto.org/), [VOSK](https://alphacephei.com/vosk/), [FFMPEG](https://ffmpeg.org/), [LanguageTool](https://dev.languagetool.org/http-server), pybullet, qibullet, [Python SDK for Pepper/NAO (pynaoqi)](https://www.aldebaran.com/en/support), [PyCozmo animations via download script](https://github.com/zayfod/pycozmo/blob/master/tools/pycozmo_resources.py), ...).   
    Please check their licenses before installation and usage. You can find the corresponding download URLs in [install.bat](install.bat) and Python package (PyPi) names in [requirements.txt](requirements.txt). pybullet is downloaded from the conda package repository (conda-forge)
-* Keep the default settings during installation of Miniconda and Mosquitto
+* Keep the default settings during installation of Miniforge and Mosquitto
 * The installation process might take from several minutes up to 30 minutes or more depending on your system and internet connection speed. Don't close the command window during this time, wait until you see the message "Press any key to continue ..."
 
 # Usage and Testing
@@ -104,10 +104,10 @@ For example, the chat-partner app can be started by running the following batch 
 
 
 #### Start an app from commandline
-The app can also be started directly with Python. For commandline testing you need to open a miniconda prompt. Then you can use the following commands. Before using the actual sobotify commands, you need to activate the sobotify conda enviroment (as can be seen below).
+The app can also be started directly with Python. For commandline testing you need to open a miniforge prompt. Then you can use the following commands. Before using the actual sobotify commands, you need to activate the sobotify conda enviroment (as can be seen below).
 You can finish each programm with the CTRL-C key combination.
 
-**open a miniconda prompt** and type the following commands to start the app:
+**open a miniforge prompt** and type the following commands to start the app:
 
     conda activate sobotify
     python sobotify\apps\chat_partner\chat_partner.py --robot_name=stickman --language english --project_file "%USERPROFILE%\.sobotify\projects\chat_partner.xlsx" 
@@ -122,7 +122,7 @@ For example, the facial processing tool can be started by running the following 
 
 #### Start a tool from commandline
 
-**open a miniconda prompt** and type the following commands to start the app:
+**open a miniforge prompt** and type the following commands to start the app:
 
     conda activate sobotify
     python sobotify\tools\facial_processing.py --cam_device 0 --frame_rate 2
@@ -145,7 +145,7 @@ You can start the robot control tool with a "Hello world" message with these bat
 
 #### Start a tool from commandline
 
-For testing "Hello world" with the stickman **open a miniconda prompt** and type the following command to start the robot control tool from the sobotify API: 
+For testing "Hello world" with the stickman **open a miniforge prompt** and type the following command to start the robot control tool from the sobotify API: 
 
     conda activate sobotify
     python sobotify\sobotify.py -r --message "Hello, I am stickman, a virtual robot. Please close this demo by pressing q on your keyboard"
@@ -256,17 +256,18 @@ sobotify uses LanguageTool for grammar and spell checking
 
 ### Setup of Python environment 
 
-The following instruction are based on using Miniconda3 to set up the two different Python versions required for the Sobotify main part (Python 3.8) and for the Pepper robot (Python 2.7)
-* Get and install for example miniconda https://docs.conda.io/en/latest/miniconda.html
+The following instruction are based on using Miniforge3 to set up the two different Python versions required for the Sobotify main part (Python 3.8) and for the Pepper robot (Python 2.7)
+* Get and install for example miniforge https://conda-forge.org/download/
 However, you can also use regular Python installation instead of Conda, as sobotify is not dependent on any other Conda packages (everything requried can be installe with pip) 
 
 #### Python 3.8 environment
 Create a Python 3.8 environment for most of the sobotify tools:
-* open anaconda prompt and type the following commands: 
+* open miniforge prompt and type the following commands: 
 
       conda create -y -n sobotify python=3.8
       conda activate sobotify
       conda config --add channels conda-forge
+      :: the following line is optional
       conda install pybullet
       :: cd to sobotify folder (where README.md is)
       pip install -r requirements.txt
@@ -279,7 +280,7 @@ Create a Python 2.7 envirnoment including the Python SDK (pynaoqi) and a if you 
 * unpack the ZIP file, e.g. to %HOME%\.sobotify\pynaoqi (or different location, then adjust also path in conda env below)
   (e.g. the naoqi.py can then be found at %USERPROFILE%\.sobotify\pynaoqi\lib\naoqi.py)
 
-* open anaconda prompt and type the following commands: 
+* open miniforge prompt and type the following commands: 
 
       conda create -y -n sobotify_naoqi python=2.7
       conda activate sobotify_naoqi
@@ -292,10 +293,10 @@ Create a Python 2.7 envirnoment including the Python SDK (pynaoqi) and a if you 
 For downloading animations for Cozmo use:
 
       conda activate sobotify
-      python %USERPROFILE%\miniconda3\envs\sobotify\Scripts\pycozmo_resources.py
-      :: or (depending on your miniconda installation location)
+      python %USERPROFILE%\miniforge3\envs\sobotify\Scripts\pycozmo_resources.py
+      :: or (depending on your miniforge installation location)
       python
-      "%USERPROFILE%\AppData\Local\miniconda3\envs\sobotify\Scripts\pycozmo_resources.py" download
+      "%USERPROFILE%\AppData\Local\miniforge3\envs\sobotify\Scripts\pycozmo_resources.py" download
 
 # Extending Sobotify
 
@@ -336,7 +337,7 @@ The easiest way to integrate your own robot, is to a start from an existing robo
 * adjust the content of the .py file according to the needs of your robotm e.g. for sending the movement values/angles as commands to your robot. If a feature (e.g. vision/camera or sound/microphone) is not supported by your robot, just inheriting these classes from the default robot base class, then it will use the default devices, e.g. camera and microphone of your laptop. 
 * in **sobotify\\robots\\robots.py** add your robot at the required places   
 * in **sobotify\\sobotify_app_gui.py** and **sobotify\\sobotify_gesture_gui.py** add the new robot in the lists on the top of the files
-* create a default movement file with a name corresponding to your robot (e.g. **sobotify\\tools\\robotcontrol\\data\\random_myrobot.csv**) by opening an Anaconda prompt and typing the following commands: 
+* create a default movement file with a name corresponding to your robot (e.g. **sobotify\\tools\\robotcontrol\\data\\random_myrobot.csv**) by opening an miniforge prompt and typing the following commands: 
 
       conda activate sobotify
       cd sobotify/tools/robotcontrol/data/
