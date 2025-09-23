@@ -4,7 +4,7 @@
 sobotify is a framework for turning a robot into a social robot. 
 Currently it supports controlling the humanoid robots Pepper and NAO as well as Cozmo and initial support for MyKeepon. Additionally a virtual "robot", called stickman, can be user. It is planned to support further robots (Cue, Bioloid, ...).
  
-It has been tested with Python 3.8 (and Python 2.7 for accessing NAO/Pepper) on Windows 10. Future versions should also support Linux and MacOS.
+It has been tested with Python 3.8 and 3.10 (current version) for the main parts (and Python 2.7 for accessing NAO/Pepper) on Windows 10 and Windows 11. Future versions should also support Linux and MacOS.
 
 ## Sobotify Overview
 The following diagram shows an overview of the soboitfy framework structure. 
@@ -256,15 +256,15 @@ sobotify uses LanguageTool for grammar and spell checking
 
 ### Setup of Python environment 
 
-The following instruction are based on using Miniforge3 to set up the two different Python versions required for the Sobotify main part (Python 3.8) and for the Pepper robot (Python 2.7)
+The following instruction are based on using Miniforge3 to set up the two different Python versions required for the Sobotify main part (Python 3.10) and for the Pepper/Nao robot (Python 2.7)
 * Get and install for example miniforge https://conda-forge.org/download/
 However, you can also use regular Python installation instead of Conda, as sobotify is not dependent on any other Conda packages (everything requried can be installe with pip) 
 
-#### Python 3.8 environment
-Create a Python 3.8 environment for most of the sobotify tools:
+#### Python 3.10 environment
+Create a Python 3.10 environment for most of the sobotify tools:
 * open miniforge prompt and type the following commands: 
 
-      conda create -y -n sobotify python=3.8
+      conda create -y -n sobotify python=3.10
       conda activate sobotify
       conda config --add channels conda-forge
       :: the following line is optional

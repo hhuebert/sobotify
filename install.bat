@@ -6,7 +6,7 @@ REM ============================================================================
 REM ======================================================================================
 REM download and install miniforge and mosquitto
 set MINIFORGE=Miniforge3-Windows-x86_64.exe
-set MOSQUITTO=mosquitto-2.0.15-install-windows-x64.exe 
+set MOSQUITTO=mosquitto-2.0.15-install-windows-x64.exe
 CALL curl -L https://github.com/conda-forge/miniforge/releases/latest/download/%MINIFORGE% > %MINIFORGE%
 CALL curl -O https://mosquitto.org/files/binary/win64/%MOSQUITTO%
 CALL .\%MINIFORGE% 
@@ -64,7 +64,7 @@ REM ============================================================================
 REM ======================================================================================
 REM Create python environment for sobotify
 set CONDA_ENV=sobotify
-CALL %CONDA% create -y -n %CONDA_ENV% python=3.8 
+CALL %CONDA% create -y -n %CONDA_ENV% python=3.10 
 CALL %CONDA% run --no-capture-output -n %CONDA_ENV% conda install -c conda-forge --yes pybullet
 CALL %CONDA% run --no-capture-output -n %CONDA_ENV% pip install -r "%~dp0\requirements.txt"
 CALL %CONDA% run --no-capture-output -n %CONDA_ENV% pip install -e "%~dp0."
