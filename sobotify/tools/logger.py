@@ -14,8 +14,10 @@ SERVER_CONNECT_TIMEOUT= 5   # timeout fpr client to connect to server (in second
 FLUSH_FILE_INTERVAL   = 2   # interval to write the current messages to disk (in seconds)s
 
 LOG_FILE_DIR          = os.path.join(os.path.expanduser("~"),".sobotify","log")
-IGNORED_MESSAGES      = ("robot_control/image",
-                         "robot_control/command/get_image"
+IGNORED_MESSAGES      = ("robot/image",
+                         "robot/command/get_image",
+                         "robot/audio",
+                         "robot/command/get_audio_data"
                          )
 
 def timestamp():
