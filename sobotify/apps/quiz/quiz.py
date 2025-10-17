@@ -79,6 +79,7 @@ class quiz:
 
     def process_task(self,task) :
         self.sobot.speak(task["question"])
+        self.sobot.log("question","app_info")
         for i in range(3) :
             if i>0 : self.sobot.speak(task["question2"])
             if emotion_detection==True :
@@ -100,6 +101,7 @@ class quiz:
         return False
 
     def run(self) :
+        self.sobot.log("start quiz","app_info")
         correct_answers=0
         if emotion_detection==True :
             emotion=self.sobot.speak(self.general_info["welcome"],speed=70,detect_emotion=True)
@@ -107,13 +109,15 @@ class quiz:
         else:
             self.sobot.speak(self.general_info["welcome"],speed=70)
         for number,task in enumerate(self.tasks):
-            self.sobot.log(f"starting task {number}")
+            self.sobot.log(f"starting task {number}","app_info")
             if self.process_task(task): correct_answers+=1
             time.sleep(1)    
             
         self.sobot.speak(self.general_info["score"]+" "+str(round(correct_answers/len(self.tasks)*100))+ " %")
         #self.sobot.speak(f"You scored {correct_answers} out of {len(tasks)} tasks correct.")
         self.sobot.speak(self.general_info["farewell"])
+        self.sobot.log(f"correct answers : {correct_answers}","app_info")
+        self.sobot.log("end quiz","app_info")
 
     def terminate(self):
         self.sobot.terminate()
