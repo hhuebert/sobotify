@@ -350,6 +350,59 @@ For testing if the integration of your robot was successful:
         [Sobotify Gesture GUI](#sobotify-gesture-gui)
 
 
+## Integrate LLMs in the chatbot tool
+Currently sobotify does not include a large language model (LLM) in the chatbot tool. It only provides
+
+* an example for LLMs with JSON-API 
+* a dummy LLM stub
+
+Both can be used as a basis for integrating real LLMs. 
+
+### LLMs with Python API 
+Modify the **sobotify\tools\chatbot.py** as follows
+* add imports of required modules for the LLM 
+* make a copy of the **llm_dummy** class and name it e.g. **my_llm** and modify the new class as follows
+  * in the **\_\_init__** method: add code for llm initalization, e.g. loading a model  
+  * in the **process_query** method: add your code for sending a query (stored in **self.query**) to the llm and place the generated result in **self.gen_text**, e.g. 
+
+      replace the line 
+  
+        self.gen_text = "This an important ... this is not a real answer to your topic)."
+  
+      with
+  
+        self.gen_text = myLLM.generate(self.query)
+
+* in the **llm_processor** method: add your llm as an elif-statement e.g. add the following: 
+
+      elif llm_name=="my_llm":
+        llm_proc = my_llm(llm_options)
+
+* Use the following to test the chatbot with your llm:
+
+      python chatbot.py --llm_name my_llm
+
+   or 
+
+   * adjust the project **chat_partner** by changing the spreadsheet value for **llm_name** from "dummy" to **my_llm** and then run the chat_partner app. You can use the **llm_options** value to pass options to your llm.
+
+### Webserver-based LLMs with JSON-API
+Modify the **sobotify\tools\chatbot.py** as follows
+* make a copy of the the **llm_json_api** class and name it e.g. **my_json_llm** and modify the new class, e.g. by adjusting required json data.
+* in the **llm_processor** method: add your llm as an elif-statement e.g. add the following: 
+
+      elif llm_name=="my_json_llm":
+        llm_proc = my_json_llm(llm_options)
+
+* Use the following to test the chatbot with your llm:
+
+      python chatbot.py --llm_name my_json_llm --llm_options "--URL localhost:1234"
+
+   or 
+
+   * adjust the project **chat_partner** by changing the spreadsheet value for **llm_name** from "dummy" to **my_json_llm** and then run the chat_partner app. You can use the **llm_options** value to pass options to your llm, e.g. **--URL localhost:1234**
+
+
 # License:
 Sobotify itself is licensed under MIT license. However, some part of the code are taken from other project which are under other licenses (e.g. Apache License Version 2.0). The license is then stated in the code. 
 Additionally, sobotify uses several packages (see [requirements.txt](requirements.txt)), please check their licenses and terms of use before using sobotify.
