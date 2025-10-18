@@ -382,9 +382,7 @@ Modify the **sobotify\tools\chatbot.py** as follows
 
       python chatbot.py --llm_name my_llm
 
-   or 
-
-   * adjust the project **chat_partner** by changing the spreadsheet value for **llm_name** from "dummy" to **my_llm** and then run the chat_partner app. You can use the **llm_options** value to pass options to your llm.
+   or follow the instructions below to test with the chat partner app
 
 ### Webserver-based LLMs with JSON-API
 Modify the **sobotify\tools\chatbot.py** as follows
@@ -398,10 +396,30 @@ Modify the **sobotify\tools\chatbot.py** as follows
 
       python chatbot.py --llm_name my_json_llm --llm_options "--URL localhost:1234"
 
-   or 
+   or or follow the instructions below to test with the chat partner app
 
-   * adjust the project **chat_partner** by changing the spreadsheet value for **llm_name** from "dummy" to **my_json_llm** and then run the chat_partner app. You can use the **llm_options** value to pass options to your llm, e.g. **--URL localhost:1234**
+### Test the LLM-based chat bot with the chat partner app
+* Start the sobotify GUI with **start_app.bat**
+* select the **chat_partner** project
+* click the **edit** button, it will open the spreadsheet program
+* **adjust** the following in the spreadsheet: 
 
+    * **llm_name**: change the name of the llm from "dummy" to the name of your llm as defined in the chatbot.py, e.g. **my_llm** or **my_json_llm**
+
+    optionally adjust the following too:
+
+    * **llm_options** : pass options to your llm, e.g. **--URL localhost:1234**
+    * **language**: (e.g. currently **English** or **German** are valid options)
+    * **key_word**: use a keyword that fits to the selected language (e.g. "apple tree" in English)
+    * also adjust the following messages accordingly to the selected language
+* **save** the spreadsheet
+* press the **start** button in the sobotify GUI 
+* wait until the robot says the welcome messages
+* say the **keyword** (e.g. "apple tree"). If the robot understood the keyword, it will reply with a beep tone to indicate it's listening, otherwise try again.
+* say your **request** to the chat bot
+* fininsh your request again with the **keyword** (e.g. "apple tree")
+* wait for the **answer** of the robot
+* after that the robot is done and waiting for the keyword again 
 
 # License:
 Sobotify itself is licensed under MIT license. However, some part of the code are taken from other project which are under other licenses (e.g. Apache License Version 2.0). The license is then stated in the code. 
